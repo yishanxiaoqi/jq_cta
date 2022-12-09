@@ -1,0 +1,29 @@
+{
+  "name": "test",
+  "description": "algoritmic trading strategy codebase",
+  "private": true,
+  "dependencies": {
+    "callsite": "1.0.0",
+    "lodash": "4.17.11",
+    "mathjs": "5.6.0",
+    "microtime": "3.0.0",
+    "moment": "2.22.2",
+    "moment-timezone": "0.5.31",
+    "node-schedule": "^2.1.0",
+    "ps-node": "^0.1.6",
+    "pusher": "^5.1.1-beta",
+    "random-id": "0.0.2",
+    "redis": "2.8.0",
+    "request": "2.88.0",
+    "request-promise-native": "1.0.9",
+    "talib": "1.0.6",
+    "winston": "2.4.0",
+    "winston-daily-rotate-file": "3.2.3",
+    "ws": "^8.11.0",
+    "yargs": "12.0.1"
+  },
+  "devDependencies": {
+    "node-global-proxy": "1.0.1",
+    "pg": "8.7.1"
+  }
+}

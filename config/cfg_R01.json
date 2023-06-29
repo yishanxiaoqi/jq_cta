@@ -19,7 +19,10 @@
     "idfs": [
         "BinanceU.XEMUSDT.perp"
     ],
-    "BinanceU.XEMUSDT.perp": {
+    "entries": [
+        "BinanceU.XEMUSDT.perp.1h"
+    ],
+    "BinanceU.XEMUSDT.perp.1h": {
         "track_ATR_n": 20,
         "track_ATR_multiplier": 0.2,
         "stoploss_rate": 0.05,

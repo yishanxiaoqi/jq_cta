@@ -65,7 +65,7 @@ const logLevels = {
     }
 };
 
-logger = new (winston.Logger)({
+logger = winston.createLogger({
     transports: [
         new (winston.transports.Console)({
             level: process.env.PRODUCTION !== 'true' ? 'debug' : 'info',

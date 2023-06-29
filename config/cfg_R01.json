@@ -1,0 +1,35 @@
+{
+    "alias": "R01",
+    "clear_existing_status": false,
+    "max_num": 100,
+    "ini_usdt": 300,
+    "interval": "1h",
+    "act_ids": [
+        "jq_cta_02"
+    ],
+    "ex_act_id_order_uds": [
+        "BinanceU|jq_cta_02"
+    ],
+    "ex_act_id_pos_info": [
+        "BinanceU|jq_cta_02"
+    ],
+    "symbols": [
+        "XEMUSDT"
+    ],
+    "idfs": [
+        "BinanceU.XEMUSDT.perp"
+    ],
+    "BinanceU.XEMUSDT.perp": {
+        "track_ATR_n": 20,
+        "track_ATR_multiplier": 0.2,
+        "stoploss_rate": 0.05,
+        "cutloss_rate": 0.03,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "splitAt": 0,
+        "ini_usdt": 3000,
+        "act_id": "cta_foreseem_sub02_fut",
+        "cfgID": "R010056"
+    }
+}

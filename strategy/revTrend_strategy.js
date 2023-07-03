@@ -374,6 +374,7 @@ class RevTrendStrategy {
     }
 
     _format_market_data(jdata) {
+        console.log(JSON.stringify(jdata));
         let market_data;
         switch (jdata["e"]) {
             case "aggTrade":
@@ -388,8 +389,8 @@ class RevTrendStrategy {
                 ];
                 market_data = {
                     exchange: "BinanceU",
-                    contract_type: "perp",
                     symbol: this._get_external_symbol(jdata["s"]),
+                    contract_type: "perp",
                     data_type: MARKET_DATA.TRADE,
                     metadata: updated_trades,
                     timestamp: utils._util_get_human_readable_timestamp()
@@ -753,9 +754,13 @@ class RevTrendStrategy {
 
         let idf = [exchange, symbol, contract_type].join(".");
 
+        console.log(that.cfg, idf);
+
         if (!that.cfg["idfs"].includes(idf)) return;
         if (!that.klines[idf]["ready"]) return;
         that.prices[idf] = { "price": price, "upd_ts": ts };
+
+        console.log("test");
 
         // logger.info(symbol, ts, that.cur_bar_otime[idf], that.pre_bar_otime[idf]);
         that.cur_bar_otime[idf] = cal_bar_otime(ts, that.interval, that.cfg[idf]["splitAt"]);

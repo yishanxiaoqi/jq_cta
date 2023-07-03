@@ -40,10 +40,14 @@ ORDER_STATUS = {
 }
 
 MARKET_DATA = {
-    QUOTE: "quote",
     ORDERBOOK: "orderbook",
+    QUOTE: "quote",
     TRADE: "trade",
+    PRICE: "price",
+    KLINE: "kline",
     INDEX: "index",
+    RATE: "rate",
+    LIQUIDATION: "liquadation",
     FUNDING: "funding",
     HOLDAMOUNT: "holdamount"
 }

@@ -1,11 +1,13 @@
 {
   "dependencies": {
     "callsite": "^1.0.0",
+    "json-bigint": "^1.0.0",
     "moment": "^2.29.4",
+    "moment-timezone": "^0.5.43",
     "random-id": "^1.0.4",
     "request-promise-native": "^1.0.9",
-    "winston": "^3.9.0",
-    "winston-daily-rotate-file": "^4.7.1",
+    "winston": "https://registry.npmjs.org/winston/-/winston-2.4.0.tgz",
+    "winston-daily-rotate-file": "3.2.3",
     "ws": "^8.13.0"
   }
 }

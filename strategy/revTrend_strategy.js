@@ -1,6 +1,7 @@
 require("../config/typedef.js");
 const fs = require("fs");
 const WS = require("ws");
+const moment = require("moment");
 const assert = require("assert");
 const randomID = require("random-id");
 const EventEmitter = require("events");
@@ -12,8 +13,9 @@ const logger = require("../module/logger.js");
 const request = require('../module/request.js');
 const utils = require("../utils/util_func");
 const stratutils = require("../utils/strat_util.js");
-const { default: nodeTest } = require("node:test");
 const emitter = new EventEmitter.EventEmitter();
+
+const { cal_bar_otime } = require("../utils/strat_util.js");
 
 class RevTrendStrategy {
     constructor(name, alias) {
@@ -182,7 +184,7 @@ class RevTrendStrategy {
             }, function (error, res, body) {
                 let high = Number.NEGATIVE_INFINITY, low = Number.POSITIVE_INFINITY;
                 for (let i = body.length - 1; i >= 0; i--) {
-                    let ts = stratutils.get_human_readable_timestamp(body[i][0]);
+                    let ts = utils.get_human_readable_timestamp(body[i][0]);
                     let hour = parseInt(ts.slice(8, 10));
                     high = Math.max(high, parseFloat(body[i][2]));
                     low = Math.min(low, parseFloat(body[i][3]));
@@ -374,14 +376,13 @@ class RevTrendStrategy {
     }
 
     _format_market_data(jdata) {
-        console.log(JSON.stringify(jdata));
         let market_data;
         switch (jdata["e"]) {
             case "aggTrade":
                 let updated_trades = [
                     [
                         String(jdata["f"]),
-                        jdata["T"],
+                        utils.get_human_readable_timestamp(jdata["T"]),
                         parseFloat(jdata["p"]),
                         (jdata["m"] ? TRADE_SIDE.SELL : TRADE_SIDE.BUY),
                         parseFloat(jdata["q"])
@@ -389,7 +390,7 @@ class RevTrendStrategy {
                 ];
                 market_data = {
                     exchange: "BinanceU",
-                    symbol: this._get_external_symbol(jdata["s"]),
+                    symbol: jdata["s"],
                     contract_type: "perp",
                     data_type: MARKET_DATA.TRADE,
                     metadata: updated_trades,
@@ -486,11 +487,6 @@ class RevTrendStrategy {
         } catch (err) {
             // logger.error(`${this.name}:: ${__callee}| error: ${err.stack}`);
         }
-    }
-
-    _get_external_symbol(symbol) {
-        let extSymbol = utils._util_get_key_by_value(apiconfig.symbolMap, symbol);
-        return extSymbol;
     }
 
     on_order_update(order_update) {
@@ -754,13 +750,10 @@ class RevTrendStrategy {
 
         let idf = [exchange, symbol, contract_type].join(".");
 
-        console.log(that.cfg, idf);
 
         if (!that.cfg["idfs"].includes(idf)) return;
         if (!that.klines[idf]["ready"]) return;
         that.prices[idf] = { "price": price, "upd_ts": ts };
-
-        console.log("test");
 
         // logger.info(symbol, ts, that.cur_bar_otime[idf], that.pre_bar_otime[idf]);
         that.cur_bar_otime[idf] = cal_bar_otime(ts, that.interval, that.cfg[idf]["splitAt"]);
@@ -1231,16 +1224,16 @@ class RevTrendStrategy {
 
         let action = response["action"];
 
-        let exchange = response["metadata"]["request"]["metadata"]["exchange"];
-        let symbol = response["metadata"]["request"]["metadata"]["symbol"];
-        let contract_type = response["metadata"]["request"]["metadata"]["contract_type"];
-        let client_order_id = response["metadata"]["request"]["metadata"]["client_order_id"];
-        let act_id = response["metadata"]["request"]["metadata"]["account_id"];
+        let exchange = response["request"]["exchange"];
+        let symbol = response["request"]["symbol"];
+        let contract_type = response["request"]["contract_type"];
+        let client_order_id = response["request"]["client_order_id"];
+        let act_id = response["request"]["account_id"];
 
-        let target = response["metadata"]["request"]["metadata"]["target"];
-        let quantity = response["metadata"]["request"]["metadata"]["quantity"];
-        let direction = response["metadata"]["request"]["metadata"]["direction"];
-        let price = response["metadata"]["request"]["metadata"]["price"];
+        let target = response["request"]["target"];
+        let quantity = response["request"]["quantity"];
+        let direction = response["request"]["direction"];
+        let price = response["request"]["price"];
 
         let label = client_order_id.slice(3, 5);
         if (!Object.values(LABELMAP).includes(label)) {
@@ -1259,7 +1252,7 @@ class RevTrendStrategy {
 
             let error_code = response["metadata"]["metadata"]["error_code"];
             let error_code_msg = response["metadata"]["metadata"]["error_code_msg"];
-            let retry = response["metadata"]["request"]["metadata"]["retry"];
+            let retry = response["request"]["retry"];
 
             if (retry === 5) {
                 that._send_alarm(`${that.alias}::${order_idf}::Send order retried over 5 times, check the code!`, ALARM_REASON.FAILED, true);
@@ -1368,13 +1361,13 @@ class RevTrendStrategy {
         let action = response["action"];
 
         // 用request里面的数据比较保险
-        let exchange = response["metadata"]["request"]["metadata"]["exchange"];
-        let symbol = response["metadata"]["request"]["metadata"]["symbol"];
-        let contract_type = response["metadata"]["request"]["metadata"]["contract_type"];
-        let act_id = response["metadata"]["request"]["metadata"]["account_id"];
-        let client_order_id = response["metadata"]["request"]["metadata"]["client_order_id"];
+        let exchange = response["request"]["exchange"];
+        let symbol = response["request"]["symbol"];
+        let contract_type = response["request"]["contract_type"];
+        let act_id = response["request"]["account_id"];
+        let client_order_id = response["request"]["client_order_id"];
         // 如果报错，返回的metadata里面没有direction
-        let direction = response["metadata"]["request"]["metadata"]["direction"];
+        let direction = response["request"]["direction"];
 
         let label = client_order_id.slice(3, 5);
         if (!Object.values(LABELMAP).includes(label)) {
@@ -1391,7 +1384,7 @@ class RevTrendStrategy {
             //撤单失败
             let error_code = response["metadata"]["metadata"]["error_code"];
             let error_code_msg = response["metadata"]["metadata"]["error_code_msg"];
-            let retry = response["metadata"]["request"]["metadata"]["retry"];
+            let retry = response["request"]["retry"];
 
             if (retry === 5) {
                 that._send_alarm(`${that.alias}::${order_idf}::Cancel order retried over 5 times, check the code!`, ALARM_REASON.FAILED, true);
@@ -1442,10 +1435,10 @@ class RevTrendStrategy {
     on_query_orders_response(response) {
         let that = this;
 
-        let exchange = response["metadata"]["request"]["metadata"]["exchange"];
-        let symbol = response["metadata"]["request"]["metadata"]["symbol"];
-        let contract_type = response["metadata"]["request"]["metadata"]["contract_type"];
-        let act_id = response["metadata"]["request"]["metadata"]["account_id"];
+        let exchange = response["request"]["exchange"];
+        let symbol = response["request"]["symbol"];
+        let contract_type = response["request"]["contract_type"];
+        let act_id = response["request"]["account_id"];
         let idf = [exchange, symbol, contract_type].join(".");
 
         if (response["metadata"]["metadata"]["result"] === false) {
@@ -1537,6 +1530,8 @@ class RevTrendStrategy {
         if (order["ref_id"] === undefined) order["ref_id"] = ref_id;
         let response = await this._send_order_via_rest(order);
 
+        console.log("order details", JSON.stringify(order));
+        
         this.intercom.emit("REQUEST_RESPONSE", response);
     }
 
@@ -1552,13 +1547,11 @@ class RevTrendStrategy {
         let account_id = order["account_id"];
         let client_order_id = order["client_order_id"];
 
-        let exg_symbol = apiconfig.symbolMap[symbol].toUpperCase();
+        let exg_symbol = symbol;
         let exg_direction = direction.toUpperCase();
         let exg_order_type = apiconfig.orderTypeMap[order_type];
-
-        price = Math.round(price * apiconfig.pricePrecision[symbol]) / apiconfig.pricePrecision[symbol];
         let absAmount = Math.abs(quantity);
-
+        
         let params;
         if (order_type === "market") {
             // 市价单走这里
@@ -1628,7 +1621,7 @@ class RevTrendStrategy {
                         account_id: account_id,
                         result: false,
                         order_id: 0,
-                        error_code: 999999,
+                        error_code: 888888,
                         error_code_msg: body["err-msg"]
                     },
                     timestamp: utils._util_get_human_readable_timestamp()
@@ -1689,13 +1682,13 @@ class RevTrendStrategy {
         if (order_id) {
             // 优先使用order_id进行撤单
             params = this._get_rest_options(restUrlCancelOrder, {
-                symbol: apiconfig.symbolMap[symbol].toUpperCase(),
+                symbol: symbol,
                 orderId: order_id,
                 timestamp: Date.now(),
             }, account_id);
         } else {
             params = this._get_rest_options(restUrlCancelOrder, {
-                symbol: apiconfig.symbolMap[symbol].toUpperCase(),
+                symbol: symbol,
                 origClientOrderId: client_order_id,
                 timestamp: Date.now(),
             }, account_id);
@@ -1787,13 +1780,13 @@ class RevTrendStrategy {
         let cxl_resp;
         if (order_id) {    
             params = this._get_rest_options(restUrlGetOrder, {
-                symbol: apiconfig.symbolMap[symbol].toUpperCase(),
+                symbol: symbol,
                 orderId: order_id,
                 timestamp: Date.now(),
             }, account_id); 
         } else {
             params = this._get_rest_options(restUrlGetOrder, {
-                symbol: apiconfig.symbolMap[symbol].toUpperCase(),
+                symbol: symbol,
                 origClientOrderId: client_order_id,
                 timestamp: Date.now(),
             }, account_id);
@@ -1846,7 +1839,7 @@ class RevTrendStrategy {
                     metadata: {
                         account_id: account_id,
                         result: false,
-                        error_code: 999999,
+                        error_code: 888888,
                         error_code_msg: body["err-msg"]
                     },
                     timestamp: utils._util_get_human_readable_timestamp(),
@@ -1908,7 +1901,7 @@ class RevTrendStrategy {
         let restUrlQueryOrders = apiconfig.restUrlQueryOrders;
         
         let params = this._get_rest_options(restUrlQueryOrders, {
-            symbol: apiconfig.symbolMap[symbol].toUpperCase(),
+            symbol: symbol,
             timestamp: Date.now(),
         }, account_id); 
 

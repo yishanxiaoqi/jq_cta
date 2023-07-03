@@ -14,10 +14,6 @@
     "marketDataThemeMap": {
         "trade": "aggTrade"
     },
-    "symbolMap": {
-        "BTCUSDT": "btcusdt",
-        "XEMUSDT": "xemusdt"
-    },
     "orderTypeMap": {
         "limit": "LIMIT",
         "market": "MARKET"

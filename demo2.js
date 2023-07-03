@@ -1,4 +1,7 @@
-const EventEmitter = require("events");
-const emitter = new EventEmitter.EventEmitter();
+var price = 0.0296;
+var apiconfig = require("./config/apiconfig.json");
+var symbol = "XEMUSDT";
 
-emitter.emit("UPDATE", "=== HELLO");
+var adj_price = Math.round(price * apiconfig.pricePrecision[symbol]) / apiconfig.pricePrecision[symbol];
+
+console.log(adj_price);

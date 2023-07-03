@@ -209,12 +209,6 @@ function get_hrt(date = new Date()) {
     return `${yyyy}${MM}${dd}${hh}${mm}${ss}${fff}`;
 }
 
-function get_human_readable_timestamp(timestamp) {
-    // return (timestamp ? moment(timestamp) : moment()).utcOffset(8).format('YYYYMMDDHHmmssSSS');
-    // return timestamp ? moment(timestamp).format('YYYYMMDDHHmmssSSS') : get_hrt();
-    return timestamp ? get_hrt(new Date(timestamp)) : get_hrt();
-}
-
 function round(number, precision = 4, type = 'round') {
     if (!validateNumber(+number)) {
         throw new Error(`Value must be a valid number, instead ${number}`)
@@ -2833,7 +2827,6 @@ module.exports = {
     cal_bar_otime: cal_bar_otime,
     recognize_timestamp: recognize_timestamp,
     convert_timestamp_to_date: convert_timestamp_to_date,
-    get_human_readable_timestamp: get_human_readable_timestamp,
     transform_with_tick_size: transform_with_tick_size,
     get_key_by_value: get_key_by_value,
     get_opposite_side: get_opposite_side,

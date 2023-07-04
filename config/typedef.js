@@ -93,7 +93,7 @@ REQUEST_ACTIONS = {
 };
 
 INTERCOM_SCOPE = {
-    MARKET: "market",
+    FEED: "feed",
     STRATEGY: "strategy"
 }
 
@@ -104,11 +104,11 @@ INTERCOM_TYPE = {
 
 INTERCOM_CONFIG = {
     //===============LOCALHOST=====================
-    LOCALHOST_MARKET: {
+    LOCALHOST_FEED: {
         host: '127.0.0.1',
         port: '6379',
         auth: 'pass1',
-        scope: INTERCOM_SCOPE.MARKET
+        scope: INTERCOM_SCOPE.FEED
     },
     LOCALHOST_STRATEGY: {
         host: '127.0.0.1',

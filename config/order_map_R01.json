@@ -1,1 +1,1 @@
-{"BinanceU.XEMUSDT.perp":{"R01LRAEkSEWc":{"label":"ANTI_L|REVERSE","target":"SHORT","quantity":6442,"time":1688443200379,"filled":0},"ANTI_L":{"client_order_id":"R01LRAEkSEWc","label":"ANTI_L|REVERSE","price":0.0313,"quantity":6442,"time":1688443200380}}}
+{"BinanceU.XEMUSDT.perp":{"ANTI_L":{"client_order_id":"R01LRN7qNWnL","label":"ANTI_L|REVERSE","price":0.031,"quantity":6473,"time":1688446800346},"R01LRN7qNWnL":{"label":"ANTI_L|REVERSE","target":"SHORT","quantity":6473,"time":1688446800346,"filled":0}}}

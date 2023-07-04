@@ -1,21 +1,16 @@
 require("../config/typedef.js");
 const fs = require("fs");
-const WS = require("ws");
 const moment = require("moment");
 const assert = require("assert");
 const randomID = require("random-id");
-const EventEmitter = require("events");
-const querystring = require("querystring");
-const rp = require("request-promise-native");
 
-const apiconfig = require("../config/apiconfig.json");
+const Intercom = require("../module/intercom");
 const logger = require("../module/logger.js");
 const request = require('../module/request.js');
 const Slack = require("../module/slack");
 const utils = require("../utils/util_func");
 const stratutils = require("../utils/strat_util.js");
 const StrategyBase = require("./strategy_base.js");
-const emitter = new EventEmitter.EventEmitter();
 
 class RevTrendStrategy extends StrategyBase{
     constructor(name, alias, intercom) {
@@ -48,7 +43,7 @@ class RevTrendStrategy extends StrategyBase{
 
     start() {
         this._register_events();
-        this._init_websocket();
+        this.subscribe_market_data();
 
         this.load_klines();
 
@@ -73,10 +68,6 @@ class RevTrendStrategy extends StrategyBase{
                 if (err) logger.info(`${this.alias}::err`);
             });
         }, 1000 * 60 * 60);
-
-        // setTimeout(() => {
-        //     this._test_query_orders();
-        // }, 1000 * 3);
     }
 
     query_active_orders() {
@@ -1115,7 +1106,7 @@ class RevTrendStrategy extends StrategyBase{
 
                 if ((!active_orders.includes(client_order_id)) && (moment.now() - time > 1000 * 60 * 10)) {
                     logger.debug(`${that.alias}::${symbol}|${key}|${client_order_id}::order not active (label as key) and submitted over 10 min before, will be deleted, please check it!`);
-                    that.slack.alert(`${that.alias}::${symbol}|${key}|${client_order_id}::order not active (label as key) and submitted over 10 min before, will be deleted, please check it!`);
+                    that.slack.warn(`${that.alias}::${symbol}|${key}|${client_order_id}::order not active (label as key) and submitted over 10 min before, will be deleted, please check it!`);
                     
                     if (that.order_map[idf][key]["ToBeDeleted"]) {
                         delete that.order_map[idf][key];
@@ -1134,16 +1125,19 @@ class RevTrendStrategy extends StrategyBase{
                 if (!(active_orders.includes(key)) && (moment.now() - time > 1000 * 60 * 10)) {
                     // 该order不在active orders里面，并且距今已经超过10分钟，直接删掉
                     logger.debug(`${that.alias}::${symbol}|${label}|${key}::order not active (client_order_id as key) and submitted over 10 min before, will be deleted, please check it!`);
-                    that.slack.alert(`${that.alias}::${symbol}|${label}|${key}::order not active (client_order_id as key) and submitted over 10 min before, will be deleted, please check it!`);
+                    that.slack.warn(`${that.alias}::${symbol}|${label}|${key}::order not active (client_order_id as key) and submitted over 10 min before, will be deleted, please check it!`);
+
+                    logger.info(JSON.stringify(that.order_map), idf, key);
 
                     if (that.order_map[idf][key]["ToBeDeleted"]) {
                         delete that.order_map[idf][key];
                     } else {
                         that.order_map[idf][key]["ToBeDeleted"] = true;
                     }
-
                 }
             }
+
+
         }
 
         order_map_string = order_map_string.join(", ");
@@ -1155,16 +1149,51 @@ class RevTrendStrategy extends StrategyBase{
         item[`${index + 1}|active_orders`] = active_orders_string;
         let data = [item];
     }
-
-    on_account_update(account_update) {
-        console.log("ACCOUNT_UPDATE", JSON.stringify(account_update));
-        return;
-    }
 }
 
-var intercom_config = [
-    INTERCOM_CONFIG[`LOCALHOST_FEED`],
-    INTERCOM_CONFIG[`LOCALHOST_STRATEGY`]
-];
-var strategy = new RevTrendStrategy("RevTrend", "R01", new Intercom(intercom_config));
-strategy.start();
+module.exports = RevTrendStrategy;
+
+let strategy;
+
+process.argv.forEach((val) => {
+    if (val === "on") {
+        let args = require("yargs")
+            .option("alias", {
+                alias: "a",
+                describe: "-a <env> specify the stragey alias",
+                default: "undefined",
+            })
+            .help()
+            .alias("h", "help")
+            .epilog("FORESEEM 2021.")
+            .argv;
+
+        let alias = args.a;
+        let intercom_config = [
+            INTERCOM_CONFIG[`LOCALHOST_FEED`],
+            INTERCOM_CONFIG[`LOCALHOST_STRATEGY`]
+        ];
+
+        strategy = new RevTrendStrategy("RevTrend", alias, new Intercom(intercom_config));
+        strategy.start();
+    }
+});
+
+process.on('SIGINT', async () => {
+    logger.info(`${strategy.alias}::SIGINT`);
+    /* Note: Just work under pm2 environment */
+    // strategy._test_cancel_order(strategy.test_order_id);
+    setTimeout(() => process.exit(), 3000)
+});
+
+process.on('exit', async () => {
+    logger.info(`${strategy.alias}:: exit`);
+});
+
+process.on('uncaughtException', (err) => {
+    logger.error(`uncaughtException: ${JSON.stringify(err.stack)}`);
+});
+
+process.on('unhandledRejection', (reason, p) => {
+    logger.error(`unhandledRejection: ${p}, reason: ${reason}`);
+});

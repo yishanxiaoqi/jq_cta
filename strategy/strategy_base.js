@@ -33,10 +33,14 @@ class StrategyBase {
 
     _register_events() {
         let that = this;
+
+        // redis
         this.intercom.on("MARKET_DATA", that.on_market_data_handler, INTERCOM_SCOPE.FEED);
         this.intercom.on("ORDER_UPDATE", that.on_order_update_handler, INTERCOM_SCOPE.FEED);
-        this.intercom.on("REQUEST_RESPONSE", that.on_response_handler, INTERCOM_SCOPE.FEED);
         this.intercom.on("ACCOUNT_UPDATE", that.on_account_update_handler, INTERCOM_SCOPE.FEED);
+
+        // eventhandler
+        this.intercom.on("REQUEST_RESPONSE", that.on_response_handler);
     }
 
     subscribe_market_data() {
@@ -85,8 +89,8 @@ class StrategyBase {
     on_response(response) {
         // 过滤不属于本策略的response
         let ref_id = response["ref_id"];
-        if (ref_id.slice(0, 3) !== this.alias) return;
         logger.info(`${this.alias}::on_${response.action}_response| ${JSON.stringify(response)}`);
+        if (ref_id.slice(0, 3) !== this.alias) return;
 
         switch (response.action) {
             case REQUEST_ACTIONS.QUERY_ORDERS:
@@ -122,9 +126,30 @@ class StrategyBase {
     }
 
     on_account_update(account_update) {
-        logger.info(`${this.alias}: no implementation for account response.`)
-        return;
+        logger.info(`${this.name}: ${JSON.stringify(account_update)}`);
+        if (!account_update["a"]) {
+            logger.warn(`${this.name}: no data update in account update?`);
+            return;
+        }
+
+        if (account_update["a"]["B"].length > 0) {
+            let balance = account_update["a"]["B"];
+            this.on_balance_update(balance);
+        }
+        if (account_update["a"]["P"].length > 0) {
+            let position = account_update["a"]["P"];
+            this.on_position_update(position);
+        }
     }
+
+    on_balance_update(balance) {
+        logger.info(`${this.name}: no implementation for balance update!`);
+    }
+
+    on_position_update(position) {
+        logger.info(`${this.name}: no implementation for position update!`);
+    }
+
 
     async send_order(order, ref_id = this.alias + randomID(27)) {
         logger.debug(`Emitting send order request from ${this.name}|${this.alias}|${order["symbol"]}|${order["label"]}|${order["client_order_id"]}`);
@@ -595,6 +620,45 @@ class StrategyBase {
             url: url + "?",
             postbody: presign + "&signature=" + signature
         };
+    }
+
+    _convert_to_standard_order_status(status) {
+        switch (status) {
+            case "CANCELED":
+            case "CANCELED was: PARTIALLY FILLED":
+            case "INSUFFICIENT MARGIN was: PARTIALLY FILLED":
+            case "canceled":
+            case "cancelled":
+            case "Canceled":
+            case "partial-canceled":
+            case "-1":
+                return ORDER_STATUS.CANCELLED;
+            case "FILLED":
+            case "filled":
+            case "Filled":
+            case "EXECUTED":
+            case "0":
+                return ORDER_STATUS.FILLED;
+            case "NEW":
+            case "submitted":
+            case "New":
+            case "new":
+            case "ACTIVE":
+            case "1":
+            case "live":
+                return ORDER_STATUS.SUBMITTED;
+            case "PartiallyFilled":
+            case "PARTIALLY_FILLED":
+            case "partial-filled":
+            case "partiallyFilled":
+            case "PARTIALLY FILLED":
+            case "partially_filled":
+            case "2":
+                return ORDER_STATUS.PARTIALLY_FILLED;
+            default:
+                logger.warn(`No predefined order status conversion rule in ${this.name} for ${status}`);
+                return "unknown";
+        }
     }
 }
 

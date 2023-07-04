@@ -98,6 +98,10 @@
 }
 ```
 
+## 2.2 cancel order
+
+## 2.3 order execuated
+
 ```json
 {
     "exchange": "BinanceU",
@@ -119,6 +123,33 @@
         "new_filled": 3367,
         "avg_executed_price": 0.0297,
         "submit_price": 0.0297,
+        "status": "filled"
+    }
+}
+```
+
+```json
+{
+    "exchange": "BinanceU",
+    "symbol": "XEMUSDT",
+    "contract_type": "perp",
+    "metadata": {
+        "result": true,
+        "account_id": "jq_cta_02",
+        "order_id": 6327431732,
+        "client_order_id": "web_P7HwjgJUlLHJOQ303LK0",
+        "direction": "Buy",
+        "timestamp": 1688479081947,
+        "fee": 0.04012932,
+        "update_type": "executed"
+    },
+    "timestamp": "20230704215801962",
+    "order_info": {
+        "original_amount": 3333,
+        "filled": 3333,
+        "new_filled": 3333,
+        "avg_executed_price": 0.0301,
+        "submit_price": 0,
         "status": "filled"
     }
 }

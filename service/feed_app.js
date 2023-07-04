@@ -99,6 +99,10 @@ class FeedApp {
                 return;
             }
 
+            if (jdata["e"] !==  "aggTrade") {
+                logger.info(`${this.name}: ${JSON.stringify(jdata)}`);
+            }
+
             // console.log("private WS: ", JSON.stringify(jdata));
 
             if (jdata["e"] === "ORDER_TRADE_UPDATE") {
@@ -110,7 +114,6 @@ class FeedApp {
                 let market_data = this._format_market_data(jdata);
                 this.intercom.emit("MARKET_DATA", market_data, INTERCOM_SCOPE.FEED);
             } else if (jdata["e"] === "ACCOUNT_UPDATE") {
-                // let account_update = this._format_market_data(jdata);
                 let account_update = jdata;
                 this.intercom.emit("ACCOUNT_UPDATE", account_update, INTERCOM_SCOPE.FEED);
             }

@@ -8,8 +8,10 @@
     "random-id": "^1.0.4",
     "redis": "2.8.0",
     "request-promise-native": "^1.0.9",
+    "table": "^6.8.1",
     "winston": "https://registry.npmjs.org/winston/-/winston-2.4.0.tgz",
     "winston-daily-rotate-file": "3.2.3",
-    "ws": "^8.13.0"
+    "ws": "^8.13.0",
+    "yargs": "^17.7.2"
   }
 }

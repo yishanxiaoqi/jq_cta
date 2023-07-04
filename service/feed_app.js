@@ -14,15 +14,9 @@ const request = require('../module/request.js');
 const Slack = require("../module/slack");
 const utils = require("../utils/util_func");
 const stratutils = require("../utils/strat_util.js");
-const emitter = new EventEmitter.EventEmitter();
 
-class RevTrendStrategy {
-    constructor(name, alias) {
-        this.name = name;
-        this.alias = alias;
-        this.intercom = emitter;
-
-        this.cfg = require(`../config/cfg_${alias}.json`);
+class FeedApp {
+    constructor(intercom_config) {
         this.slack = new Slack.Slack();
 
         // account_id及其对应的apiKey和apiSecret，目前一个策略只能做一个账号
@@ -31,24 +25,6 @@ class RevTrendStrategy {
         this.apiSecret = "u3k0fbR7eqYDKnltU31nWwQ19Jw0RxqUg8XDuMTQoKiBr8mN7gRQbQN6ocIndDAG";
 
         this.listenKey = undefined;
-
-        this.init_status_map();
-        this.init_order_map();  // this will set order_map to be empty
-        this.init_summary();
-
-        // idf::exchange.symbol.contract_type
-        this.prices = {};
-        this.klines = {}
-        this.cur_bar_otime = {};
-        this.pre_bar_otime = {};
-
-        // set-up
-        this.interval = this.cfg["interval"];
-        this.contract_type = CONTRACT_TYPE.PERP;
-
-        this.on_market_data_handler = this.on_market_data_ready.bind(this);
-        this.on_order_update_handler = this.on_order_update.bind(this);
-        this.on_response_handler = this.on_response.bind(this);
         this.on_account_update_handler = this.on_account_update.bind(this);
     }
 

@@ -1,10 +1,12 @@
 {
   "dependencies": {
+    "@slack/web-api": "^6.8.1",
     "callsite": "^1.0.0",
     "json-bigint": "^1.0.0",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.43",
     "random-id": "^1.0.4",
+    "redis": "2.8.0",
     "request-promise-native": "^1.0.9",
     "winston": "https://registry.npmjs.org/winston/-/winston-2.4.0.tgz",
     "winston-daily-rotate-file": "3.2.3",

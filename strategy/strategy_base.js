@@ -16,7 +16,9 @@ const utils = require("../utils/util_func");
 const stratutils = require("../utils/strat_util.js");
 const emitter = new EventEmitter.EventEmitter();
 
-class RevTrendStrategy {
+const { cal_bar_otime } = require("../utils/strat_util.js");
+
+class StrategyBase {
     constructor(name, alias) {
         this.name = name;
         this.alias = alias;
@@ -26,9 +28,9 @@ class RevTrendStrategy {
         this.slack = new Slack.Slack();
 
         // account_id及其对应的apiKey和apiSecret，目前一个策略只能做一个账号
-        this.account_id = "jq_cta_02";
-        this.apiKey = "qGKdrATW1ZaSxjhyClx2zez8BHJp9uVrBmCVZ6LbOeNF65GRazB25pwFWpYabDPB";
-        this.apiSecret = "u3k0fbR7eqYDKnltU31nWwQ19Jw0RxqUg8XDuMTQoKiBr8mN7gRQbQN6ocIndDAG";
+        this.account_id = undefined;
+        this.apiKey = undefined;
+        this.apiSecret = undefined;
 
         this.listenKey = undefined;
 
@@ -361,7 +363,7 @@ class RevTrendStrategy {
                 client_order_id: jdata["o"]["c"],
                 direction: (jdata["o"]["S"] === "SELL") ? DIRECTION.SELL : DIRECTION.BUY,
                 timestamp: jdata["o"]["T"],
-                fee: jdata["o"]["n"] ? parseFloat(jdata["o"]["n"]): undefined,
+                fee: jdata["o"]["S"] ? parseFloat(jdata["o"]["S"]): undefined,
                 update_type: this._convert_to_standard_order_update_type(jdata["o"]["x"])
             },
             timestamp: utils._util_get_human_readable_timestamp(),
@@ -758,7 +760,7 @@ class RevTrendStrategy {
         that.prices[idf] = { "price": price, "upd_ts": ts };
 
         // logger.info(symbol, ts, that.cur_bar_otime[idf], that.pre_bar_otime[idf]);
-        that.cur_bar_otime[idf] = stratutils.cal_bar_otime(ts, that.interval, that.cfg[idf]["splitAt"]);
+        that.cur_bar_otime[idf] = cal_bar_otime(ts, that.interval, that.cfg[idf]["splitAt"]);
         // if the pre_bar_otime is undefined, it means the strategy is re-started
         let new_start = (that.pre_bar_otime[idf] === undefined);
         // new interal is not new_start, new bar means a new bar starts

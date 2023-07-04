@@ -1,1 +1,17 @@
-{"ref_id":"R01cM44qsCr43Th99cEgMSLBjK0Dht","action":"cancel_order","strategy":"RevTrend","metadata":{"exchange":"BinanceU","symbol":"XEMUSDT","contract_type":"perp","event":"cancel_order","metadata":{"account_id":"cta_foreseem_sub02_fut","result":false,"error_code":999999,"error_code_msg":"StatusCodeError: 400 - \"{\\\"code\\\":-2011,\\\"msg\\\":\\\"Unknown order sent.\\\"}\""},"timestamp":"20230703154914059"},"request":{"exchange":"BinanceU","symbol":"XEMUSDT","contract_type":"perp","client_order_id":"R01DNygM0Q6X","account_id":"cta_foreseem_sub02_fut","ref_id":"R01cM44qsCr43Th99cEgMSLBjK0Dht"}}
+{
+    "e": "ACCOUNT_UPDATE",
+    "T": 1688396711118,
+    "E": 1688396711123,
+    "a": {
+        "B": [
+            {
+                "a": "USDT",
+                "wb": "5735.79804855",
+                "cw": "5735.79804855",
+                "bc": "0.00600000"
+            }
+        ],
+        "P": [],
+        "m": "ADMIN_DEPOSIT"
+    }
+}

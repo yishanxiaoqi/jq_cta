@@ -91,3 +91,29 @@ REQUEST_ACTIONS = {
     SEND_ORDER_BATCH: 'place_order_batch',
     GET_QUOTE: 'get_quote'
 };
+
+INTERCOM_SCOPE = {
+    MARKET: "market",
+    STRATEGY: "strategy"
+}
+
+INTERCOM_TYPE = {
+    EVENT_EMITTER: 'EventEmitter',
+    REDIS: 'Redis'
+};
+
+INTERCOM_CONFIG = {
+    //===============LOCALHOST=====================
+    LOCALHOST_MARKET: {
+        host: '127.0.0.1',
+        port: '6379',
+        auth: 'pass1',
+        scope: INTERCOM_SCOPE.MARKET
+    },
+    LOCALHOST_STRATEGY: {
+        host: '127.0.0.1',
+        port: '6379',
+        auth: 'pass1',
+        scope: INTERCOM_SCOPE.STRATEGY
+    }
+};

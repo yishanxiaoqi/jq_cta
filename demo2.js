@@ -1,7 +1,15 @@
-var price = 0.0296;
-var apiconfig = require("./config/apiconfig.json");
-var symbol = "XEMUSDT";
+require("./config/typedef");
+const Intercom = require("./module/intercom");
 
-var adj_price = Math.round(price * apiconfig.pricePrecision[symbol]) / apiconfig.pricePrecision[symbol];
+var intercom_config = [
+    INTERCOM_CONFIG[`LOCALHOST_MARKET`],
+    INTERCOM_CONFIG[`LOCALHOST_STRATEGY`]
+];
 
-console.log(adj_price);
+var intercom = new Intercom(intercom_config);
+
+// console.log(intercom);
+// console.log(intercom.carriers);
+
+
+intercom.on("ORDER_UPDATE", console.log, INTERCOM_SCOPE.MARKET);

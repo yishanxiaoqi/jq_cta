@@ -67,3 +67,59 @@
     }
 }
 ```
+
+# 2. ORDER UPDATE
+
+## 2.1 place order
+
+```json
+{
+    "exchange": "BinanceU",
+    "symbol": "XEMUSDT",
+    "contract_type": "perp",
+    "metadata": {
+        "result": true,
+        "account_id": "jq_cta_02",
+        "order_id": 6300810354,
+        "client_order_id": "R01UPTYQwC5V",
+        "direction": "Sell",
+        "timestamp": 1688395825951,
+        "update_type": "submitted"
+    },
+    "timestamp": "20230703225025960",
+    "order_info": {
+        "original_amount": 3367,
+        "filled": 0,
+        "new_filled": 0,
+        "avg_executed_price": 0,
+        "submit_price": 0.0297,
+        "status": "new"
+    }
+}
+```
+
+```json
+{
+    "exchange": "BinanceU",
+    "symbol": "XEMUSDT",
+    "contract_type": "perp",
+    "metadata": {
+        "result": true,
+        "account_id": "jq_cta_02",
+        "order_id": 6294660651,
+        "client_order_id": "R01UPGFphQhy",
+        "direction": "Buy",
+        "timestamp": 1688377909034,
+        "update_type": "executed"
+    },
+    "timestamp": "20230703175149046",
+    "order_info": {
+        "original_amount": 3367,
+        "filled": 3367,
+        "new_filled": 3367,
+        "avg_executed_price": 0.0297,
+        "submit_price": 0.0297,
+        "status": "filled"
+    }
+}
+```

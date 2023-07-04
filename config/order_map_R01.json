@@ -1,1 +1,1 @@
-{"BinanceU.XEMUSDT.perp":{"UP":{"client_order_id":"R01UPltqZstt","label":"UP","price":0.0298,"quantity":3356,"time":1688372471839},"DN":{"client_order_id":"R01DNgsFpsUz","label":"DN","price":0.0294,"quantity":3401,"time":1688372471841}}}
+{"BinanceU.XEMUSDT.perp":{"R01LRAEkSEWc":{"label":"ANTI_L|REVERSE","target":"SHORT","quantity":6442,"time":1688443200379,"filled":0},"ANTI_L":{"client_order_id":"R01LRAEkSEWc","label":"ANTI_L|REVERSE","price":0.0313,"quantity":6442,"time":1688443200380}}}

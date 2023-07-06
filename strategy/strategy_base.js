@@ -143,11 +143,11 @@ class StrategyBase {
     }
 
     on_balance_update(balance) {
-        logger.info(`${this.name}: no implementation for balance update!`);
+        // logger.info(`${this.name}: no implementation for balance update!`);
     }
 
     on_position_update(position) {
-        logger.info(`${this.name}: no implementation for position update!`);
+        // logger.info(`${this.name}: no implementation for position update!`);
     }
 
 

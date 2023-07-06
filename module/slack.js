@@ -6,7 +6,7 @@ const { WebClient, LogLevel } = require("@slack/web-api");
 class Slack {
     constructor() {
         this.last_publish_ts = moment(new Date());
-        this.client = new WebClient("xoxb-5371587372357-5371693295861-CZlg8o8nfB35VyLkexoo7JGe", {
+        this.client = new WebClient("xoxb-5371587372357-5371693295861-U2QTKltqI3WDILbj8WZ23tUZ", {
             // LogLevel can be imported and used to make debugging simpler
             // logLevel: LogLevel.DEBUG
         });
@@ -22,7 +22,7 @@ class Slack {
             // Call the chat.postMessage method using the built-in WebClient
             const result = await this.client.chat.postMessage({
                 // The token you used to initialize your app
-                token: "xoxb-5371587372357-5371693295861-CZlg8o8nfB35VyLkexoo7JGe",
+                token: "xoxb-5371587372357-5371693295861-U2QTKltqI3WDILbj8WZ23tUZ",
                 channel: id,
                 text: text
                 // You could also use a blocks[] array to send richer content

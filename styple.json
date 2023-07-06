@@ -1,23 +1,23 @@
 {
     "exchange": "BinanceU",
-    "symbol": "BTCUSDT",
+    "symbol": "RUNEUSDT",
     "contract_type": "perp",
     "metadata": {
         "result": true,
         "account_id": "jq_cta_02",
-        "order_id": 167820083155,
-        "client_order_id": "12345678910",
+        "order_id": 6613077175,
+        "client_order_id": "web_oSsJxpvrNpWZdQdZnyuq",
         "direction": "Sell",
-        "timestamp": 1688570025700,
-        "fee": 0.0121458,
+        "timestamp": 1688633683660,
+        "fee": 0.0942844,
         "update_type": "executed"
     },
-    "timestamp": "20230705231345721",
+    "timestamp": "20230706165443683",
     "order_info": {
-        "original_amount": 0.001,
-        "filled": 0.001,
-        "new_filled": 0.001,
-        "avg_executed_price": 30364.5,
+        "original_amount": 283,
+        "filled": 283,
+        "new_filled": 223,
+        "avg_executed_price": 1.057,
         "submit_price": 0,
         "status": "filled"
     }

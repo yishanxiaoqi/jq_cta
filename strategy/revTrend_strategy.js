@@ -194,7 +194,7 @@ class RevTrendStrategy extends StrategyBase{
         let idf = [exchange, symbol, contract_type].join(".");
         
         // 不是本策略的订单更新，自动过滤
-        // if (client_order_id.slice(0, 3) !== that.alias) return;
+        if (client_order_id.slice(0, 3) !== that.alias) return;
         logger.info(`${that.alias}::on_order_update|${JSON.stringify(order_update)}`);
 
         let label = client_order_id.slice(3, 5);
@@ -864,7 +864,7 @@ class RevTrendStrategy extends StrategyBase{
 
         let label = client_order_id.slice(3, 5);
         if (!Object.values(LABELMAP).includes(label)) {
-            logger.info(`${that.alias}::on_order_update|unknown order label ${label}!`);
+            logger.info(`${that.alias}::on_send_order_response|unknown order label ${label}!`);
             return;
         } else {
             label = stratutils.get_key_by_value(LABELMAP, label);   
@@ -998,7 +998,7 @@ class RevTrendStrategy extends StrategyBase{
 
         let label = client_order_id.slice(3, 5);
         if (!Object.values(LABELMAP).includes(label)) {
-            logger.info(`${that.alias}::on_order_update|unknown order label ${label}!`);
+            logger.info(`${that.alias}::on_cancel_order_response|unknown order label ${label}!`);
             return;
         } else {
             label = stratutils.get_key_by_value(LABELMAP, label);   

@@ -1,6 +1,6 @@
 {
     "alias": "STR",
-    "clear_existing_status": true,
+    "clear_existing_status": false,
     "ini_usdt": 200,
     "act_ids": [
         "jq_cta_02"
@@ -78,7 +78,7 @@
         "cfgID": "STR0003"
     },
     "BinanceU.RUNEUSDT.perp.1h": {
-        "ini_usdt": 300,
+        "ini_usdt": 100,
         "splitAt": 0,
         "track_ATR_multiplier": 0.7,
         "track_ATR_n": 10,

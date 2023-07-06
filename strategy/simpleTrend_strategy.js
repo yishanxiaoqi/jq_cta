@@ -283,7 +283,8 @@ class SimpleTrendStrategy extends StrategyBase{
 
             // record the order filling details
             let ts = order_update["metadata"]["timestamp"];
-            let filled_info = [act_id, exchange, symbol, contract_type, interval, client_order_id, original_amount, filled, submit_price, avg_executed_price, fee].join(",");
+            // 0 stands for submit_price
+            let filled_info = [act_id, exchange, symbol, contract_type, interval, client_order_id, original_amount, filled, 0, avg_executed_price, fee].join(",");
             let order_info = (that.order_map[entry][client_order_id] === undefined) ? "" : Object.entries(that.order_map[entry][client_order_id]).map((element) => element[1]).join(",");
             let output_string = [ts, filled_info, order_info].join(",");
             output_string += (order_status === ORDER_STATUS.FILLED) ? ",filled\n" : ",partially_filled\n";
@@ -499,6 +500,8 @@ class SimpleTrendStrategy extends StrategyBase{
         if (label !== undefined) {
             let client_order_id = that.alias + interval.padStart(3, '0') + LABELMAP[label] + randomID(5);  // client_order_id总共13位
             that.status_map[entry]["status"] = "TBA";
+            logger.info(label, target, tgt_qty);
+            that.order_map[entry][client_order_id] = {label: label, target: target, quantity: tgt_qty, time: moment.now(), filled: 0};
             
             that.send_order({
                 label: label,

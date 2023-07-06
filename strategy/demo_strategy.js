@@ -12,8 +12,8 @@ class DemoStrategy extends StrategyBase {
         this.subscribe_market_data();
 
         setTimeout(() => {
-            this._test_send_order();
-        }, 2000);
+            this._test_slack_publish();
+        }, 1000);
     }
 
     _test_send_order() {
@@ -61,7 +61,15 @@ class DemoStrategy extends StrategyBase {
     };
 
     _on_market_data_trade_ready(trade) {
-        console.log(JSON.stringify(trade));
+        // console.log(JSON.stringify(trade));
+    }
+
+    _test_slack_publish() {
+        let publish = {
+            "type": "alert",
+            "msg": "try"
+        }
+        this.slack_publish(publish);
     }
 }
 

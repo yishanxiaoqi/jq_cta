@@ -7,7 +7,6 @@ const randomID = require("random-id");
 const Intercom = require("../module/intercom");
 const logger = require("../module/logger.js");
 const request = require('../module/request.js');
-const Slack = require("../module/slack");
 const utils = require("../utils/util_func");
 const stratutils = require("../utils/strat_util.js");
 const StrategyBase = require("./strategy_base.js");
@@ -17,7 +16,6 @@ class RevTrendStrategy extends StrategyBase{
         super(name, alias, intercom);
 
         this.cfg = require(`../config/cfg_${alias}.json`);
-        this.slack = new Slack.Slack();
 
         // account_id及其对应的apiKey和apiSecret，目前一个策略只能做一个账号
         this.account_id = "jq_cta_02";
@@ -882,12 +880,19 @@ class RevTrendStrategy extends StrategyBase{
             let retry = response["request"]["retry"];
 
             if (retry === 5) {
-                that.slack.alert(`${that.alias}::${order_idf}::Send order retried over 5 times, check the code!`);
+                that.slack_publish({
+                    "type": "alert",
+                    "msg": `${that.alias}::${order_idf}::Send order retried over 5 times, check the code!`
+                });
                 return;
             } 
 
             // 所有的发单报错都会发邮件！
             logger.debug(`${that.alias}::on_response|${order_idf}::an error occured during ${action}: ${error_code}: ${error_code_msg}`);
+            that.slack_publish({
+                "type": "alert",
+                "msg": `${that.alias}::on_response|${order_idf}::an error occured during ${action}: ${error_code}: ${error_code_msg}`
+            });
 
             let resend = false, timeout = 10;    // 注意：这里不能用分号，只能用逗号！
             if ((error_code_msg === "Internal error; unable to process your request. Please try again.") || (error_code_msg === "Timestamp for this request is outside of the recvWindow.") || (error_code_msg === "Timestamp for this request is outside of the ME recvWindow.")) {
@@ -944,10 +949,9 @@ class RevTrendStrategy extends StrategyBase{
             } else if (error_code_msg === "Order would immediately trigger.") {
                 // The order would be triggered immediately, STOP order才会报这样的错，本策略都是LIMIT ORDER
             } else {
-                that.slack.alert(`${that.alias}::on_response|${order_idf}::unknown error occured during ${action}: ${error_code}: ${error_code_msg}`);
+                logger.warn(`${that.alias}::on_response|${order_idf}::unknown error occured during ${action}: ${error_code}: ${error_code_msg}`);
                 return;
             }
-            that.slack.alert(`${that.alias}::on_response|${order_idf}::an error occured during ${action}: ${error_code}: ${error_code_msg}`);
 
             if (resend) {
                 logger.info(`${that.alias}::${order_idf}::resend the order in ${timeout} ms!`);
@@ -1014,12 +1018,19 @@ class RevTrendStrategy extends StrategyBase{
             let retry = response["request"]["retry"];
 
             if (retry === 5) {
-                that.slack.alert(`${that.alias}::${order_idf}::Cancel order retried over 5 times, check the code!`);
+                that.slack_publish({
+                    "type": "alert",
+                    "msg": `${that.alias}::${order_idf}::Cancel order retried over 5 times, check the code!`
+                });
                 return;
             } 
 
-            //所有的撤单失败也会发邮件报警
             logger.debug(`${that.alias}::on_response|${order_idf}::an error occured during ${action}: ${error_code}: ${error_code_msg}`);
+            //所有的撤单失败也会发邮件报警
+            that.slack_publish({
+                "type": "alert",
+                "msg": `${that.alias}::on_response|${order_idf}::an error occured during ${action}: ${error_code}: ${error_code_msg}`
+            });
 
             let recancel = false, timeout = 10;     // 注意：这里不能用分号
             if ((error_code_msg === "Internal error; unable to process your request. Please try again.") || (error_code_msg === "Timestamp for this request is outside of the recvWindow.") || (error_code_msg === "Timestamp for this request is outside of the ME recvWindow.") || (error_code_msg === "Unexpected error happened")) {
@@ -1034,11 +1045,9 @@ class RevTrendStrategy extends StrategyBase{
                 // 2秒后重新撤单
                 recancel = true, timeout = 1000 * 2;
             } else {
-                that.slack.alert(`${that.alias}::on_response|${order_idf}::unknown error occured during ${action}: ${error_code}: ${error_code_msg}`);
+                logger.warn(`${that.alias}::on_response|${order_idf}::unknown error occured during ${action}: ${error_code}: ${error_code_msg}`);
                 return;
             }
-
-            that.slack.alert(`${that.alias}::on_response|${order_idf}::an error occured during ${action}: ${error_code}: ${error_code_msg}`);
 
             if (recancel) {
                 logger.info(`${that.alias}::${order_idf}::recancel the order in ${timeout} ms!`);
@@ -1084,9 +1093,7 @@ class RevTrendStrategy extends StrategyBase{
 
         // 检查异常单
         let wierd_orders = orders.filter(item => !ALIASES.includes(item.client_order_id.slice(0, 3)));
-        if (wierd_orders.length !== 0) {
-            that.slack.alert(`${that.alias}::wierd orders found: ${JSON.stringify(wierd_orders)}`);
-        }
+        logger.warn(`${that.alias}::wierd orders found: ${JSON.stringify(wierd_orders)}`);
 
         // logger.info(`${that.alias}::${symbol} active_orders| ${active_orders_string}`);
 
@@ -1104,8 +1111,10 @@ class RevTrendStrategy extends StrategyBase{
 
                 if ((!active_orders.includes(client_order_id)) && (moment.now() - time > 1000 * 60 * 10)) {
                     logger.debug(`${that.alias}::${symbol}|${key}|${client_order_id}::order not active (label as key) and submitted over 10 min before, will be deleted, please check it!`);
-                    that.slack.warn(`${that.alias}::${symbol}|${key}|${client_order_id}::order not active (label as key) and submitted over 10 min before, will be deleted, please check it!`);
-                    
+                    that.slack_publish({
+                        "type": "warn",
+                        "msg": `${that.alias}::${symbol}|${key}|${client_order_id}::order not active (label as key) and submitted over 10 min before, will be deleted, please check it!`
+                    });
                     if (that.order_map[idf][key]["ToBeDeleted"]) {
                         delete that.order_map[idf][key];
                     } else {
@@ -1123,7 +1132,10 @@ class RevTrendStrategy extends StrategyBase{
                 if (!(active_orders.includes(key)) && (moment.now() - time > 1000 * 60 * 10)) {
                     // 该order不在active orders里面，并且距今已经超过10分钟，直接删掉
                     logger.debug(`${that.alias}::${symbol}|${label}|${key}::order not active (client_order_id as key) and submitted over 10 min before, will be deleted, please check it!`);
-                    that.slack.warn(`${that.alias}::${symbol}|${label}|${key}::order not active (client_order_id as key) and submitted over 10 min before, will be deleted, please check it!`);
+                    that.slack_publish({
+                        "type": "warn",
+                        "msg": `${that.alias}::${symbol}|${label}|${key}::order not active (client_order_id as key) and submitted over 10 min before, will be deleted, please check it!`
+                    });
 
                     logger.info(JSON.stringify(that.order_map), idf, key);
 
@@ -1134,8 +1146,6 @@ class RevTrendStrategy extends StrategyBase{
                     }
                 }
             }
-
-
         }
 
         order_map_string = order_map_string.join(", ");

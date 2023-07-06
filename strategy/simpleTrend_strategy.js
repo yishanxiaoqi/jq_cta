@@ -9,7 +9,6 @@ const randomID = require("random-id");
 const Intercom = require("../module/intercom");
 const logger = require("../module/logger.js");
 const request = require('../module/request.js');
-const Slack = require("../module/slack");
 const utils = require("../utils/util_func");
 const stratutils = require("../utils/strat_util.js");
 const StrategyBase = require("./strategy_base.js");
@@ -19,7 +18,6 @@ class SimpleTrendStrategy extends StrategyBase{
         super(name, alias, intercom);
 
         this.cfg = require(`../config/cfg_${alias}.json`);
-        this.slack = new Slack.Slack();
 
         // account_id及其对应的apiKey和apiSecret，目前一个策略只能做一个账号
         this.account_id = "jq_cta_02";
@@ -549,12 +547,19 @@ class SimpleTrendStrategy extends StrategyBase{
             let retry = response["metadata"]["request"]["metadata"]["retry"];
 
             if (retry === 5) {
-                that.slack.alert(`${that.alias}::${order_idf}::Send order retried over 5 times, check the code!`);
+                that.slack_publish({
+                    "type": "alert",
+                    "msg": `${that.alias}::${order_idf}::Send order retried over 5 times, check the code!`
+                });
                 return;
             } 
 
             // 所有的发单报错都会发邮件！
             logger.debug(`${that.alias}::on_response|${order_idf}::an error occured during ${action}: ${error_code}: ${error_code_msg}`);
+            that.slack_publish({
+                "type": "alert",
+                "msg": `${that.alias}::on_response|${order_idf}::an error occured during ${action}: ${error_code}: ${error_code_msg}`
+            });
 
             let resend = false, timeout = 10;    // 注意：这里不能用分号，只能用逗号！
             if ((error_code_msg === "Internal error; unable to process your request. Please try again.") || (error_code_msg === "Timestamp for this request is outside of the recvWindow.") || (error_code_msg === "Timestamp for this request is outside of the ME recvWindow.")) {
@@ -591,10 +596,9 @@ class SimpleTrendStrategy extends StrategyBase{
             } else if (error_code_msg === "Order would immediately trigger.") {
                 // The order would be triggered immediately, STOP order才会报这样的错，本策略都是LIMIT ORDER
             } else {
-                that.slack.alert(`${that.alias}::on_response|${order_idf}::unknown error occured during ${action}: ${error_code}: ${error_code_msg}`);
+                logger.warn(`${that.alias}::on_response|${order_idf}::unknown error occured during ${action}: ${error_code}: ${error_code_msg}`);
                 return;
             }
-            that.slack.alert(`${that.alias}::on_response|${order_idf}::an error occured during ${action}: ${error_code}: ${error_code_msg}`);
 
             if (resend) {
                 logger.info(`${that.alias}::${order_idf}::resend the order in ${timeout} ms!`);
@@ -642,13 +646,19 @@ class SimpleTrendStrategy extends StrategyBase{
         // 检查异常单：不属于任何策略
         let wierd_orders = orders.filter(item => !ALIASES.includes(item.client_order_id.slice(0, 3)));
         if (wierd_orders.length !== 0) {
-            that.slack.alert(`${that.alias}::wierd orders found: ${JSON.stringify(wierd_orders)}, not belong to any strategies!`);
+            that.slack_publish({
+                "type": "alert",
+                "msg": `${that.alias}::wierd orders found: ${JSON.stringify(wierd_orders)}, not belong to any strategies!`
+            });
         }
 
         // 检查异常单：下单超过10分钟，还是没成交
         wierd_orders = orders.filter(item => (item.client_order_id.slice(0, 3) == that.alias) && (item["filled"] < item["original_amount"]) && (moment.now() - moment(item["create_time"], 'YYYYMMDDHHmmssSSS', 'Asia/Shanghai').toDate() > 1000 * 60 * 10));
         if (wierd_orders.length !== 0) {
-            that.slack.alert(`${that.alias}::wierd orders found: ${JSON.stringify(wierd_orders)}, not filled after 10min!`);
+            that.slack_publish({
+                "type": "alert",
+                "msg": `${that.alias}::wierd orders found: ${JSON.stringify(wierd_orders)}, not filled after 10min!`
+            });
         }
 
     }

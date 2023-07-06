@@ -48,7 +48,11 @@ class BalanceMonitor extends StrategyBase {
                 text += "\n";
             }
         }
-        this.slack.info(text);
+
+        this.slack_publish({
+            "type": "info",
+            "msg": text
+        });
     }
 
     on_balance_update(balance) {
@@ -63,7 +67,10 @@ class BalanceMonitor extends StrategyBase {
                 let annul_return = ret / n_days * 365;
                 let annul_return_per = `${parseFloat(annul_return * 100).toFixed(2)}%`;
                 let txt = `====Summary====\ninit\t\tcurr\t\tpnl\t\tret\t\tannul\n${this.init_balance}\t\t${wallet_balance}\t\t${pnl}\t\t${ret_per}\t\t${annul_return_per}`;
-                this.slack.info(txt);
+                this.slack_publish({
+                    "type": "info",
+                    "msg": txt
+                });
             }
         }
     }

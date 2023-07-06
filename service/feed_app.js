@@ -6,17 +6,18 @@ const WS = require("ws");
 const randomID = require("random-id");
 const querystring = require("querystring");
 const rp = require("request-promise-native");
+const Slack = require("../module/slack");
 
 const logger = require("../module/logger.js");
 const Intercom = require("../module/intercom");
 const utils = require("../utils/util_func");
 const apiconfig = require("../config/apiconfig.json");
-const json_parse = require("json-bigint/lib/parse");
 
 class FeedApp {
     constructor(intercom) {
         this.name = "FeedApp";
         this.intercom = intercom;
+        this.slack = new Slack.Slack();
 
         // 默认订阅XEMUSDT的trade数据
         this.symbols = [
@@ -38,16 +39,36 @@ class FeedApp {
 
         this.listenKey = undefined;
         this.on_market_data_subscription_handler = this.on_market_data_subscription.bind(this);
+        this.on_slack_publish_handler = this.on_slack_publish.bind(this);
     }
 
     on_market_data_subscription(idfs_list){
         logger.info(`${this.name}: no on_market_data_subscription implementation yet.`)
     }
 
+    on_slack_publish(slack_publish) {
+        logger.info(`${this.name}: slack publish message: ${JSON.stringify(slack_publish)}`);
+        let type = slack_publish["type"];
+        let msg = slack_publish["msg"];
+
+        switch(type) {
+            case "info":
+                this.slack.info(msg);
+                break;
+            case "warn":
+                this.slack.warn(msg);
+                break;
+            case "alert":
+                this.slack.alert(msg);
+                break;
+        }
+    }
+
     _register_events() {
         let that = this;
         // 收听策略端的订阅请求
         this.intercom.on("MARKET_DATA_SUBSCRIPTION", that.on_market_data_subscription_handler, INTERCOM_SCOPE.STRATEY);
+        this.intercom.on("SLACK_PUBLISH", this.on_slack_publish_handler, INTERCOM_SCOPE.STRATEGY);
     }
 
     start() {
@@ -191,7 +212,7 @@ class FeedApp {
                 order_id: jdata["o"]["i"],
                 client_order_id: jdata["o"]["c"],
                 direction: (jdata["o"]["S"] === "SELL") ? DIRECTION.SELL : DIRECTION.BUY,
-                timestamp: jdata["o"]["T"],
+                timestamp: utils.get_human_readable_timestamp(jdata["o"]["T"]),
                 fee: jdata["o"]["n"] ? parseFloat(jdata["o"]["n"]): undefined,
                 update_type: this._convert_to_standard_order_update_type(jdata["o"]["x"])
             },

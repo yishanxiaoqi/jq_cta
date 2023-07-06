@@ -5,7 +5,6 @@ const querystring = require("querystring");
 
 const apiconfig = require("../config/apiconfig.json");
 const logger = require("../module/logger.js");
-const Slack = require("../module/slack");
 const utils = require("../utils/util_func");
 
 class StrategyBase {
@@ -13,7 +12,6 @@ class StrategyBase {
         this.name = name;
         this.alias = alias;
         this.intercom = intercom;
-        this.slack = new Slack.Slack();
 
         // account_id及其对应的apiKey和apiSecret，目前一个策略只能做一个账号
         this.account_id = "jq_cta_02";
@@ -29,6 +27,10 @@ class StrategyBase {
     start() {
         this._register_events();
         this.subscribe_market_data();
+    }
+
+    slack_publish(publish) {
+        this.intercom.emit("SLACK_PUBLISH", publish, INTERCOM_SCOPE.STRATEGY);
     }
 
     _register_events() {
@@ -515,7 +517,7 @@ class StrategyBase {
 
     async query_orders(order, ref_id = this.alias + randomID(27)) {
         // 只返回active orders
-        logger.debug(`Emitting query orders request from ${this.name}|${this.alias}`);
+        // logger.debug(`Emitting query orders request from ${this.name}|${this.alias}`);
 
         if (order["ref_id"] === undefined) order["ref_id"] = ref_id;
         let response = await this._query_order_via_rest(order);

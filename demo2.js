@@ -1,25 +1,26 @@
-const Slack = require("./module/slack").Slack;
-const moment = require("moment");
-
-let slack = new Slack();
-
-const table = require('table').table;
 const fs = require('fs');
 
-// let data = [
-//     ['init_usdt', 'curr_usdt', 'pnl', 'return', 'annul_return'],
-//     [500, 501, 1, '1%', '20%']
-// ];
+let aliases = ["R01"];
+let text = "";
+let add_items = ["status", "triggered", "pos", "fee", "net_profit", "stoploss_price", "up", "dn"];
 
-// let output = table(data);
-// console.log(output);
+for (let alias of aliases) {
+    text += `========${alias}========\nidf\tstatus\ttriggered\tpos\tfee\tnp\tsp\tup\tdn\n`;
+    let status_map = JSON.parse(fs.readFileSync(`./config/status_map_${alias}.json`, 'utf8'));
+    for (let idf of Object.keys(status_map)) {
+        text += `${idf}\t`;
+        for (let item of add_items) {
+            if (item === "net_profit") {
+                text += `=${status_map[idf][item]}=\t`;
+            } else {
+                text += `${status_map[idf][item]}\t`;
+            }
+        }
+        text += "\n";
+    }
+}
+// this.slack.info(text);
 
-// let txt = `init\t\tcurr\t\tpnl\t\tret\t\tannul\n500\t\t501\t\t1\t\t2%\t\t20%`;
-// slack.info(txt);
+console.log(text);
 
-let init_date = moment("2023-06-23");
-let today = moment.now();
-
-let n_days = - init_date.diff(today, "days");
-
-console.log(n_days);
+// console.log(status_map);

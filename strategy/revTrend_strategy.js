@@ -24,8 +24,6 @@ class RevTrendStrategy extends StrategyBase{
         this.apiKey = "qGKdrATW1ZaSxjhyClx2zez8BHJp9uVrBmCVZ6LbOeNF65GRazB25pwFWpYabDPB";
         this.apiSecret = "u3k0fbR7eqYDKnltU31nWwQ19Jw0RxqUg8XDuMTQoKiBr8mN7gRQbQN6ocIndDAG";
 
-        this.listenKey = undefined;
-
         this.init_status_map();
         this.init_order_map();  // this will set order_map to be empty
         this.init_summary();
@@ -57,9 +55,9 @@ class RevTrendStrategy extends StrategyBase{
         }, 1000 * 3);
 
         setInterval(() => {
-            // 每隔2分钟查询一下active orders
+            // 每隔5分钟查询一下active orders
             this.query_active_orders();
-        }, 1000 * 60 * 2);
+        }, 1000 * 60 * 5);
 
         setInterval(() => {
             // 每隔1小时将status_map做一个记录

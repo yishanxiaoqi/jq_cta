@@ -37,6 +37,40 @@
 }
 ```
 
+### 1.1.3 send market order response
+```json
+{
+    "ref_id": "DMOFN5Z52sy6kwKCpoH2ySMD29aHJ6",
+    "action": "place_order",
+    "strategy": "Demo",
+    "metadata": {
+        "exchange": "Demo",
+        "symbol": "BTCUSDT",
+        "contract_type": "perp",
+        "event": "place_order",
+        "metadata": {
+            "result": true,
+            "account_id": "jq_cta_02",
+            "order_id": 167820083155,
+            "client_order_id": "12345678910",
+            "timestamp": 1688570025700
+        },
+        "timestamp": "20230705231345708"
+    },
+    "request": {
+        "exchange": "BinanceU",
+        "symbol": "BTCUSDT",
+        "contract_type": "perp",
+        "quantity": 0.001,
+        "direction": "Sell",
+        "order_type": "market",
+        "account_id": "jq_cta_02",
+        "client_order_id": "12345678910",
+        "ref_id": "DMOFN5Z52sy6kwKCpoH2ySMD29aHJ6"
+    }
+}
+```
+
 ## 1.2 cancel order response
 
 ```json
@@ -72,6 +106,8 @@
 
 ## 2.1 place order
 
+### 2.1.1 place limit order
+
 ```json
 {
     "exchange": "BinanceU",
@@ -94,6 +130,92 @@
         "avg_executed_price": 0,
         "submit_price": 0.0297,
         "status": "new"
+    }
+}
+```
+
+### 2.1.2 place market order
+
+- 发送market_order会有两条order update，一条是发单的update，一条是成交的update，如下
+- submit_price全都是0
+
+```json
+{
+    "exchange": "BinanceU",
+    "symbol": "BTCUSDT",
+    "contract_type": "perp",
+    "metadata": {
+        "result": true,
+        "account_id": "jq_cta_02",
+        "order_id": 167820083155,
+        "client_order_id": "12345678910",
+        "direction": "Sell",
+        "timestamp": 1688570025700,
+        "fee": 0,
+        "update_type": "submitted"
+    },
+    "timestamp": "20230705231345713",
+    "order_info": {
+        "original_amount": 0.001,
+        "filled": 0,
+        "new_filled": 0,
+        "avg_executed_price": 0,
+        "submit_price": 0,
+        "status": "new"
+    }
+}
+```
+
+```json
+{
+    "exchange": "BinanceU",
+    "symbol": "BTCUSDT",
+    "contract_type": "perp",
+    "metadata": {
+        "result": true,
+        "account_id": "jq_cta_02",
+        "order_id": 167820083155,
+        "client_order_id": "12345678910",
+        "direction": "Sell",
+        "timestamp": 1688570025700,
+        "fee": 0,
+        "update_type": "submitted"
+    },
+    "timestamp": "20230705231345713",
+    "order_info": {
+        "original_amount": 0.001,
+        "filled": 0,
+        "new_filled": 0,
+        "avg_executed_price": 0,
+        "submit_price": 0,
+        "status": "new"
+    }
+}
+```
+
+```json
+{
+    "exchange": "BinanceU",
+    "symbol": "BTCUSDT",
+    "contract_type": "perp",
+    "metadata": {
+        "result": true,
+        "account_id": "jq_cta_02",
+        "order_id": 167820083155,
+        "client_order_id": "12345678910",
+        "direction": "Sell",
+        "timestamp": 1688570025700,
+        "fee": 0.0121458,
+        "update_type": "executed"
+    },
+    "timestamp": "20230705231345721",
+    "order_info": {
+        "original_amount": 0.001,
+        "filled": 0.001,
+        "new_filled": 0.001,
+        "avg_executed_price": 30364.5,
+        "submit_price": 0,
+        "status": "filled"
     }
 }
 ```

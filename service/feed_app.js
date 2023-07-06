@@ -7,20 +7,29 @@ const randomID = require("random-id");
 const querystring = require("querystring");
 const rp = require("request-promise-native");
 
-const Slack = require("../module/slack");
 const logger = require("../module/logger.js");
 const Intercom = require("../module/intercom");
 const utils = require("../utils/util_func");
 const apiconfig = require("../config/apiconfig.json");
+const json_parse = require("json-bigint/lib/parse");
 
 class FeedApp {
     constructor(intercom) {
         this.name = "FeedApp";
-        this.slack = new Slack.Slack();
         this.intercom = intercom;
 
         // 默认订阅XEMUSDT的trade数据
-        this.symbols = ["XEMUSDT"]; 
+        this.symbols = [
+            "ADAUSDT",
+            "BANDUSDT",
+            "BNBUSDT",
+            "CTKUSDT",
+            "DYDXUSDT",
+            "RUNEUSDT",
+            "SKLUSDT",
+            "SOLUSDT",
+            "XEMUSDT"
+        ]; 
 
         // account_id及其对应的apiKey和apiSecret，目前一个策略只能做一个账号
         this.account_id = "jq_cta_02";
@@ -66,10 +75,14 @@ class FeedApp {
                 this.ws.pong(() => { });
 
                 if (Date.now() - this.ws_connected_ts > 23 * 60 * 60 * 1000) {
-                    logger.warn("")
+                    logger.warn(`${this.name}: reconnect this private WS...`)
                     this._init_websocket();
                 }
             }, 30000);
+
+            setInterval(() => {
+                this.extend_listenKey();
+            }, 1000 * 60 * 50);
 
             // 100毫秒后订阅频道
             setTimeout(() => {
@@ -145,6 +158,26 @@ class FeedApp {
         this.listenKey = JSON.parse(body)["listenKey"];
 
         logger.info(`${this.name}: listen key received: ${this.listenKey}`);
+    }
+
+    async extend_listenKey() {
+        let params = this._get_rest_options(apiconfig.restUrlListenKey, {}, this.account_id);
+
+        var options = {
+            url: params["url"] + params["postbody"],
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-MBX-APIKEY": this.apiKey
+            }
+        };
+
+        try {
+            let body = await rp.put(options);
+            logger.info(`${this.name}: listen key extended: ${JSON.stringify(body)}`);
+        } catch (err) {
+            logger.error(`${this.name}: listen key extension error: ${JSON.stringify(err)}`);
+        }
+
     }
 
     _format_order_update(jdata) {

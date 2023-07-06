@@ -21,10 +21,9 @@ class DemoStrategy extends StrategyBase {
             exchange: EXCHANGE.BINANCEU,
             symbol: "BTCUSDT",
             contract_type: CONTRACT_TYPE.PERP,
-            price: 32000,
             quantity: 0.001,
             direction: DIRECTION.SELL,
-            order_type: ORDER_TYPE.LIMIT,
+            order_type: ORDER_TYPE.MARKET,
             account_id: "jq_cta_02",
             client_order_id: "12345678910"
         });

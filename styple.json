@@ -1,17 +1,24 @@
 {
-    "e": "ACCOUNT_UPDATE",
-    "T": 1688480712432,
-    "E": 1688480712436,
-    "a": {
-        "B": [
-            {
-                "a": "USDT",
-                "wb": "5730.08008394",
-                "cw": "5730.08008394",
-                "bc": "0.00801253"
-            }
-        ],
-        "P": [],
-        "m": "ADMIN_DEPOSIT"
+    "exchange": "BinanceU",
+    "symbol": "BTCUSDT",
+    "contract_type": "perp",
+    "metadata": {
+        "result": true,
+        "account_id": "jq_cta_02",
+        "order_id": 167820083155,
+        "client_order_id": "12345678910",
+        "direction": "Sell",
+        "timestamp": 1688570025700,
+        "fee": 0.0121458,
+        "update_type": "executed"
+    },
+    "timestamp": "20230705231345721",
+    "order_info": {
+        "original_amount": 0.001,
+        "filled": 0.001,
+        "new_filled": 0.001,
+        "avg_executed_price": 30364.5,
+        "submit_price": 0,
+        "status": "filled"
     }
 }

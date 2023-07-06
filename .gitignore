@@ -5,3 +5,8 @@ node_modules/
 log/
 *.log
 log/*.json
+
+# demo and test
+demo.js
+demo2.js
+test.js

@@ -6,14 +6,14 @@ const { WebClient, LogLevel } = require("@slack/web-api");
 class Slack {
     constructor() {
         this.last_publish_ts = moment(new Date());
-        this.client = new WebClient("xoxb-5371587372357-5371693295861-AGeg1r8pRGexJsbmdIjoMphE", {
+        this.client = new WebClient("xoxb-5371587372357-5371693295861-KqvDnegUm6rF8GW2jahVBdPC", {
             // LogLevel can be imported and used to make debugging simpler
             // logLevel: LogLevel.DEBUG
         });
     }
 
     async publishMessage(id, text) {
-        if (moment(new Date()).diff(this.last_publish_ts, "second") < 2) {
+        if (moment(new Date()).diff(this.last_publish_ts, "second") < 10) {
             // 短时间内发送太多消息，本消息被过滤掉
             return;
         }
@@ -22,7 +22,7 @@ class Slack {
             // Call the chat.postMessage method using the built-in WebClient
             const result = await this.client.chat.postMessage({
                 // The token you used to initialize your app
-                token: "xoxb-5371587372357-5371693295861-AGeg1r8pRGexJsbmdIjoMphE",
+                token: "xoxb-5371587372357-5371693295861-KqvDnegUm6rF8GW2jahVBdPC",
                 channel: id,
                 text: text
                 // You could also use a blocks[] array to send richer content

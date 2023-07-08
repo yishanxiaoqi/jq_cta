@@ -18,7 +18,7 @@ class BalanceMonitor extends StrategyBase {
 
     start() {
         this._register_events();
-        setInterval(() => { this.update_status_map_to_slack() }, 1000 * 60 * 1);
+        setInterval(() => { this.update_status_map_to_slack() }, 1000 * 60 * 2);
     }
 
     update_status_map_to_slack() {

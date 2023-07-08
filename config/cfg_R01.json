@@ -1,6 +1,6 @@
 {
     "alias": "R01",
-    "clear_existing_status": false,
+    "clear_existing_status": true,
     "max_num": 100,
     "ini_usdt": 300,
     "interval": "1h",

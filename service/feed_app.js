@@ -19,18 +19,36 @@ class FeedApp {
         this.intercom = intercom;
         this.slack = new Slack.Slack();
 
-        // 默认订阅XEMUSDT的trade数据
+        // 每个ws连接最多订阅200个streams
         this.symbols = [
-            "ADAUSDT",
-            "BANDUSDT",
-            "BNBUSDT",
-            "CTKUSDT",
-            "DYDXUSDT",
+            // "ADAUSDT",
+            // "BANDUSDT",
+            // "BNBUSDT",
+            // "CTKUSDT",
+            // "DYDXUSDT",
             "RUNEUSDT",
-            "SKLUSDT",
-            "SOLUSDT",
+            // "SKLUSDT",
+            // "SOLUSDT",
             "XEMUSDT"
         ]; 
+
+        // this.symbols = [
+        //     '1000SHIBUSDT', 'ADAUSDT', 'ALGOUSDT', 'ALPHAUSDT',
+        //     'ANKRUSDT', 'ATOMUSDT', 'AUDIOUSDT', 'AVAXUSDT',
+        //     'AXSUSDT', 'BALUSDT', 'BANDUSDT', 'BNBUSDT',
+        //     'BTCDOMUSDT', 'BTCUSDT', 'C98USDT', 'CELOUSDT',
+        //     'CELRUSDT', 'COTIUSDT', 'CTKUSDT', 'DASHUSDT',
+        //     'DOTUSDT', 'DYDXUSDT', 'EGLDUSDT', 'ENJUSDT',
+        //     'ETCUSDT', 'ETHUSDT', 'FILUSDT', 'FTMUSDT',
+        //     'GRTUSDT', 'GTCUSDT', 'HOTUSDT', 'KLAYUSDT',
+        //     'KSMUSDT', 'LINAUSDT', 'LTCUSDT', 'MANAUSDT',
+        //     'MKRUSDT', 'MTLUSDT', 'NEARUSDT', 'NKNUSDT',
+        //     'OCEANUSDT', 'QTUMUSDT', 'REEFUSDT', 'RSRUSDT',
+        //     'RUNEUSDT', 'RVNUSDT', 'SANDUSDT', 'SKLUSDT',
+        //     'SOLUSDT', 'SXPUSDT', 'THETAUSDT', 'VETUSDT',
+        //     'WAVESUSDT', 'XEMUSDT', 'XRPUSDT', 'XTZUSDT',
+        //     'YFIUSDT', 'ZECUSDT', 'ZILUSDT'
+        // ];
 
         // account_id及其对应的apiKey和apiSecret，目前一个策略只能做一个账号
         this.account_id = "jq_cta_02";
@@ -42,7 +60,7 @@ class FeedApp {
         this.on_slack_publish_handler = this.on_slack_publish.bind(this);
     }
 
-    on_market_data_subscription(idfs_list){
+    on_market_data_subscription(idfs_list) {
         logger.info(`${this.name}: no on_market_data_subscription implementation yet.`)
     }
 
@@ -51,7 +69,7 @@ class FeedApp {
         let type = slack_publish["type"];
         let msg = slack_publish["msg"];
 
-        switch(type) {
+        switch (type) {
             case "info":
                 this.slack.info(msg);
                 break;
@@ -85,6 +103,9 @@ class FeedApp {
 
         this.ws.on("open", (evt) => {
             logger.info(`${this.name}: private WS is CONNECTED.`);
+
+            this.reconnecting = false;
+            this.websocketconnected = true;
             this.ws_connected_ts = Date.now();
 
             if (this.ws_keep_alive_interval) {
@@ -97,7 +118,7 @@ class FeedApp {
 
                 if (Date.now() - this.ws_connected_ts > 23 * 60 * 60 * 1000) {
                     logger.warn(`${this.name}: reconnect this private WS...`)
-                    this._init_websocket();
+                    this._reconnect_ws();
                 }
             }, 30000);
 
@@ -133,7 +154,7 @@ class FeedApp {
                 return;
             }
 
-            if (jdata["e"] !==  "aggTrade") {
+            if (jdata["e"] !== "aggTrade") {
                 logger.info(`${this.name}: ${JSON.stringify(jdata)}`);
             }
 
@@ -143,7 +164,7 @@ class FeedApp {
                 // order_update更新
                 let order_update = this._format_order_update(jdata);
                 this.intercom.emit("ORDER_UPDATE", order_update, INTERCOM_SCOPE.FEED);
-            } else if (jdata["e"] ===  "aggTrade") {
+            } else if (jdata["e"] === "aggTrade") {
                 // trade价格更新
                 let market_data = this._format_market_data(jdata);
                 this.intercom.emit("MARKET_DATA", market_data, INTERCOM_SCOPE.FEED);
@@ -162,6 +183,28 @@ class FeedApp {
             console.log("private ping", evt);
             this.ws.pong();
         });
+    }
+
+    _reconnect_ws() {
+        if (this.reconnecting) {
+            logger.info(`${this.name}: websocket is already reconnecting.`);
+            return;
+        }
+        this.reconnecting = true;
+
+        try {
+            if (this.websocketconnected) {
+                logger.info(`${this.name}: websocket was closed by _reconnect_ws.`);
+                this.ws.close();
+            }
+        } catch (e) {
+            logger.error(`${this.name}: error ${e.stack}`);
+        }
+
+        setTimeout(() => {
+            logger.info(`${this.name}: websocket is reconnecting...`);
+            this._init_websocket();
+        }, 100);
     }
 
     async get_listenKey() {
@@ -213,7 +256,7 @@ class FeedApp {
                 client_order_id: jdata["o"]["c"],
                 direction: (jdata["o"]["S"] === "SELL") ? DIRECTION.SELL : DIRECTION.BUY,
                 timestamp: utils.get_human_readable_timestamp(jdata["o"]["T"]),
-                fee: jdata["o"]["n"] ? parseFloat(jdata["o"]["n"]): undefined,
+                fee: jdata["o"]["n"] ? parseFloat(jdata["o"]["n"]) : undefined,
                 update_type: this._convert_to_standard_order_update_type(jdata["o"]["x"])
             },
             timestamp: utils._util_get_human_readable_timestamp(),

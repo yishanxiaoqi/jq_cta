@@ -1,6 +1,6 @@
 {
     "alias": "STR",
-    "clear_existing_status": false,
+    "clear_existing_status": true,
     "ini_usdt": 200,
     "act_ids": [
         "jq_cta_02"
@@ -15,7 +15,7 @@
         "BinanceU.RUNEUSDT.perp"
     ],
     "entries": [
-        "BinanceU.RUNEUSDT.perp.1h"
+        "BinanceU.RUNEUSDT.perp.6h"
     ],
     "BinanceU.AUDIOUSDT.perp.1h": {
         "ini_usdt": 100,

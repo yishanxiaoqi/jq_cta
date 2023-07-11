@@ -12,13 +12,96 @@
         "BinanceU|jq_cta_02"
     ],
     "idfs": [
-        "BinanceU.RUNEUSDT.perp"
+        "BinanceU.ADAUSDT.perp",
+        "BinanceU.ALPHAUSDT.perp",
+        "BinanceU.ANKRUSDT.perp",
+        "BinanceU.AUDIOUSDT.perp",
+        "BinanceU.AVAXUSDT.perp",
+        "BinanceU.BALUSDT.perp",
+        "BinanceU.BNBUSDT.perp",
+        "BinanceU.BTCDOMUSDT.perp",
+        "BinanceU.BTCUSDT.perp",
+        "BinanceU.CELOUSDT.perp",
+        "BinanceU.DASHUSDT.perp",
+        "BinanceU.ENJUSDT.perp",
+        "BinanceU.ETCUSDT.perp",
+        "BinanceU.ETHUSDT.perp",
+        "BinanceU.FILUSDT.perp",
+        "BinanceU.FTMUSDT.perp",
+        "BinanceU.GTCUSDT.perp",
+        "BinanceU.KLAYUSDT.perp",
+        "BinanceU.KSMUSDT.perp",
+        "BinanceU.LINAUSDT.perp",
+        "BinanceU.LTCUSDT.perp",
+        "BinanceU.MANAUSDT.perp",
+        "BinanceU.MKRUSDT.perp",
+        "BinanceU.NEARUSDT.perp",
+        "BinanceU.OCEANUSDT.perp",
+        "BinanceU.RUNEUSDT.perp",
+        "BinanceU.RVNUSDT.perp",
+        "BinanceU.SANDUSDT.perp",
+        "BinanceU.SKLUSDT.perp",
+        "BinanceU.SOLUSDT.perp",
+        "BinanceU.SXPUSDT.perp",
+        "BinanceU.VETUSDT.perp",
+        "BinanceU.WAVESUSDT.perp",
+        "BinanceU.ZECUSDT.perp",
+        "BinanceU.ZILUSDT.perp"
     ],
     "entries": [
-        "BinanceU.RUNEUSDT.perp.6h"
+        "BinanceU.AUDIOUSDT.perp.1h",
+        "BinanceU.BALUSDT.perp.1h",
+        "BinanceU.FILUSDT.perp.1h",
+        "BinanceU.FTMUSDT.perp.1h",
+        "BinanceU.KLAYUSDT.perp.1h",
+        "BinanceU.RUNEUSDT.perp.1h",
+        "BinanceU.AVAXUSDT.perp.6h",
+        "BinanceU.BTCDOMUSDT.perp.6h",
+        "BinanceU.ETCUSDT.perp.6h",
+        "BinanceU.FILUSDT.perp.6h",
+        "BinanceU.GTCUSDT.perp.6h",
+        "BinanceU.LINAUSDT.perp.6h",
+        "BinanceU.RUNEUSDT.perp.6h",
+        "BinanceU.SANDUSDT.perp.6h",
+        "BinanceU.SXPUSDT.perp.6h",
+        "BinanceU.VETUSDT.perp.6h",
+        "BinanceU.WAVESUSDT.perp.6h",
+        "BinanceU.ADAUSDT.perp.12h",
+        "BinanceU.ALPHAUSDT.perp.12h",
+        "BinanceU.ANKRUSDT.perp.12h",
+        "BinanceU.BNBUSDT.perp.12h",
+        "BinanceU.BTCDOMUSDT.perp.12h",
+        "BinanceU.BTCUSDT.perp.12h",
+        "BinanceU.ETCUSDT.perp.12h",
+        "BinanceU.FILUSDT.perp.12h",
+        "BinanceU.FTMUSDT.perp.12h",
+        "BinanceU.RVNUSDT.perp.12h",
+        "BinanceU.SANDUSDT.perp.12h",
+        "BinanceU.SOLUSDT.perp.12h",
+        "BinanceU.VETUSDT.perp.12h",
+        "BinanceU.ZILUSDT.perp.12h",
+        "BinanceU.AVAXUSDT.perp.1d",
+        "BinanceU.BTCDOMUSDT.perp.1d",
+        "BinanceU.BTCUSDT.perp.1d",
+        "BinanceU.CELOUSDT.perp.1d",
+        "BinanceU.DASHUSDT.perp.1d",
+        "BinanceU.ENJUSDT.perp.1d",
+        "BinanceU.ETCUSDT.perp.1d",
+        "BinanceU.ETHUSDT.perp.1d",
+        "BinanceU.KSMUSDT.perp.1d",
+        "BinanceU.LTCUSDT.perp.1d",
+        "BinanceU.MANAUSDT.perp.1d",
+        "BinanceU.MKRUSDT.perp.1d",
+        "BinanceU.NEARUSDT.perp.1d",
+        "BinanceU.OCEANUSDT.perp.1d",
+        "BinanceU.RUNEUSDT.perp.1d",
+        "BinanceU.SANDUSDT.perp.1d",
+        "BinanceU.SKLUSDT.perp.1d",
+        "BinanceU.VETUSDT.perp.1d",
+        "BinanceU.ZECUSDT.perp.1d"
     ],
     "BinanceU.AUDIOUSDT.perp.1h": {
-        "ini_usdt": 100,
+        "ini_usdt": 50,
         "splitAt": 0,
         "track_ATR_multiplier": 0.9,
         "track_ATR_n": 40,
@@ -26,11 +109,11 @@
         "ini_af": 0.08,
         "delta_af": 0.08,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0001"
     },
     "BinanceU.BALUSDT.perp.1h": {
-        "ini_usdt": 200,
+        "ini_usdt": 50,
         "splitAt": 0,
         "track_ATR_multiplier": 0.9,
         "track_ATR_n": 60,
@@ -38,11 +121,11 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0038"
     },
     "BinanceU.FILUSDT.perp.1h": {
-        "ini_usdt": 200,
+        "ini_usdt": 118,
         "splitAt": 0,
         "track_ATR_multiplier": 1.5,
         "track_ATR_n": 60,
@@ -50,11 +133,11 @@
         "ini_af": 0.005,
         "delta_af": 0.005,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0039"
     },
     "BinanceU.FTMUSDT.perp.1h": {
-        "ini_usdt": 200,
+        "ini_usdt": 76,
         "splitAt": 0,
         "track_ATR_multiplier": 1.1,
         "track_ATR_n": 20,
@@ -62,11 +145,11 @@
         "ini_af": 0.005,
         "delta_af": 0.005,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0002"
     },
     "BinanceU.KLAYUSDT.perp.1h": {
-        "ini_usdt": 300,
+        "ini_usdt": 149,
         "splitAt": 0,
         "track_ATR_multiplier": 1.1,
         "track_ATR_n": 20,
@@ -74,11 +157,11 @@
         "ini_af": 0.01,
         "delta_af": 0.01,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0003"
     },
     "BinanceU.RUNEUSDT.perp.1h": {
-        "ini_usdt": 100,
+        "ini_usdt": 136,
         "splitAt": 0,
         "track_ATR_multiplier": 0.7,
         "track_ATR_n": 10,
@@ -86,11 +169,11 @@
         "ini_af": 0.005,
         "delta_af": 0.005,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0040"
     },
     "BinanceU.AVAXUSDT.perp.6h": {
-        "ini_usdt": 100,
+        "ini_usdt": 50,
         "splitAt": 0,
         "track_ATR_multiplier": 1.1,
         "track_ATR_n": 20,
@@ -98,11 +181,11 @@
         "ini_af": 0.005,
         "delta_af": 0.005,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0041"
     },
     "BinanceU.BTCDOMUSDT.perp.6h": {
-        "ini_usdt": 100,
+        "ini_usdt": 69,
         "splitAt": 0,
         "track_ATR_multiplier": 1.3,
         "track_ATR_n": 20,
@@ -110,11 +193,11 @@
         "ini_af": 0.04,
         "delta_af": 0.04,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0004"
     },
     "BinanceU.ETCUSDT.perp.6h": {
-        "ini_usdt": 100,
+        "ini_usdt": 65,
         "splitAt": 0,
         "track_ATR_multiplier": 1.3,
         "track_ATR_n": 20,
@@ -122,11 +205,11 @@
         "ini_af": 0.04,
         "delta_af": 0.04,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0005"
     },
     "BinanceU.FILUSDT.perp.6h": {
-        "ini_usdt": 200,
+        "ini_usdt": 73,
         "splitAt": 0,
         "track_ATR_multiplier": 0.9,
         "track_ATR_n": 20,
@@ -134,11 +217,11 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0042"
     },
     "BinanceU.GTCUSDT.perp.6h": {
-        "ini_usdt": 300,
+        "ini_usdt": 139,
         "splitAt": 0,
         "track_ATR_multiplier": 0.5,
         "track_ATR_n": 20,
@@ -146,11 +229,11 @@
         "ini_af": 0.005,
         "delta_af": 0.005,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0006"
     },
     "BinanceU.LINAUSDT.perp.6h": {
-        "ini_usdt": 100,
+        "ini_usdt": 94,
         "splitAt": 0,
         "track_ATR_multiplier": 0.9,
         "track_ATR_n": 20,
@@ -158,11 +241,11 @@
         "ini_af": 0.01,
         "delta_af": 0.01,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0007"
     },
     "BinanceU.RUNEUSDT.perp.6h": {
-        "ini_usdt": 200,
+        "ini_usdt": 214,
         "splitAt": 0,
         "track_ATR_multiplier": 0.7,
         "track_ATR_n": 10,
@@ -170,11 +253,11 @@
         "ini_af": 0.005,
         "delta_af": 0.005,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0008"
     },
     "BinanceU.SANDUSDT.perp.6h": {
-        "ini_usdt": 300,
+        "ini_usdt": 50,
         "splitAt": 0,
         "track_ATR_multiplier": 1.3,
         "track_ATR_n": 20,
@@ -182,11 +265,11 @@
         "ini_af": 0.005,
         "delta_af": 0.005,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0009"
     },
     "BinanceU.SXPUSDT.perp.6h": {
-        "ini_usdt": 100,
+        "ini_usdt": 166,
         "splitAt": 0,
         "track_ATR_multiplier": 1.5,
         "track_ATR_n": 20,
@@ -194,11 +277,11 @@
         "ini_af": 0.01,
         "delta_af": 0.01,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0043"
     },
     "BinanceU.VETUSDT.perp.6h": {
-        "ini_usdt": 100,
+        "ini_usdt": 53,
         "splitAt": 0,
         "track_ATR_multiplier": 1.3,
         "track_ATR_n": 10,
@@ -206,11 +289,11 @@
         "ini_af": 0.005,
         "delta_af": 0.005,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0044"
     },
     "BinanceU.WAVESUSDT.perp.6h": {
-        "ini_usdt": 200,
+        "ini_usdt": 79,
         "splitAt": 0,
         "track_ATR_multiplier": 1.5,
         "track_ATR_n": 10,
@@ -218,11 +301,11 @@
         "ini_af": 0.01,
         "delta_af": 0.01,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0010"
     },
     "BinanceU.ADAUSDT.perp.12h": {
-        "ini_usdt": 100,
+        "ini_usdt": 50,
         "splitAt": 0,
         "track_ATR_multiplier": 1.1,
         "track_ATR_n": 10,
@@ -230,11 +313,11 @@
         "ini_af": 0.01,
         "delta_af": 0.01,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0045"
     },
     "BinanceU.ALPHAUSDT.perp.12h": {
-        "ini_usdt": 100,
+        "ini_usdt": 58,
         "splitAt": 0,
         "track_ATR_multiplier": 1.3,
         "track_ATR_n": 10,
@@ -242,11 +325,11 @@
         "ini_af": 0.01,
         "delta_af": 0.01,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0011"
     },
     "BinanceU.ANKRUSDT.perp.12h": {
-        "ini_usdt": 200,
+        "ini_usdt": 50,
         "splitAt": 0,
         "track_ATR_multiplier": 0.9,
         "track_ATR_n": 20,
@@ -254,11 +337,11 @@
         "ini_af": 0.005,
         "delta_af": 0.005,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0012"
     },
     "BinanceU.BNBUSDT.perp.12h": {
-        "ini_usdt": 200,
+        "ini_usdt": 50,
         "splitAt": 0,
         "track_ATR_multiplier": 0.5,
         "track_ATR_n": 40,
@@ -266,11 +349,11 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0013"
     },
     "BinanceU.BTCDOMUSDT.perp.12h": {
-        "ini_usdt": 200,
+        "ini_usdt": 78,
         "splitAt": 0,
         "track_ATR_multiplier": 1.1,
         "track_ATR_n": 5,
@@ -278,11 +361,11 @@
         "ini_af": 0.08,
         "delta_af": 0.08,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0014"
     },
     "BinanceU.BTCUSDT.perp.12h": {
-        "ini_usdt": 200,
+        "ini_usdt": 50,
         "splitAt": 0,
         "track_ATR_multiplier": 1.3,
         "track_ATR_n": 20,
@@ -290,11 +373,11 @@
         "ini_af": 0.04,
         "delta_af": 0.04,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0046"
     },
     "BinanceU.ETCUSDT.perp.12h": {
-        "ini_usdt": 200,
+        "ini_usdt": 105,
         "splitAt": 0,
         "track_ATR_multiplier": 1.1,
         "track_ATR_n": 10,
@@ -302,11 +385,11 @@
         "ini_af": 0.01,
         "delta_af": 0.01,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0047"
     },
     "BinanceU.FILUSDT.perp.12h": {
-        "ini_usdt": 300,
+        "ini_usdt": 109,
         "splitAt": 0,
         "track_ATR_multiplier": 0.9,
         "track_ATR_n": 40,
@@ -314,11 +397,11 @@
         "ini_af": 0.005,
         "delta_af": 0.005,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0015"
     },
     "BinanceU.FTMUSDT.perp.12h": {
-        "ini_usdt": 300,
+        "ini_usdt": 163,
         "splitAt": 0,
         "track_ATR_multiplier": 1.1,
         "track_ATR_n": 20,
@@ -326,11 +409,11 @@
         "ini_af": 0.04,
         "delta_af": 0.04,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0016"
     },
     "BinanceU.RVNUSDT.perp.12h": {
-        "ini_usdt": 200,
+        "ini_usdt": 56,
         "splitAt": 0,
         "track_ATR_multiplier": 0.9,
         "track_ATR_n": 5,
@@ -338,11 +421,11 @@
         "ini_af": 0.01,
         "delta_af": 0.01,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0017"
     },
     "BinanceU.SANDUSDT.perp.12h": {
-        "ini_usdt": 100,
+        "ini_usdt": 50,
         "splitAt": 0,
         "track_ATR_multiplier": 1.3,
         "track_ATR_n": 10,
@@ -350,11 +433,11 @@
         "ini_af": 0.04,
         "delta_af": 0.04,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0018"
     },
     "BinanceU.SOLUSDT.perp.12h": {
-        "ini_usdt": 100,
+        "ini_usdt": 50,
         "splitAt": 0,
         "track_ATR_multiplier": 1.3,
         "track_ATR_n": 40,
@@ -362,11 +445,11 @@
         "ini_af": 0.005,
         "delta_af": 0.005,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0019"
     },
     "BinanceU.VETUSDT.perp.12h": {
-        "ini_usdt": 200,
+        "ini_usdt": 59,
         "splitAt": 0,
         "track_ATR_multiplier": 1.3,
         "track_ATR_n": 5,
@@ -374,11 +457,11 @@
         "ini_af": 0.01,
         "delta_af": 0.01,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0020"
     },
     "BinanceU.ZILUSDT.perp.12h": {
-        "ini_usdt": 100,
+        "ini_usdt": 63,
         "splitAt": 0,
         "track_ATR_multiplier": 1.3,
         "track_ATR_n": 40,
@@ -386,11 +469,11 @@
         "ini_af": 0.005,
         "delta_af": 0.005,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0021"
     },
     "BinanceU.AVAXUSDT.perp.1d": {
-        "ini_usdt": 300,
+        "ini_usdt": 83,
         "splitAt": 0,
         "track_ATR_multiplier": 1.5,
         "track_ATR_n": 5,
@@ -398,11 +481,11 @@
         "ini_af": 0.01,
         "delta_af": 0.01,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0048"
     },
     "BinanceU.BTCDOMUSDT.perp.1d": {
-        "ini_usdt": 300,
+        "ini_usdt": 95,
         "splitAt": 0,
         "track_ATR_multiplier": 0.9,
         "track_ATR_n": 5,
@@ -410,11 +493,11 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0022"
     },
     "BinanceU.BTCUSDT.perp.1d": {
-        "ini_usdt": 300,
+        "ini_usdt": 50,
         "splitAt": 0,
         "track_ATR_multiplier": 0.9,
         "track_ATR_n": 10,
@@ -422,11 +505,11 @@
         "ini_af": 0.005,
         "delta_af": 0.005,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0023"
     },
     "BinanceU.CELOUSDT.perp.1d": {
-        "ini_usdt": 200,
+        "ini_usdt": 70,
         "splitAt": 0,
         "track_ATR_multiplier": 1.3,
         "track_ATR_n": 5,
@@ -434,11 +517,11 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0024"
     },
     "BinanceU.DASHUSDT.perp.1d": {
-        "ini_usdt": 200,
+        "ini_usdt": 56,
         "splitAt": 0,
         "track_ATR_multiplier": 0.9,
         "track_ATR_n": 5,
@@ -446,11 +529,11 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0025"
     },
     "BinanceU.ENJUSDT.perp.1d": {
-        "ini_usdt": 200,
+        "ini_usdt": 50,
         "splitAt": 0,
         "track_ATR_multiplier": 1.1,
         "track_ATR_n": 5,
@@ -458,11 +541,11 @@
         "ini_af": 0.005,
         "delta_af": 0.005,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0049"
     },
     "BinanceU.ETCUSDT.perp.1d": {
-        "ini_usdt": 200,
+        "ini_usdt": 121,
         "splitAt": 0,
         "track_ATR_multiplier": 1.1,
         "track_ATR_n": 5,
@@ -470,11 +553,11 @@
         "ini_af": 0.04,
         "delta_af": 0.04,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0050"
     },
     "BinanceU.ETHUSDT.perp.1d": {
-        "ini_usdt": 100,
+        "ini_usdt": 69,
         "splitAt": 0,
         "track_ATR_multiplier": 0.9,
         "track_ATR_n": 10,
@@ -482,11 +565,11 @@
         "ini_af": 0.005,
         "delta_af": 0.005,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0026"
     },
     "BinanceU.KSMUSDT.perp.1d": {
-        "ini_usdt": 200,
+        "ini_usdt": 50,
         "splitAt": 0,
         "track_ATR_multiplier": 0.7,
         "track_ATR_n": 10,
@@ -494,11 +577,11 @@
         "ini_af": 0.005,
         "delta_af": 0.005,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0027"
     },
     "BinanceU.LTCUSDT.perp.1d": {
-        "ini_usdt": 100,
+        "ini_usdt": 70,
         "splitAt": 0,
         "track_ATR_multiplier": 0.9,
         "track_ATR_n": 5,
@@ -506,11 +589,11 @@
         "ini_af": 0.04,
         "delta_af": 0.04,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0028"
     },
     "BinanceU.MANAUSDT.perp.1d": {
-        "ini_usdt": 100,
+        "ini_usdt": 104,
         "splitAt": 0,
         "track_ATR_multiplier": 0.9,
         "track_ATR_n": 10,
@@ -518,11 +601,11 @@
         "ini_af": 0.01,
         "delta_af": 0.01,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0029"
     },
     "BinanceU.MKRUSDT.perp.1d": {
-        "ini_usdt": 100,
+        "ini_usdt": 50,
         "splitAt": 0,
         "track_ATR_multiplier": 1.1,
         "track_ATR_n": 5,
@@ -530,11 +613,11 @@
         "ini_af": 0.005,
         "delta_af": 0.005,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0030"
     },
     "BinanceU.NEARUSDT.perp.1d": {
-        "ini_usdt": 300,
+        "ini_usdt": 50,
         "splitAt": 0,
         "track_ATR_multiplier": 1.1,
         "track_ATR_n": 5,
@@ -542,11 +625,11 @@
         "ini_af": 0.005,
         "delta_af": 0.005,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0031"
     },
     "BinanceU.OCEANUSDT.perp.1d": {
-        "ini_usdt": 100,
+        "ini_usdt": 77,
         "splitAt": 0,
         "track_ATR_multiplier": 0.7,
         "track_ATR_n": 5,
@@ -554,11 +637,11 @@
         "ini_af": 0.005,
         "delta_af": 0.005,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0032"
     },
     "BinanceU.RUNEUSDT.perp.1d": {
-        "ini_usdt": 200,
+        "ini_usdt": 85,
         "splitAt": 0,
         "track_ATR_multiplier": 1.1,
         "track_ATR_n": 10,
@@ -566,11 +649,11 @@
         "ini_af": 0.005,
         "delta_af": 0.005,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0033"
     },
     "BinanceU.SANDUSDT.perp.1d": {
-        "ini_usdt": 300,
+        "ini_usdt": 50,
         "splitAt": 0,
         "track_ATR_multiplier": 1.1,
         "track_ATR_n": 5,
@@ -578,11 +661,11 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0034"
     },
     "BinanceU.SKLUSDT.perp.1d": {
-        "ini_usdt": 100,
+        "ini_usdt": 50,
         "splitAt": 0,
         "track_ATR_multiplier": 0.9,
         "track_ATR_n": 10,
@@ -590,11 +673,11 @@
         "ini_af": 0.005,
         "delta_af": 0.005,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0035"
     },
     "BinanceU.VETUSDT.perp.1d": {
-        "ini_usdt": 200,
+        "ini_usdt": 50,
         "splitAt": 0,
         "track_ATR_multiplier": 1.1,
         "track_ATR_n": 10,
@@ -602,11 +685,11 @@
         "ini_af": 0.04,
         "delta_af": 0.04,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0036"
     },
     "BinanceU.ZECUSDT.perp.1d": {
-        "ini_usdt": 100,
+        "ini_usdt": 110,
         "splitAt": 0,
         "track_ATR_multiplier": 1.3,
         "track_ATR_n": 10,
@@ -614,7 +697,7 @@
         "ini_af": 0.04,
         "delta_af": 0.04,
         "bar_enter_limit": 1,
-        "act_id": "cta_foreseem_sub02_fut",
+        "act_id": "jq_cta_02",
         "cfgID": "STR0037"
     }
 }

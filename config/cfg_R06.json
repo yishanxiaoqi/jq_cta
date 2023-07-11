@@ -1,6 +1,6 @@
 {
     "alias": "R06",
-    "clear_existing_status": false,
+    "clear_existing_status": true,
     "max_num": 100,
     "ini_usdt": 500,
     "interval": "6h",
@@ -44,7 +44,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 1000,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R060001"
     },
@@ -57,7 +57,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 20,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R060005"
     },
@@ -70,7 +70,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 500,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R060018"
     },
@@ -83,7 +83,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 500,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R060024"
     },
@@ -96,7 +96,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 500,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R060029"
     },
@@ -109,7 +109,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 500,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R060037"
     },
@@ -122,7 +122,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 20,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R060038"
     },
@@ -135,7 +135,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 20,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R060045"
     },
@@ -148,7 +148,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 20,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R060052"
     }

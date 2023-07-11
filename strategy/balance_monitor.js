@@ -13,7 +13,7 @@ class BalanceMonitor extends StrategyBase {
         // 需要自行修改 ========
         this.init_balance = 5713.51;
         this.init_date = moment("2023-06-23");
-        this.aliases = ["R01", "STR"];
+        this.aliases = ["R01", "R06", "R12", "R24", "STR"];
     }
 
     start() {

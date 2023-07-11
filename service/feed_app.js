@@ -20,35 +20,35 @@ class FeedApp {
         this.slack = new Slack.Slack();
 
         // 每个ws连接最多订阅200个streams
-        this.symbols = [
-            // "ADAUSDT",
-            // "BANDUSDT",
-            // "BNBUSDT",
-            // "CTKUSDT",
-            // "DYDXUSDT",
-            "RUNEUSDT",
-            // "SKLUSDT",
-            // "SOLUSDT",
-            "XEMUSDT"
-        ]; 
-
         // this.symbols = [
-        //     '1000SHIBUSDT', 'ADAUSDT', 'ALGOUSDT', 'ALPHAUSDT',
-        //     'ANKRUSDT', 'ATOMUSDT', 'AUDIOUSDT', 'AVAXUSDT',
-        //     'AXSUSDT', 'BALUSDT', 'BANDUSDT', 'BNBUSDT',
-        //     'BTCDOMUSDT', 'BTCUSDT', 'C98USDT', 'CELOUSDT',
-        //     'CELRUSDT', 'COTIUSDT', 'CTKUSDT', 'DASHUSDT',
-        //     'DOTUSDT', 'DYDXUSDT', 'EGLDUSDT', 'ENJUSDT',
-        //     'ETCUSDT', 'ETHUSDT', 'FILUSDT', 'FTMUSDT',
-        //     'GRTUSDT', 'GTCUSDT', 'HOTUSDT', 'KLAYUSDT',
-        //     'KSMUSDT', 'LINAUSDT', 'LTCUSDT', 'MANAUSDT',
-        //     'MKRUSDT', 'MTLUSDT', 'NEARUSDT', 'NKNUSDT',
-        //     'OCEANUSDT', 'QTUMUSDT', 'REEFUSDT', 'RSRUSDT',
-        //     'RUNEUSDT', 'RVNUSDT', 'SANDUSDT', 'SKLUSDT',
-        //     'SOLUSDT', 'SXPUSDT', 'THETAUSDT', 'VETUSDT',
-        //     'WAVESUSDT', 'XEMUSDT', 'XRPUSDT', 'XTZUSDT',
-        //     'YFIUSDT', 'ZECUSDT', 'ZILUSDT'
-        // ];
+        //     // "ADAUSDT",
+        //     // "BANDUSDT",
+        //     // "BNBUSDT",
+        //     // "CTKUSDT",
+        //     // "DYDXUSDT",
+        //     // "RUNEUSDT",
+        //     // "SKLUSDT",
+        //     // "SOLUSDT",
+        //     // "XEMUSDT"
+        // ]; 
+
+        this.symbols = [
+            '1000SHIBUSDT', 'ADAUSDT', 'ALGOUSDT', 'ALPHAUSDT',
+            'ANKRUSDT', 'ATOMUSDT', 'AUDIOUSDT', 'AVAXUSDT',
+            'AXSUSDT', 'BALUSDT', 'BANDUSDT', 'BNBUSDT',
+            'BTCDOMUSDT', 'BTCUSDT', 'C98USDT', 'CELOUSDT',
+            'CELRUSDT', 'COTIUSDT', 'CTKUSDT', 'DASHUSDT',
+            'DOTUSDT', 'DYDXUSDT', 'EGLDUSDT', 'ENJUSDT',
+            'ETCUSDT', 'ETHUSDT', 'FILUSDT', 'FTMUSDT',
+            'GRTUSDT', 'GTCUSDT', 'HOTUSDT', 'KLAYUSDT',
+            'KSMUSDT', 'LINAUSDT', 'LTCUSDT', 'MANAUSDT',
+            'MKRUSDT', 'MTLUSDT', 'NEARUSDT', 'NKNUSDT',
+            'OCEANUSDT', 'QTUMUSDT', 'REEFUSDT', 'RSRUSDT',
+            'RUNEUSDT', 'RVNUSDT', 'SANDUSDT', 'SKLUSDT',
+            'SOLUSDT', 'SXPUSDT', 'THETAUSDT', 'VETUSDT',
+            'WAVESUSDT', 'XEMUSDT', 'XRPUSDT', 'XTZUSDT',
+            'YFIUSDT', 'ZECUSDT', 'ZILUSDT'
+        ];
 
         // account_id及其对应的apiKey和apiSecret，目前一个策略只能做一个账号
         this.account_id = "jq_cta_02";
@@ -65,7 +65,7 @@ class FeedApp {
     }
 
     on_slack_publish(slack_publish) {
-        logger.info(`${this.name}: slack publish message: ${JSON.stringify(slack_publish)}`);
+        // logger.info(`${this.name}: slack publish message: ${JSON.stringify(slack_publish)}`);
         let type = slack_publish["type"];
         let msg = slack_publish["msg"];
 
@@ -136,7 +136,7 @@ class FeedApp {
 
         this.ws.on("close", (code, reason) => {
             logger.warn(`${this.name}:: private websocket is DISCONNECTED. reason: ${reason} code: ${code}`);
-            logger.error(`${this.name} private WS is DISCONNECTED.`);
+            // logger.error(`${this.name} private WS is DISCONNECTED.`);
 
             if (code === 1006) {
                 // 很有可能是VPN连接不稳定

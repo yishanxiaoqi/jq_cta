@@ -275,6 +275,7 @@ class RevTrendStrategy extends StrategyBase{
 
             // 检查一下status_map变化
             logger.info(`${that.alias}|${symbol}::${JSON.stringify(that.status_map[idf])}`);
+            logger.info(`${that.alias}|${symbol}::${JSON.stringify(that.order_map[idf])}`);
 
             if (order_status === ORDER_STATUS.FILLED) {
                 // 订单完全成交，更新status_map
@@ -844,6 +845,35 @@ class RevTrendStrategy extends StrategyBase{
         });
     }
 
+    on_response(response) {
+        // 过滤不属于本策略的response
+        let ref_id = response["ref_id"];
+        if (response.action !== REQUEST_ACTIONS.QUERY_ORDERS) {
+            logger.info(`${this.alias}::on_${response.action}_response| ${JSON.stringify(response)}`);
+        }
+        if (ref_id.slice(0, 3) !== this.alias) return;
+
+        switch (response.action) {
+            case REQUEST_ACTIONS.QUERY_ORDERS:
+                this.on_query_orders_response(response);
+                break;
+            case REQUEST_ACTIONS.SEND_ORDER:
+                this.on_send_order_response(response);
+                break;
+            case REQUEST_ACTIONS.CANCEL_ORDER:
+                this.on_cancel_order_response(response);
+                break;
+            case REQUEST_ACTIONS.MODIFY_ORDER:
+                this.on_modify_order_response(response);
+                break;            
+            case REQUEST_ACTIONS.INSPECT_ORDER:
+                this.on_inspect_order_response(response);
+                break;
+            default:
+                logger.debug(`Unhandled request action: ${response.action}`);
+        }
+    }
+
     on_send_order_response(response) {
         let that = this;
 
@@ -1093,7 +1123,7 @@ class RevTrendStrategy extends StrategyBase{
 
         // 检查异常单
         let wierd_orders = orders.filter(item => !ALIASES.includes(item.client_order_id.slice(0, 3)));
-        logger.warn(`${that.alias}::wierd orders found: ${JSON.stringify(wierd_orders)}`);
+        if (wierd_orders.length > 0) logger.warn(`${that.alias}::wierd orders found: ${JSON.stringify(wierd_orders)}`);
 
         // logger.info(`${that.alias}::${symbol} active_orders| ${active_orders_string}`);
 

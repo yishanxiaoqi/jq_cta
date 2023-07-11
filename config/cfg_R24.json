@@ -1,6 +1,6 @@
 {
     "alias": "R24",
-    "clear_existing_status": false,
+    "clear_existing_status": true,
     "max_num": 60,
     "ini_usdt": 1000,
     "interval": "1d",
@@ -70,7 +70,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 20,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R240060"
     },
@@ -83,7 +83,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 20,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R240061"
     },
@@ -96,7 +96,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 200,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R240004"
     },
@@ -109,7 +109,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 500,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R240006"
     },
@@ -122,7 +122,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 500,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R240007"
     },
@@ -135,7 +135,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 1500,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R240065"
     },
@@ -148,7 +148,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 20,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R240066"
     },
@@ -161,7 +161,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 20,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R240073"
     },
@@ -174,7 +174,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 1500,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R240080"
     },
@@ -187,7 +187,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 1500,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R240082"
     },
@@ -200,7 +200,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 20,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R240083"
     },
@@ -213,7 +213,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 500,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R240036"
     },
@@ -226,7 +226,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 500,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R240037"
     },
@@ -239,7 +239,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 500,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R240042"
     },
@@ -252,7 +252,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 20,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R240086"
     },
@@ -265,7 +265,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 1500,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R240088"
     },
@@ -278,7 +278,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 500,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R240052"
     },
@@ -291,7 +291,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 500,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R240056"
     },
@@ -304,7 +304,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 20,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R240093"
     },
@@ -317,7 +317,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 500,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R240057"
     },
@@ -330,7 +330,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 20,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R240094"
     },
@@ -343,7 +343,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 500,
+        "ini_usdt": 100,
         "act_id": "jq_cta_02",
         "cfgID": "R240058"
     }

@@ -12,6 +12,7 @@ const request = require('../module/request.js');
 const utils = require("../utils/util_func");
 const stratutils = require("../utils/strat_util.js");
 const StrategyBase = require("./strategy_base.js");
+const token = require("../config/token.json");
 
 class SimpleTrendStrategy extends StrategyBase{
     constructor(name, alias, intercom) {
@@ -21,8 +22,8 @@ class SimpleTrendStrategy extends StrategyBase{
 
         // account_id及其对应的apiKey和apiSecret，目前一个策略只能做一个账号
         this.account_id = "jq_cta_02";
-        this.apiKey = "qGKdrATW1ZaSxjhyClx2zez8BHJp9uVrBmCVZ6LbOeNF65GRazB25pwFWpYabDPB";
-        this.apiSecret = "u3k0fbR7eqYDKnltU31nWwQ19Jw0RxqUg8XDuMTQoKiBr8mN7gRQbQN6ocIndDAG";
+        this.apiKey = token.apiKey;
+        this.apiSecret = token.apiSecret;
 
         this.init_status_map();
         this.init_order_map();  // this will set order_map to be empty

@@ -1,12 +1,15 @@
 // Require the Node Slack SDK package (github.com/slackapi/node-slack-sdk)
 const moment = require("moment");
 const logger = require("../module/logger.js");
+const token = require("")
 const { WebClient, LogLevel } = require("@slack/web-api");
+
+
 
 class Slack {
     constructor() {
         this.last_publish_ts = moment(new Date());
-        this.client = new WebClient("xoxb-5371587372357-5371693295861-KqvDnegUm6rF8GW2jahVBdPC", {
+        this.client = new WebClient(, {
             // LogLevel can be imported and used to make debugging simpler
             // logLevel: LogLevel.DEBUG
         });
@@ -22,7 +25,7 @@ class Slack {
             // Call the chat.postMessage method using the built-in WebClient
             const result = await this.client.chat.postMessage({
                 // The token you used to initialize your app
-                token: "xoxb-5371587372357-5371693295861-KqvDnegUm6rF8GW2jahVBdPC",
+                token: token,
                 channel: id,
                 text: text
                 // You could also use a blocks[] array to send richer content

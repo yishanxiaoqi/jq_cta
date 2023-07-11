@@ -13,3 +13,6 @@ test.js
 
 # copy files
 *.copy
+
+# slack token
+config/token.json

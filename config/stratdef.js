@@ -4,17 +4,6 @@ UI_PRECISION = 1;        // UI display
 MAX_ORDER_SIZE = 10;
 MIN_ORDER_USD = 10;
 
-KEY = {
-    "cta_foreseem_sub01_fut": {
-        "apiKey": "vTwUmIiPo1P2okZZF1ohBGCM190NJA4ahueMWrJFXMu1BHRBnLCbglOPPU53UNmp",
-        "apiSecret": "DbbqqSwN3KHncXPn1vqnMVULajnqqY4FQNV04LPhytVSUje48PI8RS4NHoZH2ywo"
-    },
-    "cta_foreseem_sub02_fut": {
-        "apiKey": "4KR0YaCb1V98uVUAIMmvxEXuHLgvK7HBB7C6sEvZ8J3YBEQ0SKECWNeUpiHDXIJl",
-        "apiSecret": "Xw7Ax5BHzWtItgkq4GsoCSh6x5gnFZ5X70LZ29jhPpUxSoLRKQc5zWzqLeo97pP3"
-    }
-};
-
 POS_STATUS = {
     EMPTY: "EMPTY",
     LONG: "LONG",

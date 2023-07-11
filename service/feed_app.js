@@ -12,6 +12,7 @@ const logger = require("../module/logger.js");
 const Intercom = require("../module/intercom");
 const utils = require("../utils/util_func");
 const apiconfig = require("../config/apiconfig.json");
+const token = require("../config/token.json");
 
 class FeedApp {
     constructor(intercom) {
@@ -52,8 +53,8 @@ class FeedApp {
 
         // account_id及其对应的apiKey和apiSecret，目前一个策略只能做一个账号
         this.account_id = "jq_cta_02";
-        this.apiKey = "qGKdrATW1ZaSxjhyClx2zez8BHJp9uVrBmCVZ6LbOeNF65GRazB25pwFWpYabDPB";
-        this.apiSecret = "u3k0fbR7eqYDKnltU31nWwQ19Jw0RxqUg8XDuMTQoKiBr8mN7gRQbQN6ocIndDAG";
+        this.apiKey = token.apiKey;
+        this.apiSecret = token.apiSecret;
 
         this.listenKey = undefined;
         this.on_market_data_subscription_handler = this.on_market_data_subscription.bind(this);

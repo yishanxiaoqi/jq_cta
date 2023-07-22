@@ -1,6 +1,6 @@
 {
     "alias": "R06",
-    "clear_existing_status": true,
+    "clear_existing_status": false,
     "max_num": 100,
     "ini_usdt": 500,
     "interval": "6h",

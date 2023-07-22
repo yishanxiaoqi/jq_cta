@@ -1,6 +1,6 @@
 {
     "alias": "R24",
-    "clear_existing_status": true,
+    "clear_existing_status": false,
     "max_num": 60,
     "ini_usdt": 1000,
     "interval": "1d",

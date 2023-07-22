@@ -1,4 +1,4 @@
-## 1. RESPONSE
+## 1. RESPONSE (rest)
 # 1.1 send order response
 
 ```json
@@ -102,7 +102,135 @@
 }
 ```
 
-# 2. ORDER UPDATE
+## 1.3 query positions
+
+- symbol specified
+
+```json
+{
+    "ref_id": "DMONPNcPdhngzdEBxdrEloA0yZENUk",
+    "action": "query_position",
+    "strategy": "Demo",
+    "metadata": {
+        "exchange": "BinanceU",
+        "symbol": "XEMUSDT",
+        "contract_type": "perp",
+        "event": "query_orders",
+        "metadata": {
+            "result": true,
+            "orders": [
+                {
+                    "symbol": "XEMUSDT",
+                    "position": 67114,
+                    "entryPrice": 0.0298,
+                    "markPrice": 0.02984209,
+                    "unRealizedProfit": 2.82482826,
+                    "last_updated_time": "20230722105225822"
+                }
+            ],
+            "timestamp": "20230722105225822"
+        },
+        "timestamp": "20230722105225823"
+    },
+    "request": {
+        "exchange": "BinanceU",
+        "symbol": "XEMUSDT",
+        "contract_type": "perp",
+        "ref_id": "DMONPNcPdhngzdEBxdrEloA0yZENUk"
+    }
+}
+```
+
+- symbol not specified
+
+```json
+{
+    "ref_id": "DMONlHt8cCmYVQKQGZW9GpTC41HBdH",
+    "action": "query_position",
+    "strategy": "Demo",
+    "metadata": {
+        "exchange": "BinanceU",
+        "contract_type": "perp",
+        "event": "query_orders",
+        "metadata": {
+            "result": true,
+            "positions": [
+                // 以下内容有省略
+                {
+                    "symbol": "WAVESUSDT",
+                    "position": -40.2,
+                    "entryPrice": 1.9721,
+                    "markPrice": 2.05477627,
+                    "unRealizedProfit": -3.32358605,
+                    "last_updated_time": "20230722105921985"
+                },
+                {
+                    "symbol": "BNBUSDT",
+                    "position": -0.2,
+                    "entryPrice": 248.81,
+                    "markPrice": 244.69441548,
+                    "unRealizedProfit": 0.8231169,
+                    "last_updated_time": "20230722105921986"
+                }
+            ],
+            "timestamp": "20230722105921987"
+        },
+        "timestamp": "20230722105921987"
+    },
+    "request": {
+        "exchange": "BinanceU",
+        "contract_type": "perp",
+        "ref_id": "DMONlHt8cCmYVQKQGZW9GpTC41HBdH"
+    }
+}
+```
+
+## 1.4 query account
+
+```json
+{
+    "ref_id": "DMO1FyWMWiDBiZ9VR3ZrOwrPOftDBO",
+    "action": "query_account",
+    "strategy": "Demo",
+    "metadata": {
+        "exchange": "BinanceU",
+        "contract_type": "perp",
+        "event": "query_account",
+        "metadata": {
+            "result": true,
+            "account_id": "jq_cta_02",
+            "balance": {
+                "wallet_balance_in_USD": 5301.82469244,
+                "unrealized_pnl_in_USD": -29.44308836,
+                "equity_in_USD": 5272.38160408,
+                "wallet_balance_in_USDT": 5302.06572435,
+                "unrealized_pnl_in_USDT": -29.4444269,
+                "equity_in_USDT": 5272.62129745
+            },
+            "positions": [
+                // 仅返回有仓位的symbol，以下内容有省略
+                {
+                    "symbol": "WAVESUSDT",
+                    "position": -40.2,
+                    "entryPrice": 1.9721,
+                    "unRealizedProfit": -2.52295159,
+                    "last_updated_time": "20230722120209534"
+                }
+            ],
+            "timestamp": "20230722120209540"
+        },
+        "timestamp": "20230722120209540"
+    },
+    "request": {
+        "exchange": "BinanceU",
+        "contract_type": "perp",
+        "account_id": "jq_cta_02",
+        "ref_id": "DMO1FyWMWiDBiZ9VR3ZrOwrPOftDBO"
+    }
+}
+```
+
+# 2. ORDER UPDATE (websocket)
 
 ## 2.1 place order
 

@@ -1,6 +1,6 @@
 {
     "alias": "STR",
-    "clear_existing_status": true,
+    "clear_existing_status": false,
     "ini_usdt": 200,
     "act_ids": [
         "jq_cta_02"

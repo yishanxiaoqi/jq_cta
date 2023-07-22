@@ -11,14 +11,21 @@ class BalanceMonitor extends StrategyBase {
         super(name, alias, intercom);
 
         // 需要自行修改 ========
-        this.init_balance = 5713.51;
+        this.init_equity = 5713.51;
         this.init_date = moment("2023-06-23");
         this.aliases = ["R01", "R06", "R12", "R24", "STR"];
     }
 
     start() {
         this._register_events();
-        setInterval(() => { this.update_status_map_to_slack() }, 1000 * 60 * 2);
+        setInterval(() => { 
+            this.update_status_map_to_slack();
+            this.query_account({
+                exchange: EXCHANGE.BINANCEU,
+                contract_type: CONTRACT_TYPE.PERP,
+                account_id: "jq_cta_02"
+            }) 
+        }, 1000 * 60 * 2);
     }
 
     update_status_map_to_slack() {
@@ -55,24 +62,65 @@ class BalanceMonitor extends StrategyBase {
         });
     }
 
-    on_balance_update(balance) {
-        for (let item of balance) {
-            if (item["a"] === "USDT") {
-                let today = moment.now();
-                let wallet_balance = stratutils.round(item["wb"], 2);
-                let pnl = stratutils.round(wallet_balance - this.init_balance, 2);
-                let ret = pnl / this.init_balance;
-                let ret_per = `${parseFloat(ret * 100).toFixed(2)}%`;
-                let n_days = - this.init_date.diff(today, "days");
-                let annul_return = ret / n_days * 365;
-                let annul_return_per = `${parseFloat(annul_return * 100).toFixed(2)}%`;
-                let txt = `====Summary====\ninit\t\tcurr\t\tpnl\t\tret\t\tannul\n${this.init_balance}\t\t${wallet_balance}\t\t${pnl}\t\t${ret_per}\t\t${annul_return_per}`;
-                this.slack_publish({
-                    "type": "info",
-                    "msg": txt
-                });
+    on_query_account_response(response) {
+
+        let real_positions = response.metadata.metadata.positions;
+        let balance = response.metadata.metadata.balance;
+        let cal_positions = {};
+
+        for (let alias of this.aliases) {
+            let cfg = JSON.parse(fs.readFileSync(`./config/cfg_${alias}.json`, 'utf8'));
+            let status_map = JSON.parse(fs.readFileSync(`./config/status_map_${alias}.json`, 'utf8'));
+            let loop_items = (alias === "STR")? cfg["entries"]: cfg["idfs"];
+
+            for (let item of loop_items) {
+                let symbol = item.split(".")[1];
+                if (symbol in cal_positions) {
+                    cal_positions[symbol] += status_map[item]["pos"];
+                } else {
+                    cal_positions[symbol] = status_map[item]["pos"];
+                }
             }
         }
+
+        let warning_msg = "";
+        let wierd_symbols = Object.keys(cal_positions).filter((symbol) => ! (real_positions.map((e) => e["symbol"]).includes(symbol)));
+
+        for (let symbol of wierd_symbols) {
+            if (cal_positions[symbol] !== 0) warning_msg += `inconsistent position of ${symbol}:: cal: ${cal_positions[symbol]}, real: 0 \n`
+        }
+
+        for (let item of real_positions) {
+            let symbol = item["symbol"];
+            let position = item["position"];
+            if (position !== cal_positions[symbol]) warning_msg += `inconsistent position of ${symbol}:: cal: ${cal_positions[symbol]}, real: ${position} \n`
+        }
+
+        if (warning_msg !== "") {
+            this.slack_publish({
+                "type": "alert",
+                "msg": warning_msg
+            });
+        }
+
+        let today = moment.now();
+        let wb = stratutils.round(balance["wallet_balance_in_USDT"], 2);
+        let unrealized_pnl = stratutils.round(balance["unrealized_pnl_in_USDT"], 2);
+        let equity = stratutils.round(balance["equity_in_USDT"], 2);
+        let pnl = stratutils.round(equity - this.init_equity, 2);
+        let ret = pnl / this.init_equity;
+        let ret_per = `${parseFloat(ret * 100).toFixed(2)}%`;
+        let n_days = - this.init_date.diff(today, "days");
+        let annul_return = ret / n_days * 365;
+        let annul_return_per = `${parseFloat(annul_return * 100).toFixed(2)}%`;
+        let txt = `====Summary====\ninit_equity\t\twallet_balance\t\tunrealized_pnl\t\tequity\t\tpnl\t\tret\t\tannul\n${this.init_equity}\t\t${wb}\t\t${unrealized_pnl}\t\t${equity}\t\t${pnl}\t\t${ret_per}\t\t${annul_return_per}`;
+        this.slack_publish({
+            "type": "info",
+            "msg": txt
+        });
+    }
+
+    on_balance_update(balance) {
     }
 
     on_order_update(order_update) {

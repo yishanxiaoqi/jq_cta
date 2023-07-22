@@ -1,6 +1,6 @@
 {
     "alias": "R12",
-    "clear_existing_status": true,
+    "clear_existing_status": false,
     "max_num": 100,
     "ini_usdt": 700,
     "interval": "12h",

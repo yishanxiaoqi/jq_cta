@@ -67,6 +67,7 @@ REQUEST_ACTIONS = {
     CANCEL_ALL_ORDER: 'cancel_all_orders',
     MODIFY_ORDER: 'modify_order',
     QUERY_POSITION: 'query_position',
+    QUERY_ACCOUNT: 'query_account',
     QUERY_BALANCE: 'query_balance',
     QUERY_SUBACCOUNT_BALANCE: 'query_subaccount_balance',
     QUERY_ORDERS: 'query_orders',

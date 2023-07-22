@@ -111,21 +111,35 @@ class StrategyBase {
             case REQUEST_ACTIONS.INSPECT_ORDER:
                 this.on_inspect_order_response(response);
                 break;
+            case REQUEST_ACTIONS.QUERY_POSITION:
+                this.on_query_position_response(response);
+                break;
+            case REQUEST_ACTIONS.QUERY_ACCOUNT:
+                this.on_query_account_response(response);
+                break;
             default:
                 logger.debug(`Unhandled request action: ${response.action}`);
         }
     }
 
     on_send_order_response(response) {
-        logger.info(`${this.alias}: no implementation for send order response response.`)
+        logger.info(`${this.alias}: no implementation for send order response.`)
     }
 
     on_cancel_order_response(response) {
-        logger.info(`${this.alias}: no implementation for cancel order response response.`)
+        logger.info(`${this.alias}: no implementation for cancel order response.`)
     }
 
     on_query_orders_response(response) {
-        logger.info(`${this.alias}: no implementation for query order response response.`)
+        logger.info(`${this.alias}: no implementation for query order response.`)
+    }
+
+    on_query_position_response(response) {
+        logger.info(`${this.alias}: no implementation for query position response.`)
+    }
+
+    on_query_account_response(response) {
+        logger.info(`${this.alias}: no implementation for query account response.`)
     }
 
     on_account_update(account_update) {
@@ -153,7 +167,6 @@ class StrategyBase {
         // logger.info(`${this.name}: no implementation for position update!`);
     }
 
-
     async send_order(order, ref_id = this.alias + randomID(27)) {
         logger.debug(`Emitting send order request from ${this.name}|${this.alias}|${order["symbol"]}|${order["label"]}|${order["client_order_id"]}`);
 
@@ -161,8 +174,6 @@ class StrategyBase {
         if (order["ref_id"] === undefined) order["ref_id"] = ref_id;
         let response = await this._send_order_via_rest(order);
 
-        console.log("order details", JSON.stringify(order));
-        
         this.intercom.emit("REQUEST_RESPONSE", response);
     }
 
@@ -235,7 +246,7 @@ class StrategyBase {
                     timestamp: body["updateTime"]
                 }
                 cxl_resp = {
-                    exchange: this.name,
+                    exchange: EXCHANGE.BINANCEU,
                     symbol: symbol,
                     contract_type: contract_type,
                     event: ORDER_ACTIONS.SEND,
@@ -449,7 +460,7 @@ class StrategyBase {
                     status: this._convert_to_standard_order_status(body["status"])
                 };
                 cxl_resp = {
-                    exchange: this.name,
+                    exchange: EXCHANGE.BINANCEU,
                     symbol: symbol,
                     contract_type: contract_type,
                     event: ORDER_ACTIONS.INSPECT,
@@ -465,7 +476,7 @@ class StrategyBase {
                     status: 'unknown'
                 };
                 cxl_resp = {
-                    exchange: this.name,
+                    exchange: EXCHANGE.BINANCEU,
                     symbol: symbol,
                     contract_type: contract_type,
                     event: ORDER_ACTIONS.INSPECT,
@@ -489,7 +500,7 @@ class StrategyBase {
                 status: 'unknown'
             };
             cxl_resp = {
-                exchange: this.name,
+                exchange: EXCHANGE.BINANCEU,
                 symbol: symbol,
                 contract_type: contract_type,
                 event: ORDER_ACTIONS.INSPECT,
@@ -572,7 +583,7 @@ class StrategyBase {
             }
 
             cxl_resp = {
-                exchange: this.name,
+                exchange: EXCHANGE.BINANCEU,
                 symbol: symbol,
                 contract_type: contract_type,
                 event: REQUEST_ACTIONS.QUERY_ORDERS,
@@ -609,6 +620,205 @@ class StrategyBase {
             strategy: this.name,
             metadata: cxl_resp,
             request: order
+        }
+    
+        return response;
+    }
+
+    async query_position(query, ref_id = this.alias + randomID(27)) {
+        logger.debug(`Emitting query positions request from ${this.name}|${this.alias}`);
+
+        // 这里可以放一些下单信息的检查和更新
+        if (query["ref_id"] === undefined) query["ref_id"] = ref_id;
+        let response = await this._query_position_via_rest(query);
+
+        this.intercom.emit("REQUEST_RESPONSE", response);
+
+        console.log(JSON.stringify(response));
+    }
+
+    async _query_position_via_rest(query) {
+        let ref_id = query["ref_id"];
+        let symbol = query["symbol"];
+        let contract_type = query["contract_type"];
+        let account_id = query["account_id"];
+
+        let restUrlQueryPosition = apiconfig.restUrlQueryPosition;
+        
+        let params = this._get_rest_options(restUrlQueryPosition, {
+            symbol: symbol,
+            timestamp: Date.now(),
+        }, account_id); 
+
+        var options = {
+            url: params["url"] + params["postbody"],
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-MBX-APIKEY": this.apiKey
+            }
+        };
+
+        let cxl_resp;
+        try {
+            let body = await rp.get(options);
+            body = JSON.parse(body);
+
+            console.log(JSON.stringify(body));
+
+            let active_positions = body.filter((position) => parseFloat(position.positionAmt) !== 0);
+            let formatted_active_positions = [];
+
+            for (let i of active_positions) {
+                formatted_active_positions.push({
+                    symbol: i["symbol"],
+                    position: +i['positionAmt'],
+                    entryPrice: +i["entryPrice"],
+                    markPrice: +i["markPrice"],
+                    unRealizedProfit: +i["unRealizedProfit"],
+                    last_updated_time: utils._util_get_human_readable_timestamp(i['updateTime'])
+                });
+            }
+
+            cxl_resp = {
+                exchange: EXCHANGE.BINANCEU,
+                symbol: symbol,
+                contract_type: contract_type,
+                event: REQUEST_ACTIONS.QUERY_ORDERS,
+                metadata: {
+                    result: true,
+                    account_id: account_id,
+                    positions: formatted_active_positions,
+                    timestamp: utils._util_get_human_readable_timestamp()
+                },
+                timestamp: utils._util_get_human_readable_timestamp()
+            };
+        } catch (e) {
+            cxl_resp = {
+                exchange: EXCHANGE.BINANCEU,
+                symbol: symbol,
+                contract_type: contract_type,
+                event: REQUEST_ACTIONS.QUERY_POSITION,
+                metadata: {
+                    result: false,
+                    account_id: account_id,
+                    error_code: e.code || e.statusCode || 999999,
+                    error_code_msg: e.msg || e.message,
+                    error_stack: e.stack
+                },
+                timestamp: utils._util_get_human_readable_timestamp()
+            };
+        }
+
+        let response = {
+            ref_id: ref_id,
+            action: REQUEST_ACTIONS.QUERY_POSITION,
+            strategy: this.name,
+            metadata: cxl_resp,
+            request: query
+        }
+    
+        return response;
+    }
+
+    async query_account(query, ref_id = this.alias + randomID(27)) {
+        // 目前来看query_account覆盖了query_position的功能
+        // 区别在于query position可以制定一个symbol进行query
+        logger.debug(`Emitting query balance request from ${this.name}|${this.alias}`);
+
+        // 这里可以放一些下单信息的检查和更新
+        if (query["ref_id"] === undefined) query["ref_id"] = ref_id;
+        let response = await this._query_account_via_rest(query);
+
+        this.intercom.emit("REQUEST_RESPONSE", response);
+
+        console.log(JSON.stringify(response));
+    }
+
+    async _query_account_via_rest(query) {
+        let ref_id = query["ref_id"];
+        let contract_type = query["contract_type"];
+        let account_id = query["account_id"];
+
+        let restUrlQueryAccount = apiconfig.restUrlQueryAccount;
+        
+        let params = this._get_rest_options(restUrlQueryAccount, {
+            timestamp: Date.now(),
+        }, account_id); 
+
+        var options = {
+            url: params["url"] + params["postbody"],
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-MBX-APIKEY": this.apiKey
+            }
+        };
+
+        let cxl_resp;
+        try {
+            let body = await rp.get(options);
+            body = JSON.parse(body);
+
+            console.log(JSON.stringify(body));
+
+            let assets_USDT = body["assets"].filter((asset) => asset.asset === "USDT")[0];
+            let balance = {
+                "wallet_balance_in_USD": +body["totalWalletBalance"],
+                "unrealized_pnl_in_USD": +body["totalUnrealizedProfit"],
+                "equity_in_USD": +body["totalMarginBalance"],
+                "wallet_balance_in_USDT": +assets_USDT["walletBalance"],
+                "unrealized_pnl_in_USDT": +assets_USDT["unrealizedProfit"],
+                "equity_in_USDT": +assets_USDT["marginBalance"],
+            }
+
+            let active_positions = body["positions"].filter((position) => parseFloat(position.positionAmt) !== 0);
+            let formatted_active_positions = [];
+
+            for (let i of active_positions) {
+                formatted_active_positions.push({
+                    symbol: i["symbol"],
+                    position: +i['positionAmt'],
+                    entryPrice: +i["entryPrice"],
+                    unRealizedProfit: +i["unrealizedProfit"],
+                    last_updated_time: utils._util_get_human_readable_timestamp(i['updateTime'])
+                });
+            }
+
+            cxl_resp = {
+                exchange: EXCHANGE.BINANCEU,
+                contract_type: contract_type,
+                event: REQUEST_ACTIONS.QUERY_ACCOUNT,
+                metadata: {
+                    result: true,
+                    account_id: account_id,
+                    balance: balance,
+                    positions: formatted_active_positions,
+                    timestamp: utils._util_get_human_readable_timestamp()
+                },
+                timestamp: utils._util_get_human_readable_timestamp()
+            };
+        } catch (e) {
+            cxl_resp = {
+                exchange: EXCHANGE.BINANCEU,
+                symbol: symbol,
+                contract_type: contract_type,
+                event: REQUEST_ACTIONS.QUERY_ACCOUNT,
+                metadata: {
+                    result: false,
+                    account_id: account_id,
+                    error_code: e.code || e.statusCode || 999999,
+                    error_code_msg: e.msg || e.message,
+                    error_stack: e.stack
+                },
+                timestamp: utils._util_get_human_readable_timestamp()
+            };
+        }
+
+        let response = {
+            ref_id: ref_id,
+            action: REQUEST_ACTIONS.QUERY_ACCOUNT,
+            strategy: this.name,
+            metadata: cxl_resp,
+            request: query
         }
     
         return response;

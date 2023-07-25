@@ -54,7 +54,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 100,
+        "ini_usdt": 200,
         "act_id": "jq_cta_02",
         "cfgID": "R120002"
     },
@@ -67,7 +67,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 100,
+        "ini_usdt": 200,
         "act_id": "jq_cta_02",
         "cfgID": "R120005"
     },
@@ -80,7 +80,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 100,
+        "ini_usdt": 200,
         "act_id": "jq_cta_02",
         "cfgID": "R120008"
     },
@@ -93,7 +93,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 100,
+        "ini_usdt": 200,
         "act_id": "jq_cta_02",
         "cfgID": "R120019"
     },
@@ -106,7 +106,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 100,
+        "ini_usdt": 200,
         "act_id": "jq_cta_02",
         "cfgID": "R120026"
     },
@@ -119,7 +119,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 100,
+        "ini_usdt": 200,
         "act_id": "jq_cta_02",
         "cfgID": "R120027"
     },
@@ -132,7 +132,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 100,
+        "ini_usdt": 200,
         "act_id": "jq_cta_02",
         "cfgID": "R120029"
     },
@@ -145,7 +145,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 100,
+        "ini_usdt": 200,
         "act_id": "jq_cta_02",
         "cfgID": "R120031"
     },
@@ -158,7 +158,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 100,
+        "ini_usdt": 200,
         "act_id": "jq_cta_02",
         "cfgID": "R120035"
     },
@@ -171,7 +171,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 100,
+        "ini_usdt": 200,
         "act_id": "jq_cta_02",
         "cfgID": "R120037"
     },
@@ -184,7 +184,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 100,
+        "ini_usdt": 200,
         "act_id": "jq_cta_02",
         "cfgID": "R120041"
     },
@@ -197,7 +197,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 100,
+        "ini_usdt": 200,
         "act_id": "jq_cta_02",
         "cfgID": "R120047"
     },
@@ -210,7 +210,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 100,
+        "ini_usdt": 200,
         "act_id": "jq_cta_02",
         "cfgID": "R120049"
     },
@@ -223,7 +223,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 100,
+        "ini_usdt": 200,
         "act_id": "jq_cta_02",
         "cfgID": "R120053"
     }

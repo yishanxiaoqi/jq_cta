@@ -93,7 +93,10 @@ class BalanceMonitor extends StrategyBase {
         for (let item of real_positions) {
             let symbol = item["symbol"];
             let position = item["position"];
-            if (position !== cal_positions[symbol]) warning_msg += `inconsistent position of ${symbol}:: cal: ${cal_positions[symbol]}, real: ${position} \n`
+
+            let idf = [EXCHANGE.BINANCEU, symbol, CONTRACT_TYPE.PERP].join(".");
+            let calculated_position = stratutils.transform_with_tick_size(cal_positions[symbol], QUANTITY_TICK_SIZE[idf]);
+            if (position !== calculated_position) warning_msg += `inconsistent position of ${symbol}:: cal: ${calculated_position}, real: ${position} \n`
         }
 
         if (warning_msg !== "") {

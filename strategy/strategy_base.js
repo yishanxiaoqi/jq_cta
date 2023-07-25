@@ -143,7 +143,7 @@ class StrategyBase {
     }
 
     on_account_update(account_update) {
-        logger.info(`${this.name}: ${JSON.stringify(account_update)}`);
+        // logger.info(`${this.alias}: ${JSON.stringify(account_update)}`);
         if (!account_update["a"]) {
             logger.warn(`${this.name}: no data update in account update?`);
             return;

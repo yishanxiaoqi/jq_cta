@@ -545,7 +545,7 @@ class SimpleTrendStrategy extends StrategyBase{
 
             let error_code = response["metadata"]["metadata"]["error_code"];
             let error_code_msg = response["metadata"]["metadata"]["error_code_msg"];
-            let retry = response["metadata"]["request"]["metadata"]["retry"];
+            let retry = response["request"]["retry"];
 
             if (retry === 5) {
                 that.slack_publish({
@@ -693,20 +693,20 @@ process.argv.forEach((val) => {
     }
 });
 
-// process.on('SIGINT', async () => {
-//     logger.info(`${strategy.alias}::SIGINT`);
-//     /* Note: Just work under pm2 environment */
-//     setTimeout(() => process.exit(), 3000)
-// });
+process.on('SIGINT', async () => {
+    logger.info(`${strategy.alias}::SIGINT`);
+    /* Note: Just work under pm2 environment */
+    setTimeout(() => process.exit(), 3000)
+});
 
-// process.on('exit', async () => {
-//     logger.info(`${strategy.alias}:: exit`);
-// });
+process.on('exit', async () => {
+    logger.info(`${strategy.alias}:: exit`);
+});
 
-// process.on('uncaughtException', (err) => {
-//     logger.error(`uncaughtException: ${JSON.stringify(err.stack)}`);
-// });
+process.on('uncaughtException', (err) => {
+    logger.error(`uncaughtException: ${JSON.stringify(err.stack)}`);
+});
 
-// process.on('unhandledRejection', (reason, p) => {
-//     logger.error(`unhandledRejection: ${p}, reason: ${reason}`);
-// });
+process.on('unhandledRejection', (reason, p) => {
+    logger.error(`unhandledRejection: ${p}, reason: ${reason}`);
+});

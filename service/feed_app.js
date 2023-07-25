@@ -397,19 +397,19 @@ var intercom_config = [
 var feed_app = new FeedApp(new Intercom(intercom_config));
 feed_app.start();
 
-// process.on('SIGINT', async () => {
-//     logger.info(`${strategy.alias}::SIGINT`);
-//     setTimeout(() => process.exit(), 3000)
-// });
+process.on('SIGINT', async () => {
+    logger.info(`${strategy.alias}::SIGINT`);
+    setTimeout(() => process.exit(), 3000)
+});
 
-// process.on('exit', async () => {
-//     logger.info(`${strategy.alias}:: exit`);
-// });
+process.on('exit', async () => {
+    logger.info(`${strategy.alias}:: exit`);
+});
 
-// process.on('uncaughtException', (err) => {
-//     logger.error(`uncaughtException: ${JSON.stringify(err.stack)}`);
-// });
+process.on('uncaughtException', (err) => {
+    logger.error(`uncaughtException: ${JSON.stringify(err.stack)}`);
+});
 
-// process.on('unhandledRejection', (reason, p) => {
-//     logger.error(`unhandledRejection: ${p}, reason: ${reason}`);
-// });
+process.on('unhandledRejection', (reason, p) => {
+    logger.error(`unhandledRejection: ${p}, reason: ${reason}`);
+});

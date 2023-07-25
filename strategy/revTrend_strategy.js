@@ -64,7 +64,10 @@ class RevTrendStrategy extends StrategyBase{
             fs.writeFile(`./log/status_map_${this.alias}_${month}.log`, ts + ": " + JSON.stringify(this.status_map) + "\n", { flag: "a+" }, (err) => {
                 if (err) logger.info(`${this.alias}::err`);
             });
-        }, 1000 * 60 * 60);
+            fs.writeFile(`./log/order_map_${this.alias}_${month}.log`, ts + ": " + JSON.stringify(this.order_map) + "\n", { flag: "a+" }, (err) => {
+                if (err) logger.info(`${this.alias}::err`);
+            });
+        }, 1000 * 60 * 10);
     }
 
     query_active_orders() {
@@ -228,6 +231,7 @@ class RevTrendStrategy extends StrategyBase{
         } else if ((order_status === ORDER_STATUS.FILLED) || (order_status === ORDER_STATUS.PARTIALLY_FILLED)) {
             let original_amount = order_update["order_info"]["original_amount"];
             let filled = order_update["order_info"]["filled"];
+            let new_filled = order_update["order_info"]["new_filled"];
             let submit_price = order_update["order_info"]["submit_price"];
             let avg_executed_price = order_update["order_info"]["avg_executed_price"];
             let fee = order_update["metadata"]["fee"];
@@ -261,8 +265,7 @@ class RevTrendStrategy extends StrategyBase{
                 delete that.order_map[idf]["UP"];
             }
 
-            // 计算新成交量
-            let new_filled = filled - that.order_map[idf][client_order_id]["filled"];
+            // 更新order_map
             that.order_map[idf][client_order_id]["filled"] = filled;
 
             // 更新position
@@ -456,6 +459,7 @@ class RevTrendStrategy extends StrategyBase{
     }
 
     deal_with_TBA(idf) {
+        logger.info(`${this.alias}::deal with TBA: ${JSON.stringify(this.order_map)}`);
         let that = this;
         let [exchange, symbol, contract_type] = idf.split(".");
         let act_id = that.cfg[idf]["act_id"];
@@ -945,9 +949,9 @@ class RevTrendStrategy extends StrategyBase{
                 let adj_price = stratutils.transform_with_tick_size(limit_price, PRICE_TICK_SIZE[idf]);
 
                 let limit_type = error_code_msg.split(" ")[4];
-                if ((limit_type === "higher") && (adj_price > limit_price)) {
+                if ((limit_type === "higher") && (adj_price >= limit_price)) {
                     adj_price = stratutils.transform_with_tick_size(adj_price - PRICE_TICK_SIZE[idf], PRICE_TICK_SIZE[idf]);
-                } else if ((limit_type === "lower") && (adj_price < limit_price)) {
+                } else if ((limit_type === "lower") && (adj_price <= limit_price)) {
                     adj_price = stratutils.transform_with_tick_size(adj_price + PRICE_TICK_SIZE[idf], PRICE_TICK_SIZE[idf]);
                 } else {
                     logger.info(`${that.alias}::${order_idf}::limit_type: ${limit_type}.`);

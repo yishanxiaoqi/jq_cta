@@ -12,7 +12,7 @@ const stratutils = require("../utils/strat_util.js");
 const StrategyBase = require("./strategy_base.js");
 const token = require("../config/token.json");
 
-class RevTrendStrategy extends StrategyBase{
+class RevTrendStrategy extends StrategyBase {
     constructor(name, alias, intercom) {
         super(name, alias, intercom);
 
@@ -64,10 +64,7 @@ class RevTrendStrategy extends StrategyBase{
             fs.writeFile(`./log/status_map_${this.alias}_${month}.log`, ts + ": " + JSON.stringify(this.status_map) + "\n", { flag: "a+" }, (err) => {
                 if (err) logger.info(`${this.alias}::err`);
             });
-            fs.writeFile(`./log/order_map_${this.alias}_${month}.log`, ts + ": " + JSON.stringify(this.order_map) + "\n", { flag: "a+" }, (err) => {
-                if (err) logger.info(`${this.alias}::err`);
-            });
-        }, 1000 * 60 * 10);
+        }, 1000 * 60 * 60);
     }
 
     query_active_orders() {
@@ -88,7 +85,7 @@ class RevTrendStrategy extends StrategyBase{
         let that = this;
 
         // 注意exists和require的路径设置是不一样的
-        that.order_map = (!fs.existsSync(`./config/order_map_${that.alias}.json`))? {}: require(`../config/order_map_${that.alias}`);
+        that.order_map = (!fs.existsSync(`./config/order_map_${that.alias}.json`)) ? {} : require(`../config/order_map_${that.alias}`);
 
         // TODO: how to differ from new_start and first initialization
         that.cfg["idfs"].forEach((idf) => {
@@ -103,8 +100,8 @@ class RevTrendStrategy extends StrategyBase{
     init_status_map() {
         let that = this;
 
-        that.status_map = (!fs.existsSync(`./config/status_map_${that.alias}.json`))? {}: require(`../config/status_map_${that.alias}`);
-                    
+        that.status_map = (!fs.existsSync(`./config/status_map_${that.alias}.json`)) ? {} : require(`../config/status_map_${that.alias}`);
+
         that.cfg["idfs"].forEach((idf) => {
             if ((that.status_map[idf] === undefined) || (that.cfg["clear_existing_status"])) {
                 that.status_map[idf] = {
@@ -194,7 +191,7 @@ class RevTrendStrategy extends StrategyBase{
         let act_id = order_update["metadata"]["account_id"];
 
         let idf = [exchange, symbol, contract_type].join(".");
-        
+
         // 不是本策略的订单更新，自动过滤
         if (client_order_id.slice(0, 3) !== that.alias) return;
         logger.info(`${that.alias}::on_order_update|${JSON.stringify(order_update)}`);
@@ -204,17 +201,17 @@ class RevTrendStrategy extends StrategyBase{
             logger.info(`${that.alias}::on_order_update|unknown order label ${label}!`);
             return;
         }
-        label = stratutils.get_key_by_value(LABELMAP, label);   
+        label = stratutils.get_key_by_value(LABELMAP, label);
         let order_idf = [act_id, symbol, direction, label, client_order_id].join("|");
 
         if (order_status === ORDER_STATUS.SUBMITTED) {
             let submit_price = order_update["order_info"]["submit_price"];
             let original_amount = order_update["order_info"]["original_amount"];
             logger.info(`${that.alias}::on_order_update|${order_idf} order ${original_amount} placed @${submit_price} after ${update_type}!`);
-            
+
             // 对手单发送成功，1秒后允许修改对手单
             if (label.slice(0, 4) === "ANTI") {
-                setTimeout(() => that.status_map[idf]["anti_order_sent"] = false, 1000);  
+                setTimeout(() => that.status_map[idf]["anti_order_sent"] = false, 1000);
             }
 
         } else if (order_status === ORDER_STATUS.CANCELLED) {
@@ -321,7 +318,7 @@ class RevTrendStrategy extends StrategyBase{
                     }
 
                     that.status_map[idf]["ep"] = stratutils.transform_with_tick_size(that.status_map[idf]["ep"], PRICE_TICK_SIZE[idf]);
-                    that.status_map[idf]["sar"] = stratutils.transform_with_tick_size(that.status_map[idf]["sar"], PRICE_TICK_SIZE[idf]);    
+                    that.status_map[idf]["sar"] = stratutils.transform_with_tick_size(that.status_map[idf]["sar"], PRICE_TICK_SIZE[idf]);
                 }
 
                 // 订单完全成交，在order_map中删去该订单（注意：完全成交才删除，且当场删除！）
@@ -363,7 +360,7 @@ class RevTrendStrategy extends StrategyBase{
                     logger.info(`${that.alias}::short_num exceeds max_num, cancel all the UP orders!`);
                     that.cfg["idfs"].forEach((idf) => {
                         let [exg, syb, con] = idf.split(".");       // 不同于exchange, symbol和contract_type
-                        if ((that.order_map[idf]["UP"] !== undefined) && (that.order_map[idf]["status"] !== "TBA"))  {
+                        if ((that.order_map[idf]["UP"] !== undefined) && (that.order_map[idf]["status"] !== "TBA")) {
                             let up_client_order_id = that.order_map[idf]["UP"]["client_order_id"];
                             if (up_client_order_id !== undefined) {
                                 that.cancel_order({
@@ -536,7 +533,7 @@ class RevTrendStrategy extends StrategyBase{
         if (["LONG", "SHORT"].includes(current_status)) {
             that.status_map[idf]["bar_n"] = 0;    // 这里赋值为0，之后main_execuation中会加一
             that.status_map[idf]["af"] = that.cfg[idf]["ini_af"];
-            that.status_map[idf]["sar"] = (current_status === "SHORT")? up_price * (1 - cutloss_rate): dn_price * (1 + cutloss_rate);;
+            that.status_map[idf]["sar"] = (current_status === "SHORT") ? up_price * (1 - cutloss_rate) : dn_price * (1 + cutloss_rate);;
             if (current_status === "SHORT") {
                 that.status_map[idf]["long_enter"] = up_price;
                 that.status_map[idf]["high_since_long"] = up_price;
@@ -827,7 +824,7 @@ class RevTrendStrategy extends StrategyBase{
 
         orders_to_be_submitted.forEach((order) => {
             let client_order_id = order.client_order_id, label = order.label, target = order.target, quantity = order.quantity, price = order.price, direction = order.direction;
-            
+
             // 发送订单，同时建立order_map
             // {"3106609167": {"label": "DN", "target": "LONG", "quantity": 21133, "time": 1669492800445, "price": 0.04732, "filled": 0}}
             that.order_map[idf][client_order_id] = { label: label, target: target, quantity: quantity, time: moment.now(), filled: 0 };
@@ -870,7 +867,7 @@ class RevTrendStrategy extends StrategyBase{
                 break;
             case REQUEST_ACTIONS.MODIFY_ORDER:
                 this.on_modify_order_response(response);
-                break;            
+                break;
             case REQUEST_ACTIONS.INSPECT_ORDER:
                 this.on_inspect_order_response(response);
                 break;
@@ -900,7 +897,7 @@ class RevTrendStrategy extends StrategyBase{
             logger.info(`${that.alias}::on_send_order_response|unknown order label ${label}!`);
             return;
         } else {
-            label = stratutils.get_key_by_value(LABELMAP, label);   
+            label = stratutils.get_key_by_value(LABELMAP, label);
         }
 
         let idf = [exchange, symbol, contract_type].join(".");
@@ -920,7 +917,7 @@ class RevTrendStrategy extends StrategyBase{
                     "msg": `${that.alias}::${order_idf}::Send order retried over 5 times, check the code!`
                 });
                 return;
-            } 
+            }
 
             // 所有的发单报错都会发邮件！
             logger.debug(`${that.alias}::on_response|${order_idf}::an error occured during ${action}: ${error_code}: ${error_code_msg}`);
@@ -968,9 +965,9 @@ class RevTrendStrategy extends StrategyBase{
                 stratutils.set_leverage_by_rest(symbol, 10, url, key);
 
                 logger.info(`${that.alias}::${order_idf}::change leverage to 10 and resent the order.`);
-                resend = true; 
+                resend = true;
                 timeout = 1000 * 2;
-            
+
             } else if (error_code_msg === "Unknown order sent.") {
                 // 注意检查
                 logger.debug("Unknown order sent during placing order? Please check!");
@@ -983,6 +980,12 @@ class RevTrendStrategy extends StrategyBase{
                 }
             } else if (error_code_msg === "Order would immediately trigger.") {
                 // The order would be triggered immediately, STOP order才会报这样的错，本策略都是LIMIT ORDER
+            } else if (error_code_msg === "Futures Trading Quantitative Rules violated, only reduceOnly order is allowed, please try again later.") {
+                this.query_quantitative_rules({
+                    exchange: EXCHANGE.BINANCEU,
+                    contract_type: CONTRACT_TYPE.PERP,
+                    account_id: this.account_id
+                });
             } else {
                 logger.warn(`${that.alias}::on_response|${order_idf}::unknown error occured during ${action}: ${error_code}: ${error_code_msg}`);
                 return;
@@ -991,14 +994,14 @@ class RevTrendStrategy extends StrategyBase{
             if (resend) {
                 logger.info(`${that.alias}::${order_idf}::resend the order in ${timeout} ms!`);
                 setTimeout(() => {
-                    retry = (retry === undefined) ? 1 : retry + 1; 
+                    retry = (retry === undefined) ? 1 : retry + 1;
                     let new_client_order_id = that.alias + LABELMAP[label] + randomID(7);
-                    
+
                     // 注意：order_map里面的key只有ANTI_L, ANTI_S, UP, DN四种；
                     // 但是label有六种！
-                    that.order_map[idf][new_client_order_id] = {label: label, target: target, quantity: quantity, time: moment.now(), filled: 0};
+                    that.order_map[idf][new_client_order_id] = { label: label, target: target, quantity: quantity, time: moment.now(), filled: 0 };
                     that.order_map[idf][label.slice(0, 6)] = { client_order_id: new_client_order_id, label: label, price: price, quantity: quantity, time: moment.now() };
-    
+
                     that.send_order({
                         retry: retry,
                         label: label,
@@ -1007,7 +1010,7 @@ class RevTrendStrategy extends StrategyBase{
                         symbol: symbol,
                         contract_type: contract_type,
                         price: price,
-                        quantity: quantity, 
+                        quantity: quantity,
                         direction: direction,
                         order_type: ORDER_TYPE.LIMIT,
                         account_id: act_id,
@@ -1040,7 +1043,7 @@ class RevTrendStrategy extends StrategyBase{
             logger.info(`${that.alias}::on_cancel_order_response|unknown order label ${label}!`);
             return;
         } else {
-            label = stratutils.get_key_by_value(LABELMAP, label);   
+            label = stratutils.get_key_by_value(LABELMAP, label);
         }
 
         let idf = [exchange, symbol, contract_type].join(".");
@@ -1058,7 +1061,7 @@ class RevTrendStrategy extends StrategyBase{
                     "msg": `${that.alias}::${order_idf}::Cancel order retried over 5 times, check the code!`
                 });
                 return;
-            } 
+            }
 
             logger.debug(`${that.alias}::on_response|${order_idf}::an error occured during ${action}: ${error_code}: ${error_code_msg}`);
             //所有的撤单失败也会发邮件报警
@@ -1087,7 +1090,7 @@ class RevTrendStrategy extends StrategyBase{
             if (recancel) {
                 logger.info(`${that.alias}::${order_idf}::recancel the order in ${timeout} ms!`);
                 setTimeout(() => {
-                    retry = (retry === undefined) ? 1 : retry + 1; 
+                    retry = (retry === undefined) ? 1 : retry + 1;
                     that.cancel_order({
                         retry: retry,
                         exchange: exchange,
@@ -1146,6 +1149,7 @@ class RevTrendStrategy extends StrategyBase{
 
                 if ((!active_orders.includes(client_order_id)) && (moment.now() - time > 1000 * 60 * 10)) {
                     logger.debug(`${that.alias}::${symbol}|${key}|${client_order_id}::order not active (label as key) and submitted over 10 min before, will be deleted, please check it!`);
+                    logger.info(`${that.alias}::${JSON.stringify(response)}`);      // TODO: check the response
                     that.slack_publish({
                         "type": "warn",
                         "msg": `${that.alias}::${symbol}|${key}|${client_order_id}::order not active (label as key) and submitted over 10 min before, will be deleted, please check it!`
@@ -1155,7 +1159,7 @@ class RevTrendStrategy extends StrategyBase{
                     } else {
                         that.order_map[idf][key]["ToBeDeleted"] = true;
                     }
-                    
+
                 }
             } else {
                 // 如{"3106609167": {"label": "DN", "target": "LONG", "quantity": 21133, "time": 1669492800445, "price": 0.04732, "filled": 0}}

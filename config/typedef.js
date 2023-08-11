@@ -81,6 +81,7 @@ REQUEST_ACTIONS = {
     QUERY_HISTORY_TRADES: 'query_history_trades',
     QUERY_WITHDRAWALS: 'query_withdrawals_history',
     QUERY_DEPOSITS: 'query_deposits_history',
+    QUERY_QUANTITATIVE_RULES: 'query_quantitative_rules',
     GET_WALLET_ADDRESS: 'get_wallet_address',
     UPDATE_COMMENTS: 'update_comments',
     ADD_RECORD: 'add_record',
@@ -95,7 +96,8 @@ REQUEST_ACTIONS = {
 
 INTERCOM_SCOPE = {
     FEED: "feed",
-    STRATEGY: "strategy"
+    STRATEGY: "strategy",
+    UI: "ui"
 }
 
 INTERCOM_TYPE = {
@@ -116,5 +118,11 @@ INTERCOM_CONFIG = {
         port: '6379',
         auth: 'pass1',
         scope: INTERCOM_SCOPE.STRATEGY
+    },
+    LOCALHOST_UI: {
+        host: '127.0.0.1',
+        port: '6379',
+        auth: 'pass1',
+        scope: INTERCOM_SCOPE.UI
     }
 };

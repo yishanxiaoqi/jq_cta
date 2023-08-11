@@ -404,3 +404,31 @@
     }
 }
 ```
+
+# 3. Quantitative Rules Indicators (REST)
+
+```
+{
+    "ref_id": "DMOU1i45GAqlAQTBzJR2ftDMcLRoUn",
+    "action": "query_quantitative_rules",
+    "strategy": "Demo",
+    "metadata": {
+        "exchange": "BinanceU",
+        "contract_type": "perp",
+        "event": "query_quantitative_rules",
+        "metadata": {
+            "result": true,
+            "account_id": "jq_cta_02",
+            "indicators": {},
+            "timestamp": "20230807135314211"
+        },
+        "timestamp": "20230807135314211"
+    },
+    "request": {
+        "exchange": "BinanceU",
+        "contract_type": "perp",
+        "account_id": "jq_cta_02",
+        "ref_id": "DMOU1i45GAqlAQTBzJR2ftDMcLRoUn"
+    }
+}
+```

@@ -5,6 +5,7 @@
     "json-bigint": "^1.0.0",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.43",
+    "node-schedule": "^2.1.1",
     "ps-node": "^0.1.6",
     "random-id": "^1.0.4",
     "redis": "2.8.0",

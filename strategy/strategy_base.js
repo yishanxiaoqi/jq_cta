@@ -117,6 +117,9 @@ class StrategyBase {
             case REQUEST_ACTIONS.QUERY_ACCOUNT:
                 this.on_query_account_response(response);
                 break;
+            case REQUEST_ACTIONS.QUERY_QUANTITATIVE_RULES:
+                this.on_query_quantitative_rules_response(response);
+                break;
             default:
                 logger.debug(`Unhandled request action: ${response.action}`);
         }
@@ -140,6 +143,10 @@ class StrategyBase {
 
     on_query_account_response(response) {
         logger.info(`${this.alias}: no implementation for query account response.`)
+    }
+
+    on_query_quantitative_rules_response(response) {
+        // logger.info(`${this.alias}: no implementation for query quantitative rules response.`)
     }
 
     on_account_update(account_update) {
@@ -538,6 +545,14 @@ class StrategyBase {
     }
 
     async _query_order_via_rest(order) {
+        /**
+         * GET /fapi/v1/allOrders (HMAC SHA256)
+         * 以下订单不会被查询到：
+         * 1. 下单时间超过3天 + cancelled or expired + 没有成交量；或者
+         * 2. 下单时间超过90天
+         * 其他所有单都会被查询到
+         */
+        // 
         let ref_id = order["ref_id"];
         let symbol = order["symbol"];
         let contract_type = order["contract_type"];
@@ -563,7 +578,8 @@ class StrategyBase {
             let body = await rp.get(options);
             body = JSON.parse(body);
 
-            let active_orders = body.filter((order) => order.status === ORDER_STATUS.SUBMITTED.toUpperCase());
+            // BinanceU中订单只有5中状态：NEW, PARTIALLY_FILLED, FILLED, CANCELLED, EXPIRED
+            let active_orders = body.filter((order) => (["NEW", "PARTIALLY_FILLED"].includes(order.status)));
             let formatted_active_orders = [];
 
             for (let i of active_orders) {
@@ -768,6 +784,8 @@ class StrategyBase {
                 "wallet_balance_in_USDT": +assets_USDT["walletBalance"],
                 "unrealized_pnl_in_USDT": +assets_USDT["unrealizedProfit"],
                 "equity_in_USDT": +assets_USDT["marginBalance"],
+                "position_initial_margin_in_USDT": +assets_USDT["positionInitialMargin"],
+                "open_order_initial_margin_in_USDT": +assets_USDT["openOrderInitialMargin"],
             }
 
             let active_positions = body["positions"].filter((position) => parseFloat(position.positionAmt) !== 0);
@@ -779,6 +797,8 @@ class StrategyBase {
                     position: +i['positionAmt'],
                     entryPrice: +i["entryPrice"],
                     unRealizedProfit: +i["unrealizedProfit"],
+                    positionInitialMargin: +i["positionInitialMargin"],
+                    leverage: +i["leverage"],
                     last_updated_time: utils._util_get_human_readable_timestamp(i['updateTime'])
                 });
             }
@@ -816,6 +836,84 @@ class StrategyBase {
         let response = {
             ref_id: ref_id,
             action: REQUEST_ACTIONS.QUERY_ACCOUNT,
+            strategy: this.name,
+            metadata: cxl_resp,
+            request: query
+        }
+    
+        return response;
+    }
+
+    async query_quantitative_rules(query, ref_id = this.alias + randomID(27)) {
+        logger.debug(`Emitting quantitative rules indicators request from ${this.name}|${this.alias}`);
+
+        // 这里可以放一些下单信息的检查和更新
+        if (query["ref_id"] === undefined) query["ref_id"] = ref_id;
+        let response = await this._query_quantitative_rules_via_rest(query);
+
+        this.intercom.emit("REQUEST_RESPONSE", response);
+    }
+
+    async _query_quantitative_rules_via_rest(query) {
+        let ref_id = query["ref_id"];
+        let symbol = query["symbol"];
+        let contract_type = query["contract_type"];
+        let account_id = query["account_id"];
+
+        let restUrlFuturesTradingQuantRule = apiconfig.restUrlFuturesTradingQuantRule;
+        
+        let params = this._get_rest_options(restUrlFuturesTradingQuantRule, {
+            symbol: symbol,     // 可有可不有
+            timestamp: Date.now(),
+        }, account_id); 
+
+        var options = {
+            url: params["url"] + params["postbody"],
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-MBX-APIKEY": this.apiKey
+            }
+        };
+
+        let cxl_resp;
+        try {
+            let body = await rp.get(options);
+            body = JSON.parse(body);
+
+            console.log(JSON.stringify(body));
+
+            cxl_resp = {
+                exchange: EXCHANGE.BINANCEU,
+                contract_type: contract_type,
+                event: REQUEST_ACTIONS.QUERY_QUANTITATIVE_RULES,
+                metadata: {
+                    result: true,
+                    account_id: account_id,
+                    indicators: body.indicators,
+                    timestamp: utils._util_get_human_readable_timestamp(body['updateTime'])
+                },
+                timestamp: utils._util_get_human_readable_timestamp()
+            };
+        } catch (e) {
+            cxl_resp = {
+                exchange: EXCHANGE.BINANCEU,
+                symbol: symbol,
+                contract_type: contract_type,
+                event: REQUEST_ACTIONS.QUERY_QUANTITATIVE_RULES,
+                metadata: {
+                    result: false,
+                    account_id: account_id,
+                    error_code: e.code || e.statusCode || 999999,
+                    error_code_msg: e.msg || e.message,
+                    error_stack: e.stack
+                },
+                timestamp: utils._util_get_human_readable_timestamp()
+            };
+        }
+
+        let response = {
+            ref_id: ref_id,
+            action: REQUEST_ACTIONS.QUERY_QUANTITATIVE_RULES,
             strategy: this.name,
             metadata: cxl_resp,
             request: query

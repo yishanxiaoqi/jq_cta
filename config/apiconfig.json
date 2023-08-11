@@ -13,6 +13,7 @@
     "restUrlQueryPositions": "/fapi/v2/positionRisk",
     "restUrlQueryAccount": "/fapi/v2/account",
     "restUrlListenKey": "/fapi/v1/listenKey",
+    "restUrlFuturesTradingQuantRule": "/fapi/v1/apiTradingStatus",
     "marketDataThemeMap": {
         "trade": "aggTrade"
     },

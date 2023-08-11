@@ -12,8 +12,17 @@ class DemoStrategy extends StrategyBase {
         this.subscribe_market_data();
 
         setTimeout(() => {
-            this._test_query_account();
+            this._test_query_quantitative_rules();
         }, 1000);
+    }
+
+    _test_query_quantitative_rules() {
+        this.query_quantitative_rules({
+            exchange: EXCHANGE.BINANCEU,
+            // symbol: "XEMUSDT",
+            contract_type: CONTRACT_TYPE.PERP,
+            account_id: "jq_cta_02"
+        });
     }
 
     _test_query_position() {

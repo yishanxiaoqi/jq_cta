@@ -53,6 +53,7 @@ class SimpleTrendStrategy extends StrategyBase{
             fs.writeFile(`./config/order_map_${this.alias}.json`, JSON.stringify(this.order_map), function (err) {
                 if (err) logger.info(`${this.alias}::err`);
             });
+            this.refresh_ui();
         }, 1000 * 3);
 
         setInterval(() => {
@@ -67,6 +68,33 @@ class SimpleTrendStrategy extends StrategyBase{
                 if (err) logger.info(`${this.alias}::err`);
             });
         }, 1000 * 60 * 60);
+    }
+
+    refresh_ui() {
+        let that = this;
+        let sendData = {
+            "tableName": this.alias,
+            "tabName": "PortfolioMonitor",
+            "data": []
+        }
+
+        that.cfg["entries"].forEach((entry, index) => {
+            if (!(entry in that.status_map)) return;
+            let item = {};
+            let idf  = entry.split(".").slice(0, 3).join(".");
+            item[`${index + 1}|entry`] = entry;
+            item[`${index + 1}|status`] = that.status_map[entry]["status"];
+            item[`${index + 1}|pos`] = that.status_map[entry]["pos"];
+            item[`${index + 1}|fee`] = that.status_map[entry]["fee"];
+            item[`${index + 1}|np`] = that.status_map[entry]["net_profit"];
+            item[`${index + 1}|price`] = (that.prices[idf])? that.prices[idf]["price"]: "";
+            item[`${index + 1}|sar`] = that.status_map[entry]["sar"];
+            item[`${index + 1}|up`] = that.status_map[entry]["up"];
+            item[`${index + 1}|dn`] = that.status_map[entry]["dn"];
+            sendData["data"].push(item);
+        });
+
+        this.intercom.emit("UI_update", sendData, INTERCOM_SCOPE.UI);
     }
 
     query_active_orders() {
@@ -685,7 +713,8 @@ process.argv.forEach((val) => {
         let alias = args.a;
         let intercom_config = [
             INTERCOM_CONFIG[`LOCALHOST_FEED`],
-            INTERCOM_CONFIG[`LOCALHOST_STRATEGY`]
+            INTERCOM_CONFIG[`LOCALHOST_STRATEGY`],
+            INTERCOM_CONFIG[`LOCALHOST_UI`]
         ];
 
         strategy = new SimpleTrendStrategy("SimpleTrend", alias, new Intercom(intercom_config));

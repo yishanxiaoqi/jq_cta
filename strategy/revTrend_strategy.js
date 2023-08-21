@@ -51,6 +51,7 @@ class RevTrendStrategy extends StrategyBase {
             fs.writeFile(`./config/order_map_${this.alias}.json`, JSON.stringify(this.order_map), function (err) {
                 if (err) logger.info(`${this.alias}::err`);
             });
+            this.refresh_ui();
         }, 1000 * 3);
 
         setInterval(() => {
@@ -65,6 +66,33 @@ class RevTrendStrategy extends StrategyBase {
                 if (err) logger.info(`${this.alias}::err`);
             });
         }, 1000 * 60 * 60);
+    }
+
+    refresh_ui() {
+        let that = this;
+        let sendData = {
+            "tableName": this.alias,
+            "tabName": "PortfolioMonitor",
+            "data": []
+        }
+
+        that.cfg["idfs"].forEach((idf, index) => {
+            if (!(idf in that.status_map)) return;
+            let item = {};
+            item[`${index + 1}|idf`] = idf;
+            item[`${index + 1}|status`] = that.status_map[idf]["status"];
+            item[`${index + 1}|triggered`] = that.status_map[idf]["triggered"];
+            item[`${index + 1}|pos`] = that.status_map[idf]["pos"];
+            item[`${index + 1}|fee`] = that.status_map[idf]["fee"];
+            item[`${index + 1}|np`] = that.status_map[idf]["net_profit"];
+            item[`${index + 1}|price`] = (that.prices[idf])? that.prices[idf]["price"]: "";
+            item[`${index + 1}|sp`] = that.status_map[idf]["stoploss_price"];
+            item[`${index + 1}|up`] = that.status_map[idf]["up"];
+            item[`${index + 1}|dn`] = that.status_map[idf]["dn"];
+            sendData["data"].push(item);
+        });
+
+        this.intercom.emit("UI_update", sendData, INTERCOM_SCOPE.UI);
     }
 
     query_active_orders() {
@@ -209,9 +237,10 @@ class RevTrendStrategy extends StrategyBase {
             let original_amount = order_update["order_info"]["original_amount"];
             logger.info(`${that.alias}::on_order_update|${order_idf} order ${original_amount} placed @${submit_price} after ${update_type}!`);
 
-            // 对手单发送成功，1秒后允许修改对手单
+            // 对手单发送成功，5秒后允许修改对手单
+            // 为了尽可能避免触发quantitative rules，这里设置为5秒
             if (label.slice(0, 4) === "ANTI") {
-                setTimeout(() => that.status_map[idf]["anti_order_sent"] = false, 1000);
+                setTimeout(() => that.status_map[idf]["anti_order_sent"] = false, 1000 * 5);
             }
 
         } else if (order_status === ORDER_STATUS.CANCELLED) {
@@ -271,7 +300,7 @@ class RevTrendStrategy extends StrategyBase {
             that.status_map[idf]["quote_ccy"] += (direction === DIRECTION.SELL) ? new_filled * avg_executed_price : - new_filled * avg_executed_price;
 
             that.status_map[idf]["pos"] = stratutils.transform_with_tick_size(that.status_map[idf]["pos"], QUANTITY_TICK_SIZE[idf]);
-            that.status_map[idf]["fee"] = stratutils.transform_with_tick_size(that.status_map[idf]["fee"], 0.01);
+            that.status_map[idf]["fee"] = stratutils.transform_with_tick_size(that.status_map[idf]["fee"], 0.001);
             that.status_map[idf]["quote_ccy"] = stratutils.transform_with_tick_size(that.status_map[idf]["quote_ccy"], 0.01);
 
             // 检查一下status_map变化
@@ -1218,7 +1247,8 @@ process.argv.forEach((val) => {
         let alias = args.a;
         let intercom_config = [
             INTERCOM_CONFIG[`LOCALHOST_FEED`],
-            INTERCOM_CONFIG[`LOCALHOST_STRATEGY`]
+            INTERCOM_CONFIG[`LOCALHOST_STRATEGY`],
+            INTERCOM_CONFIG[`LOCALHOST_UI`]
         ];
 
         strategy = new RevTrendStrategy("RevTrend", alias, new Intercom(intercom_config));

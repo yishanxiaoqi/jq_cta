@@ -1,7 +1,7 @@
-{
-    "ref_id": "DMOU1i45GAqlAQTBzJR2ftDMcLRoUn",
+2023-08-13 18: 25: 33.219 - info: R24: :on_query_quantitative_rules_response| {
+    "ref_id": "R24lKBB2tffcAM4F33dbBRrKQzehui",
     "action": "query_quantitative_rules",
-    "strategy": "Demo",
+    "strategy": "RevTrend",
     "metadata": {
         "exchange": "BinanceU",
         "contract_type": "perp",
@@ -9,15 +9,25 @@
         "metadata": {
             "result": true,
             "account_id": "jq_cta_02",
-            "indicators": {},
-            "timestamp": "20230807135314211"
+            "indicators": {
+                "NKNUSDT": [
+                    {
+                        "indicator": "UFR",
+                        "value": 1,
+                        "triggerValue": 0.99,
+                        "plannedRecoverTime": 1691922574000,
+                        "isLocked": true
+                    }
+                ]
+            },
+            "timestamp": "20230813182533219"
         },
-        "timestamp": "20230807135314211"
+        "timestamp": "20230813182533219"
     },
     "request": {
         "exchange": "BinanceU",
         "contract_type": "perp",
         "account_id": "jq_cta_02",
-        "ref_id": "DMOU1i45GAqlAQTBzJR2ftDMcLRoUn"
+        "ref_id": "R24lKBB2tffcAM4F33dbBRrKQzehui"
     }
 }

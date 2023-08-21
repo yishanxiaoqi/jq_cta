@@ -35,15 +35,18 @@ class BalanceMonitor extends StrategyBase {
 
         setInterval(() => { 
             this.update_status_map_to_slack();
-            this.update_account_summary_to_slack();
+            // 10秒钟内发送的消息会被过滤掉，因此设置为20秒后
+            setTimeout(() => {
+                this.update_account_summary_to_slack();
+            }, 1000 * 20);
         }, 1000 * 60 * 5);
 
         // 记录净值
         schedule.scheduleJob('0 0/30 * * * *', function() {
             if (that.account_summary["equity"] === undefined) return;
             let ts = moment().format('YYYYMMDDHHmmssSSS');
-            let {equity, nv} = that.account_summary;
-            let record_string = [ts, that.account_id, that.init_equity, equity, that.denominator, nv].join(",") + "\n";
+            let {equity, nv, leverage} = that.account_summary;
+            let record_string = [ts, that.account_id, that.init_equity, equity, that.denominator, nv, leverage].join(",") + "\n";
             fs.writeFile("./log/account_summary.csv", record_string, { flag: "a+" }, (err) => {
                 if (err) logger.info(`${that.alias}:: fs write file error!`);
             });
@@ -173,7 +176,13 @@ class BalanceMonitor extends StrategyBase {
         this.account_summary["unrealized_pnl"] = stratutils.round(balance["unrealized_pnl_in_USDT"], 2);
         this.account_summary["ret"] = stratutils.round(this.account_summary["pnl"] / this.init_equity, 4); 
         this.account_summary["annual_ret"] = stratutils.round(this.account_summary["ret"] / n_days * 365, 4); 
+
         this.account_summary["total_position_initial_margin_in_USDT"] = stratutils.round(real_positions.map(e => e.positionInitialMargin * e.leverage).reduce((a, b) => a + b), 2); 
+        this.account_summary["total_long_position_initial_margin_in_USDT"] = stratutils.round(real_positions.filter(e => e.position > 0).map(e => e.positionInitialMargin * e.leverage).reduce((a, b) => a + b), 2); 
+        this.account_summary["total_short_position_initial_margin_in_USDT"] = stratutils.round(real_positions.filter(e => e.position < 0).map(e => e.positionInitialMargin * e.leverage).reduce((a, b) => a + b), 2); 
+ 
+        this.account_summary["long_lev"] = stratutils.round(this.account_summary["total_long_position_initial_margin_in_USDT"] / this.account_summary["equity"], 2); 
+        this.account_summary["short_lev"] = stratutils.round(this.account_summary["total_short_position_initial_margin_in_USDT"] / this.account_summary["equity"], 2); 
         this.account_summary["leverage"] = stratutils.round(this.account_summary["total_position_initial_margin_in_USDT"] / this.account_summary["equity"], 2); 
 
         let sendData = {
@@ -188,23 +197,26 @@ class BalanceMonitor extends StrategyBase {
                 },
                 {
                     "denominator": this.denominator,
-                    "nv": this.account_summary["nv"]
+                    "nv": this.account_summary["nv"],
+                    "long_lev": this.account_summary["long_lev"],
+                    "short_lev": this.account_summary["short_lev"]
                 },
                 {
                     "pnl": this.account_summary["pnl"],
-                    "ret": this.account_summary["ret"],
-                    "annual_ret": this.account_summary["annual_ret"],
+                    "ret": this.account_summary["ret"] * 100,                   // 百分比
+                    "annual_ret": this.account_summary["annual_ret"] * 100,     // 百分比
                     "leverage": this.account_summary["leverage"]
                 }
             ]
         }
-        this.intercom.emit("UI_SUMMARY", sendData, INTERCOM_SCOPE.UI);
+        this.intercom.emit("UI_update", sendData, INTERCOM_SCOPE.UI);
     }
 
     update_account_summary_to_slack() {
         let {wb, unrealized_pnl, equity, pnl, ret, annual_ret, leverage} = this.account_summary;
         let ret_per = `${parseFloat(ret * 100).toFixed(2)}%`;
         let annual_ret_per = `${parseFloat(annual_ret * 100).toFixed(2)}%`;
+        
         let txt = `====Summary====\ninit_equity\t\twallet_balance\t\tunrealized_pnl\t\tequity\t\tpnl\t\tret\t\tannual\t\tleverage\n${this.init_equity}\t\t${wb}\t\t${unrealized_pnl}\t\t${equity}\t\t${pnl}\t\t${ret_per}\t\t${annual_ret_per}\t\t${leverage}`;
         this.slack_publish({
             "type": "info",
@@ -236,8 +248,6 @@ strategy.start();
 
 process.on('SIGINT', async () => {
     logger.info(`${strategy.alias}::SIGINT`);
-    /* Note: Just work under pm2 environment */
-    // strategy._test_cancel_order(strategy.test_order_id);
     setTimeout(() => process.exit(), 3000)
 });
 

@@ -407,11 +407,13 @@
 
 # 3. Quantitative Rules Indicators (REST)
 
+在RevTrend策略中，触发该限制条件的原因应该是stoploss单频繁撤销、重发，导致在10分钟内发送的未成交单（unfilled order）超过了一定限制
+
 ```
 {
-    "ref_id": "DMOU1i45GAqlAQTBzJR2ftDMcLRoUn",
+    "ref_id": "R24lKBB2tffcAM4F33dbBRrKQzehui",
     "action": "query_quantitative_rules",
-    "strategy": "Demo",
+    "strategy": "RevTrend",
     "metadata": {
         "exchange": "BinanceU",
         "contract_type": "perp",
@@ -419,16 +421,26 @@
         "metadata": {
             "result": true,
             "account_id": "jq_cta_02",
-            "indicators": {},
-            "timestamp": "20230807135314211"
+            "indicators": {
+                "NKNUSDT": [
+                    {
+                        "indicator": "UFR",
+                        "value": 1,
+                        "triggerValue": 0.99,
+                        "plannedRecoverTime": 1691922574000,
+                        "isLocked": true
+                    }
+                ]
+            },
+            "timestamp": "20230813182533219"
         },
-        "timestamp": "20230807135314211"
+        "timestamp": "20230813182533219"
     },
     "request": {
         "exchange": "BinanceU",
         "contract_type": "perp",
         "account_id": "jq_cta_02",
-        "ref_id": "DMOU1i45GAqlAQTBzJR2ftDMcLRoUn"
+        "ref_id": "R24lKBB2tffcAM4F33dbBRrKQzehui"
     }
 }
 ```

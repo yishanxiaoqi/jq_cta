@@ -133,7 +133,7 @@
         "delta_af": 0.02,
         "bar_enter_limit": 1,
         "splitAt": 0,
-        "ini_usdt": 2000,
+        "ini_usdt": 500,
         "act_id": "jq_cta_02",
         "cfgID": "R010056"
     }

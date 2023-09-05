@@ -148,7 +148,6 @@ class SimpleTrendStrategy extends StrategyBase{
                     "up": "",
                     "dn": "",
                     "enter_price": "",
-                    "short_enter": "",
                     "bar_n": "",
                     "bar_enter_n": 0,
                     "ep": "",

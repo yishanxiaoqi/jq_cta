@@ -36,7 +36,7 @@ LABELMAP = {
     "ANTI_S|REVERSE": "SR"
 }
 
-ALIASES = ["R01", "R11", "R06", "R12", "R24", "CET", "TRE", "STR", "STE", "S01"];
+ALIASES = ["R01", "R06", "R12", "R24", "CET", "TRE", "STR", "STE", "SRE"];
 
 MAX_ORDER_SIZE_WHITELIST = [
     'Ftx.USDTUSD.perp',

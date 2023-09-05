@@ -34,7 +34,7 @@ class FeedApp {
         // ]; 
 
         this.symbols = [
-            '1000SHIBUSDT', 'ADAUSDT', 'ALGOUSDT', 'ALPHAUSDT',
+            '1000SHIBUSDT', '1000XECUSDT', 'ADAUSDT', 'ALGOUSDT', 'ALPHAUSDT',
             'ANKRUSDT', 'ATOMUSDT', 'AUDIOUSDT', 'AVAXUSDT',
             'AXSUSDT', 'BALUSDT', 'BANDUSDT', 'BNBUSDT',
             'BTCDOMUSDT', 'BTCUSDT', 'C98USDT', 'CELOUSDT',

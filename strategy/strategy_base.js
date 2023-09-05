@@ -191,6 +191,7 @@ class StrategyBase {
         let contract_type = order["contract_type"];
         let direction = order["direction"];
         let price = order["price"];
+        let stop_price = order["stop_price"];
         let quantity = order["quantity"];
         let order_type = order["order_type"];
         let account_id = order["account_id"];
@@ -213,7 +214,7 @@ class StrategyBase {
                 newClientOrderId: client_order_id,
                 timestamp: Date.now(),
             }, account_id);
-        } else {
+        } else if (order_type === "limit") {
             // 限价单走这里
             params = this._get_rest_options(apiconfig.restUrlPlaceOrder, {
                 symbol: exg_symbol,
@@ -222,6 +223,17 @@ class StrategyBase {
                 quantity: absAmount,
                 timeInForce: "GTC",
                 price: String(price),
+                newOrderRespType: "FULL",
+                newClientOrderId: client_order_id,
+                timestamp: Date.now(),
+            }, account_id);
+        } else if (order_type === "stop_market") {
+            params = this._get_rest_options(apiconfig.restUrlPlaceOrder, {
+                symbol: exg_symbol,
+                side: exg_direction,
+                type: exg_order_type,
+                quantity: absAmount,
+                stopPrice: String(stop_price),
                 newOrderRespType: "FULL",
                 newClientOrderId: client_order_id,
                 timestamp: Date.now(),

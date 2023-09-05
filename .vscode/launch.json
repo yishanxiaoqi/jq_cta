@@ -6,6 +6,11 @@
     // STR =======
     // 对于pm2来说，on前面的--不能少
     // pm2 start ./strategy/simpleTrend_strategy.js --name STR -- on -a STR 
+    // pm2 start ./strategy/simpleRevTrend_strategy.js --name SRE -- on -a SRE 
+
+
+    // node
+    // node ./strategy/simpleRevTrend_strategy.js on -a SRE
     "version": "0.2.0",
     "configurations": []
 }

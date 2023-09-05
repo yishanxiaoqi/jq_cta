@@ -1,33 +1,31 @@
-2023-08-13 18: 25: 33.219 - info: R24: :on_query_quantitative_rules_response| {
-    "ref_id": "R24lKBB2tffcAM4F33dbBRrKQzehui",
-    "action": "query_quantitative_rules",
-    "strategy": "RevTrend",
+{
+    "ref_id": "DMOEKXhtvDyCL4jQKKInFmlX7UcJ73",
+    "action": "place_order",
+    "strategy": "Demo",
     "metadata": {
         "exchange": "BinanceU",
+        "symbol": "BTCUSDT",
         "contract_type": "perp",
-        "event": "query_quantitative_rules",
+        "event": "place_order",
         "metadata": {
             "result": true,
             "account_id": "jq_cta_02",
-            "indicators": {
-                "NKNUSDT": [
-                    {
-                        "indicator": "UFR",
-                        "value": 1,
-                        "triggerValue": 0.99,
-                        "plannedRecoverTime": 1691922574000,
-                        "isLocked": true
-                    }
-                ]
-            },
-            "timestamp": "20230813182533219"
+            "order_id": 186426999287,
+            "client_order_id": "12345678910111",
+            "timestamp": 1693672119378
         },
-        "timestamp": "20230813182533219"
+        "timestamp": "20230903002839386"
     },
     "request": {
         "exchange": "BinanceU",
+        "symbol": "BTCUSDT",
         "contract_type": "perp",
+        "quantity": 0.001,
+        "direction": "Sell",
+        "order_type": "stop_market",
+        "stop_price": 25000,
         "account_id": "jq_cta_02",
-        "ref_id": "R24lKBB2tffcAM4F33dbBRrKQzehui"
+        "client_order_id": "12345678910111",
+        "ref_id": "DMOEKXhtvDyCL4jQKKInFmlX7UcJ73"
     }
 }

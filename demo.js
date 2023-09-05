@@ -1,3 +1,4 @@
-let d = {"a": 1, "b": 2};
-let {a, b} = d;
-console.log(a, b, a + b);
+let a = {"a": 1};
+let b = a.b;
+let order = {"price": a.b};
+console.log(order);

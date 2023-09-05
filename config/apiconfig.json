@@ -19,7 +19,9 @@
     },
     "orderTypeMap": {
         "limit": "LIMIT",
-        "market": "MARKET"
+        "market": "MARKET",
+        "stop_limit": "STOP",
+        "stop_market": "STOP_MARKET"
     },
     "pricePrecision": {
         "BTCUSDT": 0.01,

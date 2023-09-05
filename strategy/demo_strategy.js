@@ -12,8 +12,22 @@ class DemoStrategy extends StrategyBase {
         this.subscribe_market_data();
 
         setTimeout(() => {
-            this._test_query_quantitative_rules();
+            this._test_send_stop_market_order();
         }, 1000);
+    }
+
+    _test_send_stop_market_order() {
+        this.send_order({
+            exchange: EXCHANGE.BINANCEU,
+            symbol: "BTCUSDT",
+            contract_type: CONTRACT_TYPE.PERP,
+            quantity: 0.001,
+            direction: DIRECTION.SELL,
+            order_type: ORDER_TYPE.STOP_MARKET,
+            stop_price: 25000,
+            account_id: "jq_cta_02",
+            client_order_id: "12345678910111"
+        });
     }
 
     _test_query_quantitative_rules() {
@@ -96,6 +110,10 @@ class DemoStrategy extends StrategyBase {
             "msg": "try"
         }
         this.slack_publish(publish);
+    }
+
+    on_order_update(order_update) {
+        console.log(JSON.stringify(order_update));
     }
 }
 

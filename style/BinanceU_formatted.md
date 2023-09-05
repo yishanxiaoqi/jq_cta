@@ -71,6 +71,42 @@
 }
 ```
 
+### 1.1.4 send stop market order response
+
+```json
+{
+    "ref_id": "DMOEKXhtvDyCL4jQKKInFmlX7UcJ73",
+    "action": "place_order",
+    "strategy": "Demo",
+    "metadata": {
+        "exchange": "BinanceU",
+        "symbol": "BTCUSDT",
+        "contract_type": "perp",
+        "event": "place_order",
+        "metadata": {
+            "result": true,
+            "account_id": "jq_cta_02",
+            "order_id": 186426999287,
+            "client_order_id": "12345678910111",
+            "timestamp": 1693672119378
+        },
+        "timestamp": "20230903002839386"
+    },
+    "request": {
+        "exchange": "BinanceU",
+        "symbol": "BTCUSDT",
+        "contract_type": "perp",
+        "quantity": 0.001,
+        "direction": "Sell",
+        "order_type": "stop_market",
+        "stop_price": 25000,
+        "account_id": "jq_cta_02",
+        "client_order_id": "12345678910111",
+        "ref_id": "DMOEKXhtvDyCL4jQKKInFmlX7UcJ73"
+    }
+}
+```
+
 ## 1.2 cancel order response
 
 ```json
@@ -344,6 +380,35 @@
         "avg_executed_price": 30364.5,
         "submit_price": 0,
         "status": "filled"
+    }
+}
+```
+
+### 2.1.3 place stop market order
+
+```json
+{
+    "exchange": "BinanceU",
+    "symbol": "BTCUSDT",
+    "contract_type": "perp",
+    "metadata": {
+        "result": true,
+        "account_id": "jq_cta_02",
+        "order_id": 186426999287,
+        "client_order_id": "12345678910111",
+        "direction": "Sell",
+        "timestamp": "20230903002839378",
+        "fee": 0,
+        "update_type": "submitted"
+    },
+    "timestamp": "20230903002839391",
+    "order_info": {
+        "original_amount": 0.001,
+        "filled": 0,
+        "new_filled": 0,
+        "avg_executed_price": 0,
+        "submit_price": 0,
+        "status": "new"
     }
 }
 ```

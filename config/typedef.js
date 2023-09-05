@@ -9,7 +9,9 @@ CONTRACT_TYPE = {
 
 ORDER_TYPE = {
     LIMIT: "limit",
-    MARKET: "market"
+    MARKET: "market",
+    STOP_MARKET: "stop_market",
+    STOP_LIMIT: "stop_limit"
 }
 
 TRADE_SIDE = {

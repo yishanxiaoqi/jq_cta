@@ -1,0 +1,35 @@
+{
+    "alias": "SRE",
+    "clear_existing_status": false,
+    "ini_usdt": 300,
+    "act_ids": [
+        "jq_cta_02"
+    ],
+    "ex_act_id_order_uds": [
+        "BinanceU|jq_cta_02"
+    ],
+    "ex_act_id_pos_info": [
+        "BinanceU|jq_cta_02"
+    ],
+    "symbols": [
+        "1000XECUSDT"
+    ],
+    "idfs": [
+        "BinanceU.1000XECUSDT.perp"
+    ],
+    "entries": [
+        "BinanceU.1000XECUSDT.perp.1h"
+    ],
+    "BinanceU.1000XECUSDT.perp.1h": {
+        "splitAt": 0,
+        "track_ATR_n": 5,
+        "track_ATR_multiplier": 1.5,
+        "cutloss_rate": 0.1,
+        "ini_af": 0.08,
+        "delta_af": 0.08,
+        "bar_enter_limit": 1,
+        "ini_usdt": 50,
+        "act_id": "jq_cta_02",
+        "cfgID": "SREXXXX"
+    }
+}

@@ -1064,7 +1064,6 @@ class RevTrendStrategy extends StrategyBase {
         let contract_type = response["request"]["contract_type"];
         let act_id = response["request"]["account_id"];
         let client_order_id = response["request"]["client_order_id"];
-        // 如果报错，返回的metadata里面没有direction
         let direction = response["request"]["direction"];
 
         let label = client_order_id.slice(3, 5);

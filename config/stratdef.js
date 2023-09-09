@@ -2,9 +2,10 @@
 
 // 账号
 /**
- * jq_cta_01: jiaqichengzju@gmail.com，香港身份证认证
- * jq_cta_02: chengjiaqi_zju@qq.com，詹婷慧身份证认证（但是法定姓名是成佳淇），用Jesse的返佣链接注册     
- * jq_cta_03: 545756054@qq.com，大陆身份证认证，没有开启2FA
+ * jq_binance_hkd_master: jiaqichengzju@gmail.com，香港身份证认证
+ * th_binance_cny_master: chengjiaqi_zju@qq.com，詹婷慧身份证认证（但是法定姓名是成佳淇），用Jesse的返佣链接注册
+ * th_binance_cny_sub01: th_binance_cny_master的第一个子账户     
+ * jq_binance_cny_master: 545756054@qq.com，大陆身份证认证，没有开启2FA
  */
 
 MASTER_ACCOUNT = 'ACT_MMM';

@@ -398,12 +398,12 @@ var feed_app = new FeedApp(new Intercom(intercom_config));
 feed_app.start();
 
 process.on('SIGINT', async () => {
-    logger.info(`${strategy.alias}::SIGINT`);
+    logger.info("Feed::SIGINT");
     setTimeout(() => process.exit(), 3000)
 });
 
 process.on('exit', async () => {
-    logger.info(`${strategy.alias}:: exit`);
+    logger.info("Feed:: exit");
 });
 
 process.on('uncaughtException', (err) => {

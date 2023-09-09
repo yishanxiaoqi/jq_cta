@@ -1,6 +1,6 @@
 {
     "alias": "SRE",
-    "clear_existing_status": false,
+    "clear_existing_status": true,
     "ini_usdt": 300,
     "act_ids": [
         "jq_cta_02"

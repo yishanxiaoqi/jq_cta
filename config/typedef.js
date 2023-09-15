@@ -1,6 +1,7 @@
 /** const values */
 EXCHANGE = {
-    BINANCEU: "BinanceU"
+    BINANCEU: "BinanceU",
+    OKX: "OKX"
 }
 
 CONTRACT_TYPE = {
@@ -42,9 +43,9 @@ ORDER_STATUS = {
 }
 
 MARKET_DATA = {
-    ORDERBOOK: "orderbook",
-    QUOTE: "quote",
     TRADE: "trade",
+    BESTQUOTE: "bestquote",
+    ORDERBOOK: "orderbook",
     PRICE: "price",
     KLINE: "kline",
     INDEX: "index",

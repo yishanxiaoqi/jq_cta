@@ -1,5 +1,31 @@
-## 1. RESPONSE (rest)
-# 1.1 send order response
+# 1. MARKET_DATA
+
+## 1.1 trade
+
+## 1.2 bestquote
+
+```json
+{
+    "exchange": "BinanceU",
+    "symbol": "XEMUSDT",
+    "contract_type": "perp",
+    "data_type": "bestquote",
+    "metadata": [
+        [
+            "3252310238667",            // updated id
+            "20230911112922484",        // timestampe
+            0.0243,                     // best ask
+            6427658,                    // best ask quantity
+            0.0242,                     // best bid
+            3062104                     // best bid quantity
+        ]
+    ],
+    "timestamp": "20230911112920823"
+}
+```
+
+# 1. RESPONSE (rest)
+## 1.1 send order response
 
 ```json
 {

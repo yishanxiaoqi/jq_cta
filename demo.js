@@ -1,4 +1,1 @@
-let a = {"a": 1};
-let b = a.b;
-let order = {"price": a.b};
-console.log(order);
+{ "e": "bookTicker", "u": 3252268333237, "s": "XEMUSDT", "b": "0.0242", "B": "3040159", "a": "0.0243", "A": "7170244", "T": 1694401517031, "E": 1694401517036 }

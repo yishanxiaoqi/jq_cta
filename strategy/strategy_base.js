@@ -8,21 +8,21 @@ const logger = require("../module/logger.js");
 const utils = require("../utils/util_func");
 const token = require("../config/token.json");
 
+const BinanceU = require("../exchange/exchange_binanceU.js");
+
 class StrategyBase {
     constructor(name, alias, intercom) {
         this.name = name;
         this.alias = alias;
         this.intercom = intercom;
 
-        // account_id及其对应的apiKey和apiSecret，目前一个策略只能做一个账号
-        this.account_id = "jq_cta_02";
-        this.apiKey = token.apiKey;
-        this.apiSecret = token.apiSecret;
-
         this.on_market_data_handler = this.on_market_data_ready.bind(this);
         this.on_order_update_handler = this.on_order_update.bind(this);
         this.on_response_handler = this.on_response.bind(this);
         this.on_account_update_handler = this.on_account_update.bind(this);
+
+        this.exchanges = {};
+        this.exchanges["BinanceU"] = new BinanceU("BinanceU", intercom);
     }
 
     start() {
@@ -83,6 +83,10 @@ class StrategyBase {
 
     _on_market_data_trade_ready(trade) {
         logger.info(`${this.alias}: no implementation for market data trade ready.`)
+    }
+
+    _on_market_data_bestquote_ready(bestquote) {
+        logger.info(`${this.alias}: no implementation for market data bestquote ready.`)
     }
 
     on_order_update(order_update) {
@@ -175,375 +179,35 @@ class StrategyBase {
     }
 
     async send_order(order, ref_id = this.alias + randomID(27)) {
-        logger.debug(`Emitting send order request from ${this.name}|${this.alias}|${order["symbol"]}|${order["label"]}|${order["client_order_id"]}`);
+        let idf = [order.exchange, order.symbol, order.contract_type].join(".");
+        logger.debug(`Emitting send order request from ${this.name}|${this.alias}|${idf}|${order["client_order_id"]}|${order["label"]}`);
 
         // 这里可以放一些下单信息的检查和更新
         if (order["ref_id"] === undefined) order["ref_id"] = ref_id;
-        let response = await this._send_order_via_rest(order);
+        let response = await this.exchanges[order.exchange]._send_order_via_rest(order);
 
         this.intercom.emit("REQUEST_RESPONSE", response);
-    }
-
-    async _send_order_via_rest(order) {
-
-        let ref_id = order["ref_id"];
-        let symbol = order["symbol"];
-        let contract_type = order["contract_type"];
-        let direction = order["direction"];
-        let price = order["price"];
-        let stop_price = order["stop_price"];
-        let quantity = order["quantity"];
-        let order_type = order["order_type"];
-        let account_id = order["account_id"];
-        let client_order_id = order["client_order_id"];
-
-        let exg_symbol = symbol;
-        let exg_direction = direction.toUpperCase();
-        let exg_order_type = apiconfig.orderTypeMap[order_type];
-        let absAmount = Math.abs(quantity);
-
-        let params;
-        if (order_type === "market") {
-            // 市价单走这里
-            params = this._get_rest_options(apiconfig.restUrlPlaceOrder, {
-                symbol: exg_symbol,
-                side: exg_direction,
-                type: exg_order_type,
-                quantity: absAmount,
-                newOrderRespType: "FULL",
-                newClientOrderId: client_order_id,
-                timestamp: Date.now(),
-            }, account_id);
-        } else if (order_type === "limit") {
-            // 限价单走这里
-            params = this._get_rest_options(apiconfig.restUrlPlaceOrder, {
-                symbol: exg_symbol,
-                side: exg_direction,
-                type: exg_order_type,
-                quantity: absAmount,
-                timeInForce: "GTC",
-                price: String(price),
-                newOrderRespType: "FULL",
-                newClientOrderId: client_order_id,
-                timestamp: Date.now(),
-            }, account_id);
-        } else if (order_type === "stop_market") {
-            params = this._get_rest_options(apiconfig.restUrlPlaceOrder, {
-                symbol: exg_symbol,
-                side: exg_direction,
-                type: exg_order_type,
-                quantity: absAmount,
-                stopPrice: String(stop_price),
-                newOrderRespType: "FULL",
-                newClientOrderId: client_order_id,
-                timestamp: Date.now(),
-            }, account_id);
-        }
-
-        let options = {
-            url: params["url"] + params["postbody"],
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "X-MBX-APIKEY": this.apiKey
-            }
-        }
-
-        let cxl_resp;
-        try {
-            let body = await rp.post(options);
-
-            if (typeof body === "string") {
-                body = JSON.parse(body);
-            }
-
-            if (body.orderId) {
-                let metadata = {
-                    result: true,
-                    account_id: account_id,
-                    order_id: body["orderId"],
-                    client_order_id: body["clientOrderId"],
-                    timestamp: body["updateTime"]
-                }
-                cxl_resp = {
-                    exchange: EXCHANGE.BINANCEU,
-                    symbol: symbol,
-                    contract_type: contract_type,
-                    event: ORDER_ACTIONS.SEND,
-                    metadata: metadata,
-                    timestamp: utils._util_get_human_readable_timestamp()
-                };
-            } else {
-                cxl_resp = {
-                    exchange: EXCHANGE.BINANCEU,
-                    symbol: symbol,
-                    contract_type: contract_type,
-                    event: ORDER_ACTIONS.SEND,
-                    metadata: {
-                        account_id: account_id,
-                        result: false,
-                        order_id: 0,
-                        error_code: 888888,
-                        error_code_msg: body["err-msg"]
-                    },
-                    timestamp: utils._util_get_human_readable_timestamp()
-                };
-            }
-        } catch (ex) {
-            logger.error(ex.stack);
-            let error =  ex.error ? JSON.parse(ex.error): undefined;
-            cxl_resp = {
-                exchange: EXCHANGE.BINANCEU,
-                symbol: symbol,
-                contract_type: contract_type,
-                event: ORDER_ACTIONS.SEND,
-                metadata: {
-                    account_id: account_id,
-                    result: false,
-                    order_id: 0,
-                    error_code: error.code || 999999,
-                    error_code_msg: error.msg || ex.toString()
-                },
-                timestamp: utils._util_get_human_readable_timestamp()
-            };
-        }
-
-        let response = {
-            ref_id: ref_id,
-            action: ORDER_ACTIONS.SEND,
-            strategy: this.name,
-            metadata: cxl_resp,
-            request: order
-        }
-
-        return response;
     }
 
     async cancel_order(order, ref_id = this.alias + randomID(27)) {
-        logger.debug(`Emitting cancel order request from ${this.name}|${this.alias}|${order["symbol"]}|${order["label"]}|${order["client_order_id"]}`);
+        let idf = [order.exchange, order.symbol, order.contract_type].join(".");
+        logger.debug(`Emitting cancel order request from ${this.name}|${this.alias}|${idf}|${order["client_order_id"]}|${order["label"]}`);
 
         // 这里可以放一些下单信息的检查和更新
         if (order["ref_id"] === undefined) order["ref_id"] = ref_id;
-        let response = await this._cancel_order_via_rest(order);
+        let response = await this.exchanges[order.exchange]._cancel_order_via_rest(order);
 
         this.intercom.emit("REQUEST_RESPONSE", response);
-    }
-
-    async _cancel_order_via_rest(order) {
-
-        let ref_id = order["ref_id"];
-        let symbol = order["symbol"];
-        let contract_type = order["contract_type"];
-        let order_id = order["order_id"];
-        let client_order_id = order["client_order_id"];
-        let account_id = order["account_id"];
-
-        let restUrlCancelOrder = apiconfig.restUrlCancelOrder;
-
-        let params;
-        let cxl_resp;
-        if (order_id) {
-            // 优先使用order_id进行撤单
-            params = this._get_rest_options(restUrlCancelOrder, {
-                symbol: symbol,
-                orderId: order_id,
-                timestamp: Date.now(),
-            }, account_id);
-        } else {
-            params = this._get_rest_options(restUrlCancelOrder, {
-                symbol: symbol,
-                origClientOrderId: client_order_id,
-                timestamp: Date.now(),
-            }, account_id);
-        }
-
-        var options = {
-            url: params["url"] + params["postbody"],
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "X-MBX-APIKEY": this.apiKey
-            }
-        };
-
-        try {
-            let body = await rp.delete(options);
-            //body, e.g:{ symbol: 'BNBBTC',origClientOrderId: 'Q6KYAotfs3rC4Sh99vBVAv',orderId: 55949780,clientOrderId: 'TNJyVOwfgjJCglNldbogbG' }
-            body = JSON.parse(body);
-            if (typeof body !== "undefined" && body["orderId"]) {
-                body["result"] = true;
-                body["status"] = ORDER_STATUS.CANCELLED;
-            } else {
-                body["result"] = false;
-                body["status"] = "cancel error";
-            }
-
-            let metadata = {
-                result: true,
-                account_id: account_id,
-                order_id: body["orderId"],
-                client_order_id: body["clientOrderId"],
-                timestamp: body["updateTime"]
-            }
-            cxl_resp = {
-                exchange: EXCHANGE.BINANCEU,
-                symbol: symbol,
-                contract_type: contract_type,
-                event: ORDER_ACTIONS.CANCEL,
-                metadata: metadata,
-                timestamp: utils._util_get_human_readable_timestamp()
-            };
-        } catch (ex) {
-            logger.error(ex.stack);
-            let error =  ex.error ? JSON.parse(ex.error): undefined;
-            cxl_resp = {
-                exchange: EXCHANGE.BINANCEU,
-                symbol: symbol,
-                contract_type: contract_type,
-                event: ORDER_ACTIONS.CANCEL,
-                metadata: {
-                    account_id: account_id,
-                    result: false,
-                    error_code: error.code || 999999,
-                    error_code_msg: error.msg || ex.toString()
-                },
-                timestamp: utils._util_get_human_readable_timestamp()
-            };
-        }
-
-        let response = {
-            ref_id: ref_id,
-            action: ORDER_ACTIONS.CANCEL,
-            strategy: this.name,
-            metadata: cxl_resp,
-            request: order
-        }
-
-        return response;
     }
 
     async inspect_order(order, ref_id = this.alias + randomID(27)) {
-        logger.debug(`Emitting inspect order request from ${this.name}|${this.alias}|${order["symbol"]}|${order["label"]}|${order["client_order_id"]}`);
+        let idf = [order.exchange, order.symbol, order.contract_type].join(".");
+        logger.debug(`Emitting inspect order request from ${this.name}|${this.alias}|${idf}|${order["client_order_id"]}|${order["label"]}`);
 
         if (order["ref_id"] === undefined) order["ref_id"] = ref_id;
-        let response = await this._inspect_order_via_rest(order);
+        let response = await this.exchanges[order.exchange]._inspect_order_via_rest(order);
 
         this.intercom.emit("REQUEST_RESPONSE", response);
-    }
-
-    async _inspect_order_via_rest(order) {
-        let ref_id = order["ref_id"];
-        let symbol = order["symbol"];
-        let contract_type = order["contract_type"];
-        let order_id = order["order_id"];
-        let client_order_id = order["client_order_id"];
-        let account_id = order["account_id"];
-
-        let restUrlGetOrder = apiconfig.restUrlGetOrder;
-
-        let params;
-        let cxl_resp;
-        if (order_id) {    
-            params = this._get_rest_options(restUrlGetOrder, {
-                symbol: symbol,
-                orderId: order_id,
-                timestamp: Date.now(),
-            }, account_id); 
-        } else {
-            params = this._get_rest_options(restUrlGetOrder, {
-                symbol: symbol,
-                origClientOrderId: client_order_id,
-                timestamp: Date.now(),
-            }, account_id);
-        }
-    
-        var options = {
-            url: params["url"] + params["postbody"],
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "X-MBX-APIKEY": this.apiKey
-            }
-        };
-
-        try {
-            let body = await rp.get(options);
-            body = JSON.parse(body);
-
-            if (body.orderId === order_id) {
-                body["result"] = true;
-                body.order_id = order_id;
-                body.account_id = account_id;
-                // + 符号可以把变量变成数字型
-                let order_info = {
-                    original_amount: +body["origQty"],
-                    avg_executed_price: +body["avgPrice"],
-                    filled: +body["executedQty"],
-                    status: this._convert_to_standard_order_status(body["status"])
-                };
-                cxl_resp = {
-                    exchange: EXCHANGE.BINANCEU,
-                    symbol: symbol,
-                    contract_type: contract_type,
-                    event: ORDER_ACTIONS.INSPECT,
-                    metadata: body,
-                    timestamp: utils._util_get_human_readable_timestamp(),
-                    order_info: order_info
-                };
-            } else {
-                let order_info = {
-                    original_amount: 0,
-                    filled: 0,
-                    avg_executed_price: 0,
-                    status: 'unknown'
-                };
-                cxl_resp = {
-                    exchange: EXCHANGE.BINANCEU,
-                    symbol: symbol,
-                    contract_type: contract_type,
-                    event: ORDER_ACTIONS.INSPECT,
-                    metadata: {
-                        account_id: account_id,
-                        result: false,
-                        error_code: 888888,
-                        error_code_msg: body["err-msg"]
-                    },
-                    timestamp: utils._util_get_human_readable_timestamp(),
-                    order_info: order_info
-                };
-            }
-        } catch (ex) {
-            logger.error(ex.stack);
-            let error =  ex.error ? JSON.parse(ex.error): undefined;
-            let order_info = {
-                original_amount: 0,
-                filled: 0,
-                avg_executed_price: 0,
-                status: 'unknown'
-            };
-            cxl_resp = {
-                exchange: EXCHANGE.BINANCEU,
-                symbol: symbol,
-                contract_type: contract_type,
-                event: ORDER_ACTIONS.INSPECT,
-                metadata: {
-                    account_id: account_id,
-                    result: false,
-                    error_code: error.code || 999999,
-                    error_code_msg: error.msg || ex.toString(),
-                    order_id: order_id
-                },
-                timestamp: utils._util_get_human_readable_timestamp(),
-                order_info: order_info
-            };
-        }
-
-        let response = {
-            ref_id: ref_id,
-            action: ORDER_ACTIONS.INSPECT,
-            strategy: this.name,
-            metadata: cxl_resp,
-            request: order
-        }
-    
-        return response;
     }
 
     async query_orders(order, ref_id = this.alias + randomID(27)) {
@@ -551,106 +215,9 @@ class StrategyBase {
         // logger.debug(`Emitting query orders request from ${this.name}|${this.alias}`);
 
         if (order["ref_id"] === undefined) order["ref_id"] = ref_id;
-        let response = await this._query_order_via_rest(order);
+        let response = await this.exchanges[order.exchange]._query_order_via_rest(order);
 
         this.intercom.emit("REQUEST_RESPONSE", response);
-    }
-
-    async _query_order_via_rest(order) {
-        /**
-         * GET /fapi/v1/allOrders (HMAC SHA256)
-         * 以下订单不会被查询到：
-         * 1. 下单时间超过3天 + cancelled or expired + 没有成交量；或者
-         * 2. 下单时间超过90天
-         * 其他所有单都会被查询到
-         */
-        // 
-        let ref_id = order["ref_id"];
-        let symbol = order["symbol"];
-        let contract_type = order["contract_type"];
-        let account_id = order["account_id"];
-
-        let restUrlQueryOrders = apiconfig.restUrlQueryOrders;
-        
-        let params = this._get_rest_options(restUrlQueryOrders, {
-            symbol: symbol,
-            timestamp: Date.now(),
-        }, account_id); 
-
-        var options = {
-            url: params["url"] + params["postbody"],
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "X-MBX-APIKEY": this.apiKey
-            }
-        };
-
-        let cxl_resp;
-        try {
-            let body = await rp.get(options);
-            body = JSON.parse(body);
-
-            // BinanceU中订单只有5中状态：NEW, PARTIALLY_FILLED, FILLED, CANCELLED, EXPIRED
-            let active_orders = body.filter((order) => (["NEW", "PARTIALLY_FILLED"].includes(order.status)));
-            let formatted_active_orders = [];
-
-            for (let i of active_orders) {
-                formatted_active_orders.push({
-                    order_id: i["orderId"],
-                    client_order_id: i['clientOrderId'],
-                    original_amount: +i["origQty"],
-                    avg_executed_price: +i["avgPrice"],
-                    filled: +i["executedQty"],
-                    status: this._convert_to_standard_order_status(i["status"], +i["executedQty"], +i["origQty"]),
-                    direction: i["side"].toLowerCase(),
-                    price: +i["price"],
-                    contract_type: contract_type,
-                    create_time: utils._util_get_human_readable_timestamp(i["time"]),
-                    last_updated_time: utils._util_get_human_readable_timestamp(i['updateTime'])
-                });
-            }
-
-            cxl_resp = {
-                exchange: EXCHANGE.BINANCEU,
-                symbol: symbol,
-                contract_type: contract_type,
-                event: REQUEST_ACTIONS.QUERY_ORDERS,
-                metadata: {
-                    result: true,
-                    account_id: account_id,
-                    api_rate_limit: this.api_rate_limit,
-                    orders: formatted_active_orders,
-                    timestamp: utils._util_get_human_readable_timestamp()
-                },
-                timestamp: utils._util_get_human_readable_timestamp()
-            };
-        } catch (e) {
-            cxl_resp = {
-                exchange: EXCHANGE.BINANCEU,
-                symbol: symbol,
-                contract_type: contract_type,
-                event: REQUEST_ACTIONS.QUERY_ORDERS,
-                metadata: {
-                    result: false,
-                    account_id: account_id,
-                    api_rate_limit: this.api_rate_limit,
-                    error_code: e.code || e.statusCode || 999999,
-                    error_code_msg: e.msg || e.message,
-                    error_stack: e.stack
-                },
-                timestamp: utils._util_get_human_readable_timestamp()
-            };
-        }
-
-        let response = {
-            ref_id: ref_id,
-            action: REQUEST_ACTIONS.QUERY_ORDERS,
-            strategy: this.name,
-            metadata: cxl_resp,
-            request: order
-        }
-    
-        return response;
     }
 
     async query_position(query, ref_id = this.alias + randomID(27)) {
@@ -661,96 +228,11 @@ class StrategyBase {
         let response = await this._query_position_via_rest(query);
 
         this.intercom.emit("REQUEST_RESPONSE", response);
-
-        console.log(JSON.stringify(response));
-    }
-
-    async _query_position_via_rest(query) {
-        let ref_id = query["ref_id"];
-        let symbol = query["symbol"];
-        let contract_type = query["contract_type"];
-        let account_id = query["account_id"];
-
-        let restUrlQueryPosition = apiconfig.restUrlQueryPosition;
-        
-        let params = this._get_rest_options(restUrlQueryPosition, {
-            symbol: symbol,
-            timestamp: Date.now(),
-        }, account_id); 
-
-        var options = {
-            url: params["url"] + params["postbody"],
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "X-MBX-APIKEY": this.apiKey
-            }
-        };
-
-        let cxl_resp;
-        try {
-            let body = await rp.get(options);
-            body = JSON.parse(body);
-
-            console.log(JSON.stringify(body));
-
-            let active_positions = body.filter((position) => parseFloat(position.positionAmt) !== 0);
-            let formatted_active_positions = [];
-
-            for (let i of active_positions) {
-                formatted_active_positions.push({
-                    symbol: i["symbol"],
-                    position: +i['positionAmt'],
-                    entryPrice: +i["entryPrice"],
-                    markPrice: +i["markPrice"],
-                    unRealizedProfit: +i["unRealizedProfit"],
-                    last_updated_time: utils._util_get_human_readable_timestamp(i['updateTime'])
-                });
-            }
-
-            cxl_resp = {
-                exchange: EXCHANGE.BINANCEU,
-                symbol: symbol,
-                contract_type: contract_type,
-                event: REQUEST_ACTIONS.QUERY_ORDERS,
-                metadata: {
-                    result: true,
-                    account_id: account_id,
-                    positions: formatted_active_positions,
-                    timestamp: utils._util_get_human_readable_timestamp()
-                },
-                timestamp: utils._util_get_human_readable_timestamp()
-            };
-        } catch (e) {
-            cxl_resp = {
-                exchange: EXCHANGE.BINANCEU,
-                symbol: symbol,
-                contract_type: contract_type,
-                event: REQUEST_ACTIONS.QUERY_POSITION,
-                metadata: {
-                    result: false,
-                    account_id: account_id,
-                    error_code: e.code || e.statusCode || 999999,
-                    error_code_msg: e.msg || e.message,
-                    error_stack: e.stack
-                },
-                timestamp: utils._util_get_human_readable_timestamp()
-            };
-        }
-
-        let response = {
-            ref_id: ref_id,
-            action: REQUEST_ACTIONS.QUERY_POSITION,
-            strategy: this.name,
-            metadata: cxl_resp,
-            request: query
-        }
-    
-        return response;
     }
 
     async query_account(query, ref_id = this.alias + randomID(27)) {
         // 目前来看query_account覆盖了query_position的功能
-        // 区别在于query position可以制定一个symbol进行query
+        // 区别在于query position可以指定一个symbol进行query
         logger.debug(`Emitting query balance request from ${this.name}|${this.alias}`);
 
         // 这里可以放一些下单信息的检查和更新
@@ -758,102 +240,6 @@ class StrategyBase {
         let response = await this._query_account_via_rest(query);
 
         this.intercom.emit("REQUEST_RESPONSE", response);
-
-        console.log(JSON.stringify(response));
-    }
-
-    async _query_account_via_rest(query) {
-        let ref_id = query["ref_id"];
-        let contract_type = query["contract_type"];
-        let account_id = query["account_id"];
-
-        let restUrlQueryAccount = apiconfig.restUrlQueryAccount;
-        
-        let params = this._get_rest_options(restUrlQueryAccount, {
-            timestamp: Date.now(),
-        }, account_id); 
-
-        var options = {
-            url: params["url"] + params["postbody"],
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "X-MBX-APIKEY": this.apiKey
-            }
-        };
-
-        let cxl_resp;
-        try {
-            let body = await rp.get(options);
-            body = JSON.parse(body);
-
-            console.log(JSON.stringify(body));
-
-            let assets_USDT = body["assets"].filter((asset) => asset.asset === "USDT")[0];
-            let balance = {
-                "wallet_balance_in_USD": +body["totalWalletBalance"],
-                "unrealized_pnl_in_USD": +body["totalUnrealizedProfit"],
-                "equity_in_USD": +body["totalMarginBalance"],
-                "wallet_balance_in_USDT": +assets_USDT["walletBalance"],
-                "unrealized_pnl_in_USDT": +assets_USDT["unrealizedProfit"],
-                "equity_in_USDT": +assets_USDT["marginBalance"],
-                "position_initial_margin_in_USDT": +assets_USDT["positionInitialMargin"],
-                "open_order_initial_margin_in_USDT": +assets_USDT["openOrderInitialMargin"],
-            }
-
-            let active_positions = body["positions"].filter((position) => parseFloat(position.positionAmt) !== 0);
-            let formatted_active_positions = [];
-
-            for (let i of active_positions) {
-                formatted_active_positions.push({
-                    symbol: i["symbol"],
-                    position: +i['positionAmt'],
-                    entryPrice: +i["entryPrice"],
-                    unRealizedProfit: +i["unrealizedProfit"],
-                    positionInitialMargin: +i["positionInitialMargin"],
-                    leverage: +i["leverage"],
-                    last_updated_time: utils._util_get_human_readable_timestamp(i['updateTime'])
-                });
-            }
-
-            cxl_resp = {
-                exchange: EXCHANGE.BINANCEU,
-                contract_type: contract_type,
-                event: REQUEST_ACTIONS.QUERY_ACCOUNT,
-                metadata: {
-                    result: true,
-                    account_id: account_id,
-                    balance: balance,
-                    positions: formatted_active_positions,
-                    timestamp: utils._util_get_human_readable_timestamp()
-                },
-                timestamp: utils._util_get_human_readable_timestamp()
-            };
-        } catch (e) {
-            cxl_resp = {
-                exchange: EXCHANGE.BINANCEU,
-                symbol: symbol,
-                contract_type: contract_type,
-                event: REQUEST_ACTIONS.QUERY_ACCOUNT,
-                metadata: {
-                    result: false,
-                    account_id: account_id,
-                    error_code: e.code || e.statusCode || 999999,
-                    error_code_msg: e.msg || e.message,
-                    error_stack: e.stack
-                },
-                timestamp: utils._util_get_human_readable_timestamp()
-            };
-        }
-
-        let response = {
-            ref_id: ref_id,
-            action: REQUEST_ACTIONS.QUERY_ACCOUNT,
-            strategy: this.name,
-            metadata: cxl_resp,
-            request: query
-        }
-    
-        return response;
     }
 
     async query_quantitative_rules(query, ref_id = this.alias + randomID(27)) {
@@ -864,124 +250,6 @@ class StrategyBase {
         let response = await this._query_quantitative_rules_via_rest(query);
 
         this.intercom.emit("REQUEST_RESPONSE", response);
-    }
-
-    async _query_quantitative_rules_via_rest(query) {
-        let ref_id = query["ref_id"];
-        let symbol = query["symbol"];
-        let contract_type = query["contract_type"];
-        let account_id = query["account_id"];
-
-        let restUrlFuturesTradingQuantRule = apiconfig.restUrlFuturesTradingQuantRule;
-        
-        let params = this._get_rest_options(restUrlFuturesTradingQuantRule, {
-            symbol: symbol,     // 可有可不有
-            timestamp: Date.now(),
-        }, account_id); 
-
-        var options = {
-            url: params["url"] + params["postbody"],
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "X-MBX-APIKEY": this.apiKey
-            }
-        };
-
-        let cxl_resp;
-        try {
-            let body = await rp.get(options);
-            body = JSON.parse(body);
-
-            console.log(JSON.stringify(body));
-
-            cxl_resp = {
-                exchange: EXCHANGE.BINANCEU,
-                contract_type: contract_type,
-                event: REQUEST_ACTIONS.QUERY_QUANTITATIVE_RULES,
-                metadata: {
-                    result: true,
-                    account_id: account_id,
-                    indicators: body.indicators,
-                    timestamp: utils._util_get_human_readable_timestamp(body['updateTime'])
-                },
-                timestamp: utils._util_get_human_readable_timestamp()
-            };
-        } catch (e) {
-            cxl_resp = {
-                exchange: EXCHANGE.BINANCEU,
-                symbol: symbol,
-                contract_type: contract_type,
-                event: REQUEST_ACTIONS.QUERY_QUANTITATIVE_RULES,
-                metadata: {
-                    result: false,
-                    account_id: account_id,
-                    error_code: e.code || e.statusCode || 999999,
-                    error_code_msg: e.msg || e.message,
-                    error_stack: e.stack
-                },
-                timestamp: utils._util_get_human_readable_timestamp()
-            };
-        }
-
-        let response = {
-            ref_id: ref_id,
-            action: REQUEST_ACTIONS.QUERY_QUANTITATIVE_RULES,
-            strategy: this.name,
-            metadata: cxl_resp,
-            request: query
-        }
-    
-        return response;
-    }
-
-    _get_rest_options(apiEndpoint, params, account_id = "test") {
-        let that = this;
-        let presign = querystring.stringify(params);
-        let signature = utils.HMAC("sha256", that.apiSecret, presign);
-        let url = apiconfig.restUrl + apiEndpoint;
-        return {
-            url: url + "?",
-            postbody: presign + "&signature=" + signature
-        };
-    }
-
-    _convert_to_standard_order_status(status) {
-        switch (status) {
-            case "CANCELED":
-            case "CANCELED was: PARTIALLY FILLED":
-            case "INSUFFICIENT MARGIN was: PARTIALLY FILLED":
-            case "canceled":
-            case "cancelled":
-            case "Canceled":
-            case "partial-canceled":
-            case "-1":
-                return ORDER_STATUS.CANCELLED;
-            case "FILLED":
-            case "filled":
-            case "Filled":
-            case "EXECUTED":
-            case "0":
-                return ORDER_STATUS.FILLED;
-            case "NEW":
-            case "submitted":
-            case "New":
-            case "new":
-            case "ACTIVE":
-            case "1":
-            case "live":
-                return ORDER_STATUS.SUBMITTED;
-            case "PartiallyFilled":
-            case "PARTIALLY_FILLED":
-            case "partial-filled":
-            case "partiallyFilled":
-            case "PARTIALLY FILLED":
-            case "partially_filled":
-            case "2":
-                return ORDER_STATUS.PARTIALLY_FILLED;
-            default:
-                logger.warn(`No predefined order status conversion rule in ${this.name} for ${status}`);
-                return "unknown";
-        }
     }
 }
 

@@ -1,3 +1,24 @@
+# MARKET_DATA
+
+## 1. trade
+
+## 2. bestquote 
+
+```json
+// BinanceU
+{
+    "e": "bookTicker",
+    "u": 3252268333237,
+    "s": "XEMUSDT",
+    "b": "0.0242",      // best bid
+    "B": "3040159",     // best bid quantity
+    "a": "0.0243",      // best ask
+    "A": "7170244",     // best ask quantity
+    "T": 1694401517031,
+    "E": 1694401517036
+}
+```
+
 # ACCOUNT_UPDATE
 
 ```json

@@ -12,7 +12,7 @@ class DemoStrategy extends StrategyBase {
         this.subscribe_market_data();
 
         setTimeout(() => {
-            this._test_send_stop_market_order();
+            this._test_send_order();
         }, 1000);
     }
 
@@ -25,7 +25,7 @@ class DemoStrategy extends StrategyBase {
             direction: DIRECTION.SELL,
             order_type: ORDER_TYPE.STOP_MARKET,
             stop_price: 25000,
-            account_id: "jq_cta_02",
+            account_id: "th_binance_cny_sub01",
             client_order_id: "12345678910111"
         });
     }
@@ -35,7 +35,7 @@ class DemoStrategy extends StrategyBase {
             exchange: EXCHANGE.BINANCEU,
             // symbol: "XEMUSDT",
             contract_type: CONTRACT_TYPE.PERP,
-            account_id: "jq_cta_02"
+            account_id: "th_binance_cny_sub01"
         });
     }
 
@@ -44,7 +44,7 @@ class DemoStrategy extends StrategyBase {
             exchange: EXCHANGE.BINANCEU,
             // symbol: "XEMUSDT",
             contract_type: CONTRACT_TYPE.PERP,
-            account_id: "jq_cta_02"
+            account_id: "th_binance_cny_sub01"
         });
     }
 
@@ -52,19 +52,20 @@ class DemoStrategy extends StrategyBase {
         this.query_account({
             exchange: EXCHANGE.BINANCEU,
             contract_type: CONTRACT_TYPE.PERP,
-            account_id: "jq_cta_02"
+            account_id: "th_binance_cny_sub01"
         });
     }
 
     _test_send_order() {
         this.send_order({
             exchange: EXCHANGE.BINANCEU,
-            symbol: "BTCUSDT",
+            symbol: "XEMUSDT",
             contract_type: CONTRACT_TYPE.PERP,
-            quantity: 0.001,
+            price: 0.024,
+            quantity: 300,
             direction: DIRECTION.SELL,
-            order_type: ORDER_TYPE.MARKET,
-            account_id: "jq_cta_02",
+            order_type: ORDER_TYPE.LIMIT,
+            account_id: "th_binance_cny_sub01",
             client_order_id: "12345678910"
         });
     };
@@ -75,7 +76,7 @@ class DemoStrategy extends StrategyBase {
             symbol: "BTCUSDT",
             contract_type: CONTRACT_TYPE.PERP,
             // order_id: 166453859845,
-            account_id: "jq_cta_02",
+            account_id: "th_binance_cny_sub01",
             client_order_id: "12345678914"
         });
     };
@@ -86,7 +87,7 @@ class DemoStrategy extends StrategyBase {
             symbol: "BTCUSDT",
             contract_type: CONTRACT_TYPE.PERP,
             // order_id: 166453859845,
-            account_id: "jq_cta_02",
+            account_id: "th_binance_cny_sub01",
             client_order_id: "12345678913"
         });
     };
@@ -96,12 +97,12 @@ class DemoStrategy extends StrategyBase {
             exchange: EXCHANGE.BINANCEU,
             symbol: "BTCUSDT",
             contract_type: CONTRACT_TYPE.PERP,
-            account_id: "jq_cta_02"
+            account_id: "th_binance_cny_sub01"
         });
     };
 
     _on_market_data_trade_ready(trade) {
-        // console.log(JSON.stringify(trade));
+        console.log(JSON.stringify(trade));
     }
 
     _test_slack_publish() {

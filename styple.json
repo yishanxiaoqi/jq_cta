@@ -1,31 +1,17 @@
 {
-    "ref_id": "DMOEKXhtvDyCL4jQKKInFmlX7UcJ73",
-    "action": "place_order",
-    "strategy": "Demo",
-    "metadata": {
-        "exchange": "BinanceU",
-        "symbol": "BTCUSDT",
-        "contract_type": "perp",
-        "event": "place_order",
-        "metadata": {
-            "result": true,
-            "account_id": "jq_cta_02",
-            "order_id": 186426999287,
-            "client_order_id": "12345678910111",
-            "timestamp": 1693672119378
-        },
-        "timestamp": "20230903002839386"
-    },
-    "request": {
-        "exchange": "BinanceU",
-        "symbol": "BTCUSDT",
-        "contract_type": "perp",
-        "quantity": 0.001,
-        "direction": "Sell",
-        "order_type": "stop_market",
-        "stop_price": 25000,
-        "account_id": "jq_cta_02",
-        "client_order_id": "12345678910111",
-        "ref_id": "DMOEKXhtvDyCL4jQKKInFmlX7UcJ73"
-    }
+    "exchange": "BinanceU",
+    "symbol": "XEMUSDT",
+    "contract_type": "perp",
+    "data_type": "bestquote",
+    "metadata": [
+        [
+            "3252310238667",
+            "20230911112922484",
+            0.0243,
+            6427658,
+            0.0242,
+            3062104
+        ]
+    ],
+    "timestamp": "20230911112920823"
 }

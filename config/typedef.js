@@ -5,7 +5,9 @@ EXCHANGE = {
 }
 
 CONTRACT_TYPE = {
-    PERP: "perp"
+    PERP: "perp",
+    SPOT: "spot",
+    FUTURES: "futures"
 }
 
 ORDER_TYPE = {
@@ -96,6 +98,19 @@ REQUEST_ACTIONS = {
     SEND_ORDER_BATCH: 'place_order_batch',
     GET_QUOTE: 'get_quote'
 };
+
+INTERCOM_CHANNEL = {
+    // Feed -> Strategy
+    MARKET_DATA: "MARKET_DATA",         
+    ORDER_UPDATE: "ORDER_UPDATE",
+    WS_RESPONSE: "WS_RESPONSE",
+    ACCOUNT_UPDATE: "ACCOUNT_UPDATE",
+    // Strategy -> Feed 
+    OKX_TRADE: "OKX_TRADE",
+    
+    // rest (strategy -> exg -> strategy)
+    REQUEST_RESPONSE: "REQUEST_RESPONSE"         
+}
 
 INTERCOM_SCOPE = {
     FEED: "feed",

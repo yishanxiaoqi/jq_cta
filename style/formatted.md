@@ -65,6 +65,7 @@
 
 ### 1.1.3 send market order response
 ```json
+// BinanceU
 {
     "ref_id": "DMOFN5Z52sy6kwKCpoH2ySMD29aHJ6",
     "action": "place_order",
@@ -93,6 +94,73 @@
         "account_id": "jq_cta_02",
         "client_order_id": "12345678910",
         "ref_id": "DMOFN5Z52sy6kwKCpoH2ySMD29aHJ6"
+    }
+}
+```
+
+```json
+// OKX - Market Order
+{
+    "ref_id": "DMO0LA8iipo96L0Bx8wjBwZdhl2kvo",
+    "action": "place_order",
+    "strategy": "OKX",
+    "metadata": {
+        "exchange": "OKX",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "event": "place_order",
+        "metadata": {
+            "result": true,
+            "account_id": "jq_okx_cny_master",
+            "order_id": "624381036193275947",
+            "client_order_id": "12345678910"
+        },
+        "timestamp": "20230919230719582"
+    },
+    "request": {
+        "exchange": "OKX",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "price": 0.45,
+        "quantity": 5,
+        "direction": "Sell",
+        "order_type": "market",
+        "account_id": "jq_okx_cny_master",
+        "client_order_id": "12345678910",
+        "ref_id": "DMO0LA8iipo96L0Bx8wjBwZdhl2kvo"
+    }
+}
+```
+
+```json
+// OKX - Limit Order
+{
+    "ref_id": "DMOKMKteRjtYr5jn2G8lu3CiI4GPcR",
+    "action": "place_order",
+    "metadata": {
+        "exchange": "OKX",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "event": "place_order",
+        "metadata": {
+            "result": true,
+            "account_id": "jq_okx_cny_master",
+            "order_id": "624710367138435075",
+            "client_order_id": "12345678910"
+        },
+        "timestamp": "20230920205557676"
+    },
+    "request": {
+        "exchange": "OKX",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "price": 0.45,
+        "quantity": 5,
+        "direction": "Sell",
+        "order_type": "limit",
+        "account_id": "jq_okx_cny_master",
+        "client_order_id": "12345678910",
+        "ref_id": "DMOKMKteRjtYr5jn2G8lu3CiI4GPcR"
     }
 }
 ```
@@ -160,6 +228,281 @@
         "client_order_id": "R01DNygM0Q6X",
         "account_id": "cta_foreseem_sub02_fut",
         "ref_id": "R01cM44qsCr43Th99cEgMSLBjK0Dht"
+    }
+}
+```
+
+```json
+{
+    "ref_id": "DMOkgK1lqLXeDmlUZS3UXWjU1xjRBq",
+    "action": "cancel_order",
+    "strategy": "OKX",
+    "metadata": {
+        "exchange": "OKX",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "event": "cancel_order",
+        "metadata": {
+            "result": true,
+            "account_id": "jq_okx_cny_master",
+            "order_id": "624710367138435075",
+            "client_order_id": "12345678910"
+        },
+        "timestamp": "20230920205751123"
+    },
+    "request": {
+        "exchange": "OKX",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "account_id": "jq_okx_cny_master",
+        "client_order_id": "12345678910",
+        "ref_id": "DMOkgK1lqLXeDmlUZS3UXWjU1xjRBq"
+    }
+}
+```
+
+```json
+// OKX 撤单失败
+{
+    "ref_id": "DMOwIHgCSLDyiz8p8zzP1iIOUmlwD7",
+    "action": "cancel_order",
+    "strategy": "OKX",
+    "metadata": {
+        "exchange": "OKX",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "event": "cancel_order",
+        "metadata": {
+            "result": false,
+            "account_id": "jq_okx_cny_master",
+            "error_code": 51400,
+            "error_code_msg": "Order cancellation failed as the order has been filled, canceled or does not exist"
+        },
+        "timestamp": "20230920205856398"
+    },
+    "request": {
+        "exchange": "OKX",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "order_id": "624710367138435075",
+        "account_id": "jq_okx_cny_master",
+        "ref_id": "DMOwIHgCSLDyiz8p8zzP1iIOUmlwD7"
+    }
+}
+```
+
+```json
+// OKX - WS: cancel by order_id
+{
+    "ref_id": "DMOw9JItqzs27a9uXemYD3yzWjSZgV",
+    "action": "cancel_order",
+    "metadata": {
+        "exchange": "OKX",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "event": "cancel_order",
+        "metadata": {
+            "result": true,
+            "account_id": "jq_okx_cny_master",
+            "order_id": "627254420702912542",
+            "client_order_id": "12345678911xxx"
+        },
+        "timestamp": "20230927212527751"
+    },
+    "request": {
+        "exchange": "OKX",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "order_id": "627254420702912542",
+        "account_id": "jq_okx_cny_master",
+        "ref_id": "DMOw9JItqzs27a9uXemYD3yzWjSZgV",
+        "send_time": "20230927212527508",
+        "action": "cancel_order"
+    }
+}
+```
+
+```json
+// OKX - WS: cancel by client order id
+{
+    "ref_id": "DMONjQ64Xd8V8qoob9M8124xRBL7GK",
+    "action": "cancel_order",
+    "metadata": {
+        "exchange": "OKX",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "event": "cancel_order",
+        "metadata": {
+            "result": true,
+            "account_id": "jq_okx_cny_master",
+            "order_id": "627250007275888641",
+            "client_order_id": "12345678911xxx"
+        },
+        "timestamp": "20230927210820005"
+    },
+    "request": {
+        "exchange": "OKX",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "account_id": "jq_okx_cny_master",
+        "client_order_id": "12345678911xxx",
+        "ref_id": "DMONjQ64Xd8V8qoob9M8124xRBL7GK"
+    }
+}
+```
+
+## inspect order response
+
+```json
+{
+    "ref_id": "DMO0YAAhLD90gzUz9VlyDyk1qDv5U4",
+    "action": "inspect_order",
+    "strategy": "OKX",
+    "metadata": {
+        "exchange": "BinanceU",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "event": "inspect_order",
+        "metadata": {
+            "result": true,
+            "account_id": "jq_okx_cny_master",
+            "order_id": "624719944319913991",
+            "client_order_id": "12345678910"
+        },
+        "timestamp": "20230920214958694",
+        "order_info": {
+            "original_amount": 5,
+            "avg_executed_price": 0,
+            "filled": 0,
+            "status": "new"
+        }
+    },
+    "request": {
+        "exchange": "OKX",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "account_id": "jq_okx_cny_master",
+        "client_order_id": "12345678910",
+        "ref_id": "DMO0YAAhLD90gzUz9VlyDyk1qDv5U4"
+    }
+}
+```
+
+## Modify Order Response
+
+```json
+OKX：改单成功
+{
+    "ref_id": "DMOKsXuGFhVJ9WmsVx9Xh0MR4T2zNn",
+    "action": "modify_order",
+    "metadata": {
+        "exchange": "BinanceU",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "event": "modify_order",
+        "metadata": {
+            "result": true,
+            "account_id": "jq_okx_cny_master",
+            "order_id": "626094667058532359",
+            "client_order_id": "12345678910"
+        },
+        "timestamp": "20230924165703952"
+    },
+    "request": {
+        "exchange": "OKX",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "price": 0.49,
+        "quantity": 6,
+        "order_id": "626094667058532359",
+        "account_id": "jq_okx_cny_master",
+        "ref_id": "DMOKsXuGFhVJ9WmsVx9Xh0MR4T2zNn"
+    }
+}
+```
+
+## query orders
+
+```json
+// OKX - query orders 
+{
+    "ref_id": "DMOqBB0pWFCUQZ5R4FM3FYrHCvM9Ul",
+    "action": "query_orders",
+    "metadata": {
+        "exchange": "OKX",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "event": "query_orders",
+        "metadata": {
+            "result": true,
+            "account_id": "jq_okx_cny_master",
+            "orders": [
+                {
+                    "order_id": "624732617652719618",
+                    "client_order_id": "",
+                    "original_amount": 5,
+                    "avg_executed_price": 0,
+                    "filled": 0,
+                    "status": "new",
+                    "direction": "sell",
+                    "price": 0.46,
+                    "contract_type": "perp",
+                    "create_time": "20230920223708033",
+                    "last_updated_time": "20230920223708033"
+                },
+                {
+                    "order_id": "624719944319913991",
+                    "client_order_id": "12345678910",
+                    "original_amount": 5,
+                    "avg_executed_price": 0,
+                    "filled": 0,
+                    "status": "new",
+                    "direction": "sell",
+                    "price": 0.45,
+                    "contract_type": "perp",
+                    "create_time": "20230920223708033",
+                    "last_updated_time": "20230920223708033"
+                }
+            ],
+            "timestamp": "20230920223708033"
+        },
+        "timestamp": "20230920223708033"
+    },
+    "request": {
+        "exchange": "OKX",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "account_id": "jq_okx_cny_master",
+        "ref_id": "DMOqBB0pWFCUQZ5R4FM3FYrHCvM9Ul"
+    }
+}
+```
+
+```json
+// OKX - query orders
+{
+    "ref_id": "DMO75rA2a4yuWXqPML3gOf3KdP4dLm",
+    "action": "query_orders",
+    "metadata": {
+        "exchange": "OKX",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "event": "query_orders",
+        "metadata": {
+            "result": false,
+            "account_id": "jq_okx_cny_master",
+            "error_code": 51001,
+            "error_code_msg": "Instrument ID doesn't exist",
+            "timestamp": "20230920224125601"
+        },
+        "timestamp": "20230920224125602"
+    },
+    "request": {
+        "exchange": "OKX",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "account_id": "jq_okx_cny_master",
+        "ref_id": "DMO75rA2a4yuWXqPML3gOf3KdP4dLm"
     }
 }
 ```
@@ -439,7 +782,63 @@
 }
 ```
 
+```json
+// OKX - submit
+{
+    "exchange": "OKX",
+    "symbol": "CRVUSDT",
+    "contract_type": "perp",
+    "metadata": {
+        "result": true,
+        "account_id": "jq_okx_cny_master",
+        "order_id": "626087139713110016",
+        "client_order_id": "",
+        "direction": "Sell",
+        "timestamp": "20230924160646244",
+        "fee": 0,
+        "update_type": "submitted"
+    },
+    "timestamp": "20230924160645966",
+    "order_info": {
+        "original_amount": 5,
+        "filled": 0,
+        "new_filled": 0,
+        "avg_executed_price": 0,
+        "submit_price": 0.475,
+        "status": "new"
+    }
+}
+```
+
 ## 2.2 cancel order
+
+```json
+// OKX
+{
+    "exchange": "OKX",
+    "symbol": "CRVUSDT",
+    "contract_type": "perp",
+    "metadata": {
+        "result": true,
+        "account_id": "jq_okx_cny_master",
+        "order_id": "626087139713110016",
+        "client_order_id": "",
+        "direction": "Sell",
+        "timestamp": "20230924160824784",
+        "fee": 0,
+        "update_type": "cancelled"
+    },
+    "timestamp": "20230924160824511",
+    "order_info": {
+        "original_amount": 5,
+        "filled": 0,
+        "new_filled": 0,
+        "avg_executed_price": 0,
+        "submit_price": 0.475,
+        "status": "cancelled"
+    }
+}
+```
 
 ## 2.3 order execuated
 

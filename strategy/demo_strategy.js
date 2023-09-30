@@ -1,4 +1,5 @@
 require("../config/typedef.js");
+
 const StrategyBase = require("./strategy_base.js");
 const Intercom = require("../module/intercom");
 
@@ -12,7 +13,11 @@ class DemoStrategy extends StrategyBase {
         this.subscribe_market_data();
 
         setTimeout(() => {
-            this._test_send_order();
+            // this._test_send_order();
+            // this._test_cancel_order();
+            // this._test_inspect_order();
+            // this._test_query_orders();
+            this._test_modify_order();
         }, 1000);
     }
 
@@ -58,51 +63,67 @@ class DemoStrategy extends StrategyBase {
 
     _test_send_order() {
         this.send_order({
-            exchange: EXCHANGE.BINANCEU,
-            symbol: "XEMUSDT",
+            exchange: EXCHANGE.OKX,
+            symbol: "CRVUSDT",
             contract_type: CONTRACT_TYPE.PERP,
-            price: 0.024,
-            quantity: 300,
+            price: 0.53,
+            quantity: 5,
             direction: DIRECTION.SELL,
             order_type: ORDER_TYPE.LIMIT,
-            account_id: "th_binance_cny_sub01",
-            client_order_id: "12345678910"
+            account_id: "jq_okx_cny_master",
+            client_order_id: "12345678911xxx"
         });
     };
 
     _test_cancel_order() {
         this.cancel_order({
-            exchange: EXCHANGE.BINANCEU,
-            symbol: "BTCUSDT",
+            exchange: EXCHANGE.OKX,
+            symbol: "CRVUSDT",
             contract_type: CONTRACT_TYPE.PERP,
-            // order_id: 166453859845,
-            account_id: "th_binance_cny_sub01",
-            client_order_id: "12345678914"
+            order_id: "627254420702912542",
+            account_id: "jq_okx_cny_master",
+            // client_order_id: "12345678911xxx"
         });
     };
 
     _test_inspect_order() {
         this.inspect_order({
-            exchange: EXCHANGE.BINANCEU,
-            symbol: "BTCUSDT",
+            exchange: EXCHANGE.OKX,
+            symbol: "CRVUSDT",
             contract_type: CONTRACT_TYPE.PERP,
             // order_id: 166453859845,
-            account_id: "th_binance_cny_sub01",
-            client_order_id: "12345678913"
+            account_id: "jq_okx_cny_master",
+            client_order_id: "12345678910"
+        });
+    };
+
+    _test_modify_order() {
+        this.modify_order({
+            exchange: EXCHANGE.OKX,
+            symbol: "CRVUSDT",
+            contract_type: CONTRACT_TYPE.PERP,
+            price: 0.54,
+            quantity: 10,
+            order_id: "627254882340593664",
+            account_id: "jq_okx_cny_master",
+            // client_order_id: "12345678910"
         });
     };
 
     _test_query_orders() {
         this.query_orders({
-            exchange: EXCHANGE.BINANCEU,
-            symbol: "BTCUSDT",
+            exchange: EXCHANGE.OKX,
+            symbol: "CRVUSDT",
             contract_type: CONTRACT_TYPE.PERP,
-            account_id: "th_binance_cny_sub01"
+            account_id: "jq_okx_cny_master"
         });
     };
 
     _on_market_data_trade_ready(trade) {
-        console.log(JSON.stringify(trade));
+        // console.log(JSON.stringify(trade));
+    }
+
+    _on_market_data_bestquote_ready(bestquote) {
     }
 
     _test_slack_publish() {

@@ -12,7 +12,7 @@ ALIASES = ["R01", "R06", "R12", "R24", "STR", "SRE"];
 
 SUBSCRIPTION_LIST = [
     // CTA 
-    'BinanceU|1000SHIBUSDT|perp|trade',
+    // 'BinanceU|1000SHIBUSDT|perp|trade',
     // 'BinanceU|1000XECUSDT|perp|trade',
     // 'BinanceU|ADAUSDT|perp|trade',
     // 'BinanceU|ALGOUSDT|perp|trade',
@@ -66,14 +66,17 @@ SUBSCRIPTION_LIST = [
     // 'BinanceU|THETAUSDT|perp|trade',
     // 'BinanceU|VETUSDT|perp|trade',
     // 'BinanceU|WAVESUSDT|perp|trade',
-    // 'BinanceU|XEMUSDT|perp|trade',
+    'BinanceU|XEMUSDT|perp|trade',
     // 'BinanceU|XRPUSDT|perp|trade',
     // 'BinanceU|XTZUSDT|perp|trade',
     // 'BinanceU|YFIUSDT|perp|trade',
     // 'BinanceU|ZECUSDT|perp|trade',
     // 'BinanceU|ZILUSDT|perp|trade',
 
-    'BinanceU|XEMUSDT|perp|bestquote'
+    // spread arbitrage
+    // 'BinanceU|CRVUSDT|perp|bestquote',
+    // 'OKX|CRVUSDT|perp|bestquote',
+    'OKX|CRVUSDT|perp|bestquote'
 ]
 
 POS_STATUS = {

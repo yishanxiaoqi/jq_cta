@@ -26,7 +26,23 @@
         }
     },
     "OKX": {
-        "websocketUrl": "wss://fstream.binance.com/stream?streams=",
-        "privateWebsocketUrl": "wss://fstream.binance.com/ws/"
+        "publicWebsocketUrl": "wss://ws.okx.com:8443/ws/v5/public",
+        "privateWebsocketUrl": "wss://ws.okx.com:8443/ws/v5/private",
+        "businessWebsocketUrl": "wss://ws.okx.com:8443/ws/v5/business",
+        "restUrl": "https://www.okx.com",
+        "restUrlPlaceOrder": "/api/v5/trade/order",
+        "restUrlCancelOrder": "/api/v5/trade/cancel-order",
+        "restUrlModifyOrder": "/api/v5/trade/amend-order",
+        "restUrlQueryOrders": "/api/v5/trade/orders-pending",
+        "symbolMap": {
+            "CRVUSDT": "CRV-USDT"
+        },
+        "marketDataThemeMap": {
+            "trade": "trades-all",
+            "bestquote": "tickers"
+        },
+        "accountIdMap": {
+            "215357687528034304": "jq_okx_cny_master"
+        }
     }
 }

@@ -1,6 +1,7 @@
 require("../config/typedef.js");
 const Slack = require("../module/slack");
 const BinanceU = require("../exchange/exchange_binanceU.js");
+const OKX = require("../exchange/exchange_okx.js");
 
 const logger = require("../module/logger.js");
 const Intercom = require("../module/intercom");
@@ -39,7 +40,10 @@ class FeedApp {
     start() {
         this._register_events();
         let bn = new BinanceU("BinanceU", this.intercom);
+        let ok = new OKX("OKX", this.intercom);
+
         bn.start();
+        ok.start();
     }
 }
 
@@ -52,19 +56,19 @@ var intercom_config = [
 var feed_app = new FeedApp(new Intercom(intercom_config));
 feed_app.start();
 
-// process.on('SIGINT', async () => {
-//     logger.info("Feed::SIGINT");
-//     setTimeout(() => process.exit(), 3000)
-// });
+process.on('SIGINT', async () => {
+    logger.info("Feed::SIGINT");
+    setTimeout(() => process.exit(), 3000)
+});
 
-// process.on('exit', async () => {
-//     logger.info("Feed:: exit");
-// });
+process.on('exit', async () => {
+    logger.info("Feed:: exit");
+});
 
-// process.on('uncaughtException', (err) => {
-//     logger.error(`uncaughtException: ${JSON.stringify(err.stack)}`);
-// });
+process.on('uncaughtException', (err) => {
+    logger.error(`uncaughtException: ${JSON.stringify(err.stack)}`);
+});
 
-// process.on('unhandledRejection', (reason, p) => {
-//     logger.error(`unhandledRejection: ${p}, reason: ${reason}`);
-// });
+process.on('unhandledRejection', (reason, p) => {
+    logger.error(`unhandledRejection: ${p}, reason: ${reason}`);
+});

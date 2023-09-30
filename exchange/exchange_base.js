@@ -9,7 +9,7 @@ const token = require("../config/token.json");
 
 class ExchangeBase {
     constructor(name, intercom) {
-        this.name = name;           // 交易所名字：如BinanceU, Bybit
+        this.name = name;           // 交易所名字：如BinanceU, Bybit, OKX
         this.intercom = intercom;
 
         this.on_market_data_subscription_handler = this.on_market_data_subscription.bind(this);
@@ -29,7 +29,9 @@ class ExchangeBase {
         logger.info(`${this.name}: no on_market_data_subscription implementation yet.`)
     }
 
-
+    _format_subscription_list() {
+        return SUBSCRIPTION_LIST.filter(x => x.split("|")[0] === this.name).map(x => this._format_subscription_item(x));
+    }
 
     send_order() {
 
@@ -43,21 +45,15 @@ class ExchangeBase {
 
     }
 
-    _get_rest_options(url, params, account_id = "test") {
-        console.log(account_id);
-        let apiSecret = token[account_id].apiSecret;
-        
-        let presign = querystring.stringify(params);
-        let signature = utils.HMAC("sha256", apiSecret, presign);
-        return {
-            url: url + "?",
-            postbody: presign + "&signature=" + signature
-        };
-    }
-
     _send_ws_message(ws, message) {
-        if (ws['readyState'] !== WS.OPEN) {
-            // logger.error(`${this.name}::${__callee}| send ws message failed for websocket not open yet: ${message}`);
+        /**
+         * 0: CONNECTING
+         * 1: OPEN
+         * 2: CLOSING
+         * 3: CLOSED
+         */
+        if (ws.readyState !== WS.OPEN) {
+            logger.error(`${this.name}: send ws message failed for websocket not open yet: ${JSON.stringify(message)}`);
             return;
         }
 

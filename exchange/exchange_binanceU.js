@@ -3,6 +3,7 @@ require("../config/stratdef.js");
 const WS = require("ws");
 const randomID = require("random-id");
 const rp = require("request-promise-native");
+const querystring = require("querystring");
 
 const utils = require("../utils/util_func");
 const ExchangeBase = require("./exchange_base.js");
@@ -21,95 +22,121 @@ class ExchangeBinanceU extends ExchangeBase {
     }
 
     async _init_websocket() {
-        for (let account_id of this.account_ids) {
-            this.ws_connections[account_id] = {};
-            if (this.listenKeys[account_id] === undefined) {
-                await this.get_listenKey(account_id);
-            }
+        for (let account_id of this.account_ids) this._init_individual_websocket(account_id);
+    }
     
-            this.ws_connections[account_id]["ws"] = new WS(apiconfig.BinanceU.privateWebsocketUrl + this.listenKey + "?listenKey=" + this.listenKey);
-    
-            this.ws_connections[account_id]["ws"].on("open", (evt) => {
-                logger.info(`${this.name}|${account_id}: private WS is CONNECTED.`);
-    
-                this.ws_connections[account_id]["ws_connected_ts"] = Date.now();
-    
-                if (this.ws_connections[account_id]["ws_keep_alive_interval"]) {
-                    clearInterval(this.ws_connections[account_id]["ws_keep_alive_interval"]);
-                    this.ws_connections[account_id]["ws_keep_alive_interval"] = undefined;
-                }
-                this.ws_connections[account_id]["ws_keep_alive_interval"] = setInterval(() => {
-                    this.ws_connections[account_id]["ws"].ping(() => { });
-                    this.ws_connections[account_id]["ws"].pong(() => { });
-    
-                    if (Date.now() - this.ws_connections[account_id]["ws_connected_ts"] > 23 * 60 * 60 * 1000) {
-                        logger.warn(`${this.name}|${account_id}: reconnect this private WS...`)
-                        this._reconnect_ws(account_id);
-                    }
-                }, 30000);
-    
-                setInterval(() => {
-                    this.extend_listenKey(account_id);
-                }, 1000 * 60 * 50);
-    
-                // 100毫秒后订阅频道
-                if(account_id === "th_binance_cny_master") {
-                    setTimeout(() => {
-                        const sub_id = +randomID(6, '0');
-                        const sub_streams = this._format_subscription_list();
-                        this._send_ws_message(this.ws_connections[account_id]["ws"], { method: "SUBSCRIBE", params: sub_streams, id: sub_id });
-                    }, 100);
-                }
-            });
-    
-            this.ws_connections[account_id]["ws"].on("close", (code, reason) => {
-                logger.warn(`${this.name}:: private websocket is DISCONNECTED. reason: ${reason} code: ${code}`);
-                // logger.error(`${this.name} private WS is DISCONNECTED.`);
-    
-                if (code === 1006) {
-                    // 很有可能是VPN连接不稳定
-                    this._init_websocket();
-                }
-            });
-    
-            this.ws_connections[account_id]["ws"].on("message", (evt) => {
-                let jdata;
-                try {
-                    jdata = JSON.parse(evt);
-                } catch (ex) {
-                    logger.error(ex);
-                    return;
-                }
-    
-                // if (jdata["e"] !== "aggTrade") {
-                //     logger.info(`${this.name}|${account_id}: ${JSON.stringify(jdata)}`);
-                // }
-    
-                logger.info(`${this.name}|${account_id}: ${JSON.stringify(jdata)}`);
-    
-                if (jdata["e"] === "ORDER_TRADE_UPDATE") {
-                    // order_update更新
-                    let order_update = this._format_order_update(jdata);
-                    this.intercom.emit("ORDER_UPDATE", order_update, INTERCOM_SCOPE.FEED);
-                } else if (["aggTrade", "bookTicker"].includes(jdata["e"])) {
-                    // trade价格更新
-                    let market_data = this._format_market_data(jdata);
-                    this.intercom.emit("MARKET_DATA", market_data, INTERCOM_SCOPE.FEED);
-                } else if (jdata["e"] === "ACCOUNT_UPDATE") {
-                    let account_update = jdata;
-                    this.intercom.emit("ACCOUNT_UPDATE", account_update, INTERCOM_SCOPE.FEED);
-                }
-            });
-    
-            this.ws_connections[account_id]["ws"].on("error", (evt) => {
-                logger.error(`${this.name}|${account_id}private_websocket on error: ` + evt);
-            });
-    
-            this.ws_connections[account_id]["ws"].on("ping", (evt) => {
-                logger.info("private_websocket on ping, response with pong.");
-                this.ws_connections[account_id]["ws"].pong();
-            });
+    async _init_individual_websocket(account_id) {
+        this.ws_connections[account_id] = {};
+        if (this.listenKeys[account_id] === undefined) {
+            await this.get_listenKey(account_id);
         }
+
+        this.ws_connections[account_id]["ws"] = new WS(apiconfig.BinanceU.privateWebsocketUrl + this.listenKey + "?listenKey=" + this.listenKey);
+
+        this.ws_connections[account_id]["ws"].on("open", (evt) => {
+            logger.info(`${this.name}|${account_id}: WS is CONNECTED.`);
+
+            this.ws_connections[account_id]["reconnecting"] = false;
+            this.ws_connections[account_id]["connected"] = true;
+            this.ws_connections[account_id]["ws_connected_ts"] = Date.now();
+
+            if (this.ws_connections[account_id]["ws_keep_alive_interval"]) {
+                clearInterval(this.ws_connections[account_id]["ws_keep_alive_interval"]);
+                this.ws_connections[account_id]["ws_keep_alive_interval"] = undefined;
+            }
+            this.ws_connections[account_id]["ws_keep_alive_interval"] = setInterval(() => {
+                this.ws_connections[account_id]["ws"].ping(() => { });
+                this.ws_connections[account_id]["ws"].pong(() => { });
+
+                if (Date.now() - this.ws_connections[account_id]["ws_connected_ts"] > 23 * 60 * 60 * 1000) {
+                    logger.warn(`${this.name}|${account_id}: reconnect this WS...`)
+                    this._reconnect_ws(account_id);
+                }
+            }, 30000);
+
+            setInterval(() => {
+                this.extend_listenKey(account_id);
+            }, 1000 * 60 * 50);
+
+            // 100毫秒后订阅频道
+            if(account_id === "th_binance_cny_master") {
+                setTimeout(() => {
+                    const sub_id = +randomID(6, '0');
+                    const sub_streams = this._format_subscription_list();
+                    this._send_ws_message(this.ws_connections[account_id]["ws"], { method: "SUBSCRIBE", params: sub_streams, id: sub_id });
+                }, 100);
+            }
+        });
+
+        this.ws_connections[account_id]["ws"].on("close", (code, reason) => {
+            logger.warn(`${this.name}|${account_id}:: websocket is DISCONNECTED. reason: ${reason} code: ${code}`);
+            // logger.error(`${this.name} WS is DISCONNECTED.`);
+
+            if (code === 1006) {
+                // 很有可能是VPN连接不稳定
+                this._reconnect_ws(account_id);
+            }
+        });
+
+        this.ws_connections[account_id]["ws"].on("message", (evt) => {
+            let jdata;
+            try {
+                jdata = JSON.parse(evt);
+            } catch (ex) {
+                logger.error(ex);
+                return;
+            }
+
+            // if (jdata["e"] !== "aggTrade") {
+            //     logger.info(`${this.name}|${account_id}: ${JSON.stringify(jdata)}`);
+            // }
+
+            // logger.info(`${this.name}|${account_id}: ${JSON.stringify(jdata)}`);
+
+            if (jdata["e"] === "ORDER_TRADE_UPDATE") {
+                // order_update更新
+                let order_update = this._format_order_update(jdata);
+                this.intercom.emit("ORDER_UPDATE", order_update, INTERCOM_SCOPE.FEED);
+            } else if (["aggTrade", "bookTicker"].includes(jdata["e"])) {
+                // trade价格更新
+                let market_data = this._format_market_data(jdata);
+                this.intercom.emit("MARKET_DATA", market_data, INTERCOM_SCOPE.FEED);
+            } else if (jdata["e"] === "ACCOUNT_UPDATE") {
+                let account_update = jdata;
+                this.intercom.emit("ACCOUNT_UPDATE", account_update, INTERCOM_SCOPE.FEED);
+            }
+        });
+
+        this.ws_connections[account_id]["ws"].on("error", (evt) => {
+            logger.error(`${this.name}|${account_id}: websocket on error: ` + evt);
+        });
+
+        this.ws_connections[account_id]["ws"].on("ping", (evt) => {
+            logger.info(`${this.name}|${account_id}: websocket on ping, response with pong.`);
+            this.ws_connections[account_id]["ws"].pong();
+        });
+    }
+
+    _reconnect_ws(account_id) {
+        if (this.ws_connections[account_id]["reconnecting"]) {
+            logger.info(`${this.name}|${account_id}: websocket is already reconnecting.`);
+            return;
+        }
+        this.ws_connections[account_id]["reconnecting"] = true;
+
+        try {
+            if (this.ws_connections[account_id]["connected"]) {
+                logger.info(`${this.name}|${account_id}: websocket was closed by _reconnect_ws.`);
+                this.ws_connections[account_id]["ws"].close();
+            }
+        } catch (e) {
+            logger.error(`${this.name}|${account_id}: error ${e.stack}`);
+        }
+
+        setTimeout(() => {
+            logger.info(`${this.name}|${account_id}: websocket is reconnecting...`);
+            this._init_individual_websocket(account_id);
+        }, 100);
     }
   
     async get_listenKey(account_id) {
@@ -130,8 +157,25 @@ class ExchangeBinanceU extends ExchangeBase {
         logger.info(`${this.name}|${account_id}: listen key received: ${this.listenKey}`);
     }
 
-    _format_subscription_list() {
-        return SUBSCRIPTION_LIST.filter(x => x.split("|")[0] === this.name).map(x => this._format_subscription_item(x));
+    async extend_listenKey(account_id) {
+        let url = apiconfig.BinanceU.restUrl + apiconfig.BinanceU.restUrlListenKey;
+        let params = this._get_rest_options(url, {}, account_id);
+
+        var options = {
+            url: params["url"] + params["postbody"],
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-MBX-APIKEY": token[account_id].apiKey
+            }
+        };
+
+        try {
+            let body = await rp.put(options);
+            logger.info(`${this.name}|${account_id}: listen key extended: ${JSON.stringify(body)}`);
+        } catch (err) {
+            logger.error(`${this.name}|${account_id}: listen key extension error: ${JSON.stringify(err)}`);
+        }
+
     }
 
     _format_subscription_item(subscription_item) {
@@ -146,6 +190,34 @@ class ExchangeBinanceU extends ExchangeBase {
             case MARKET_DATA.BESTQUOTE:
                 return `${symbol.toLowerCase()}@bookTicker`;
         }
+    }
+
+    _format_order_update(jdata) {
+        let order_update = {
+            exchange: EXCHANGE.BINANCEU,
+            symbol: jdata["o"]["s"],
+            contract_type: "perp",
+            metadata: {
+                result: true,
+                account_id: this.account_id,
+                order_id: jdata["o"]["i"],
+                client_order_id: jdata["o"]["c"],
+                direction: (jdata["o"]["S"] === "SELL") ? DIRECTION.SELL : DIRECTION.BUY,
+                timestamp: utils.get_human_readable_timestamp(jdata["o"]["T"]),
+                fee: jdata["o"]["n"] ? parseFloat(jdata["o"]["n"]) : undefined,
+                update_type: this._convert_to_standard_order_update_type(jdata["o"]["x"])
+            },
+            timestamp: utils._util_get_human_readable_timestamp(),
+            order_info: {
+                original_amount: parseFloat(jdata["o"]["q"]),
+                filled: parseFloat(jdata["o"]["z"]),
+                new_filled: parseFloat(jdata["o"]["l"]),
+                avg_executed_price: parseFloat(jdata["o"]["ap"]),
+                submit_price: parseFloat(jdata["o"]["p"]),
+                status: this._convert_to_standard_order_status(jdata["o"]["X"])
+            }
+        };
+        return order_update;
     }
 
     _format_market_data(jdata) {
@@ -248,6 +320,17 @@ class ExchangeBinanceU extends ExchangeBase {
             case "AMENDMENT - Order Modified":
                 return ORDER_UPDATE_TYPE.MODIFIED;
         }
+    }
+
+    _get_rest_options(url, params, account_id = "test") {
+        let apiSecret = token[account_id].apiSecret;
+        let presign = querystring.stringify(params);
+        let signature = utils.HMAC("sha256", apiSecret, presign);
+
+        return {
+            url: url + "?",
+            postbody: presign + "&signature=" + signature
+        };
     }
 
     async _send_order_via_rest(order) {

@@ -1,17 +1,28 @@
 {
-    "exchange": "BinanceU",
-    "symbol": "XEMUSDT",
-    "contract_type": "perp",
-    "data_type": "bestquote",
-    "metadata": [
-        [
-            "3252310238667",
-            "20230911112922484",
-            0.0243,
-            6427658,
-            0.0242,
-            3062104
-        ]
-    ],
-    "timestamp": "20230911112920823"
+    "ref_id": "DMOKXOhj9iMPLLJqoF3ZdvGB1hNdjz",
+    "action": "modify_order",
+    "metadata": {
+        "exchange": "OKX",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "event": "modify_order",
+        "metadata": {
+            "result": false,
+            "account_id": "jq_okx_cny_master",
+            "error_code": 1,
+            "error_code_msg": "All operations failed"
+        },
+        "timestamp": "20230927215806468"
+    },
+    "request": {
+        "exchange": "OKX",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "price": 0.49,
+        "quantity": 6,
+        "order_id": "627254882340593664",
+        "account_id": "jq_okx_cny_master",
+        "ref_id": "DMOKXOhj9iMPLLJqoF3ZdvGB1hNdjz",
+        "send_time": "20230927215805393"
+    }
 }

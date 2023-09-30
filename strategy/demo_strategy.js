@@ -17,7 +17,8 @@ class DemoStrategy extends StrategyBase {
             // this._test_cancel_order();
             // this._test_inspect_order();
             // this._test_query_orders();
-            this._test_modify_order();
+            // this._test_modify_order();
+            this._test_query_account();
         }, 1000);
     }
 
@@ -57,7 +58,7 @@ class DemoStrategy extends StrategyBase {
         this.query_account({
             exchange: EXCHANGE.BINANCEU,
             contract_type: CONTRACT_TYPE.PERP,
-            account_id: "th_binance_cny_sub01"
+            account_id: "th_binance_cny_master"
         });
     }
 
@@ -136,6 +137,10 @@ class DemoStrategy extends StrategyBase {
 
     on_order_update(order_update) {
         console.log(JSON.stringify(order_update));
+    }
+
+    on_query_account_response(response) {
+        logger.info('Demo', JSON.stringify(response));
     }
 }
 

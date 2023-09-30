@@ -12,11 +12,11 @@ class BalanceMonitor extends StrategyBase {
         super(name, alias, intercom);
 
         // 需要自行修改 ========
-        this.account_id = "jq_cta_02";
-        this.init_equity = 5713.51;
-        this.denominator = 5713.51;
+        this.account_id = "th_binance_cny_master";
+        this.init_equity = 53984.51;
+        this.denominator = 49337.34;        ;
         this.init_date = moment("2023-06-23");
-        this.aliases = ["R01", "R06", "R12", "R24", "STR"];
+        this.aliases = ["R01", "R06", "R12", "R24", "STR", "SRE"];
 
         // only one account_id for now;
         this.account_summary = {};
@@ -29,7 +29,7 @@ class BalanceMonitor extends StrategyBase {
             this.query_account({
                 exchange: EXCHANGE.BINANCEU,
                 contract_type: CONTRACT_TYPE.PERP,
-                account_id: "jq_cta_02"
+                account_id: "th_binance_cny_master"
             }) 
         }, 1000 * 60 * 1);
 
@@ -59,7 +59,10 @@ class BalanceMonitor extends StrategyBase {
 
         for (let alias of this.aliases) {
 
-            if (alias === "STR") {
+            if (alias === "SRE") { 
+                add_items = ["status", "triggered", "pos", "fee", "net_profit", "sar", "up", "dn"]; 
+                text += `========${alias}========\nentry\tstatus\tpos\tfee\tnp\tsar(sp)\tup\tdn\n`;
+            } else if (alias === "STR") {
                 add_items = ["status", "pos", "fee", "net_profit", "sar", "up", "dn"]; 
                 text += `========${alias}========\nentry\tstatus\tpos\tfee\tnp\tsar(sp)\tup\tdn\n`;
             } else {
@@ -123,7 +126,6 @@ class BalanceMonitor extends StrategyBase {
     }
 
     on_query_account_response(response) {
-
         let real_positions = response.metadata.metadata.positions;
         let balance = response.metadata.metadata.balance;
         let cal_positions = {};
@@ -131,7 +133,7 @@ class BalanceMonitor extends StrategyBase {
         for (let alias of this.aliases) {
             let cfg = JSON.parse(fs.readFileSync(`./config/cfg_${alias}.json`, 'utf8'));
             let status_map = JSON.parse(fs.readFileSync(`./config/status_map_${alias}.json`, 'utf8'));
-            let loop_items = (alias === "STR")? cfg["entries"]: cfg["idfs"];
+            let loop_items = (["STR", "SRE"].includes(alias))? cfg["entries"]: cfg["idfs"];
 
             for (let item of loop_items) {
                 let symbol = item.split(".")[1];
@@ -174,7 +176,7 @@ class BalanceMonitor extends StrategyBase {
         this.account_summary["nv"] = stratutils.round(this.account_summary["equity"] / this.denominator, 4); 
         this.account_summary["pnl"] = stratutils.round(this.account_summary["equity"] - this.init_equity, 2);
         this.account_summary["unrealized_pnl"] = stratutils.round(balance["unrealized_pnl_in_USDT"], 2);
-        this.account_summary["ret"] = stratutils.round(this.account_summary["pnl"] / this.init_equity, 4); 
+        this.account_summary["ret"] = stratutils.round(this.account_summary["nv"] - 1, 4); 
         this.account_summary["annual_ret"] = stratutils.round(this.account_summary["ret"] / n_days * 365, 4); 
 
         this.account_summary["total_position_initial_margin_in_USDT"] = stratutils.round(real_positions.map(e => e.positionInitialMargin * e.leverage).reduce((a, b) => a + b), 2); 
@@ -246,19 +248,19 @@ let intercom_config = [
 strategy = new BalanceMonitor("BalanceMonitor", "BAM", new Intercom(intercom_config));
 strategy.start();
 
-process.on('SIGINT', async () => {
-    logger.info(`${strategy.alias}::SIGINT`);
-    setTimeout(() => process.exit(), 3000)
-});
+// process.on('SIGINT', async () => {
+//     logger.info(`${strategy.alias}::SIGINT`);
+//     setTimeout(() => process.exit(), 3000)
+// });
 
-process.on('exit', async () => {
-    logger.info(`${strategy.alias}:: exit`);
-});
+// process.on('exit', async () => {
+//     logger.info(`${strategy.alias}:: exit`);
+// });
 
-process.on('uncaughtException', (err) => {
-    logger.error(`uncaughtException: ${JSON.stringify(err.stack)}`);
-});
+// process.on('uncaughtException', (err) => {
+//     logger.error(`uncaughtException: ${JSON.stringify(err.stack)}`);
+// });
 
-process.on('unhandledRejection', (reason, p) => {
-    logger.error(`unhandledRejection: ${p}, reason: ${reason}`);
-});
+// process.on('unhandledRejection', (reason, p) => {
+//     logger.error(`unhandledRejection: ${p}, reason: ${reason}`);
+// });

@@ -86,7 +86,7 @@ class StrategyBase {
     }
 
     _on_market_data_bestquote_ready(bestquote) {
-        logger.info(`${this.alias}: no implementation for market data bestquote ready.`)
+        // logger.info(`${this.alias}: no implementation for market data bestquote ready.`)
     }
 
     on_order_update(order_update) {
@@ -263,9 +263,9 @@ class StrategyBase {
 
         // 这里可以放一些下单信息的检查和更新
         if (query["ref_id"] === undefined) query["ref_id"] = ref_id;
-        order["send_time"] = utils._util_get_human_readable_timestamp();
+        query["send_time"] = utils._util_get_human_readable_timestamp();
 
-        let response = await this._query_position_via_rest(query);
+        let response = await this.exchanges[query.exchange]._query_position_via_rest(query);
         this.intercom.emit(INTERCOM_CHANNEL.REQUEST_RESPONSE, response);
     }
 
@@ -276,9 +276,9 @@ class StrategyBase {
 
         // 这里可以放一些下单信息的检查和更新
         if (query["ref_id"] === undefined) query["ref_id"] = ref_id;
-        order["send_time"] = utils._util_get_human_readable_timestamp();
+        query["send_time"] = utils._util_get_human_readable_timestamp();
 
-        let response = await this._query_account_via_rest(query);
+        let response = await this.exchanges[query.exchange]._query_account_via_rest(query);
         this.intercom.emit(INTERCOM_CHANNEL.REQUEST_RESPONSE, response);
     }
 
@@ -287,9 +287,9 @@ class StrategyBase {
 
         // 这里可以放一些下单信息的检查和更新
         if (query["ref_id"] === undefined) query["ref_id"] = ref_id;
-        order["send_time"] = utils._util_get_human_readable_timestamp();
+        query["send_time"] = utils._util_get_human_readable_timestamp();
 
-        let response = await this._query_quantitative_rules_via_rest(query);
+        let response = await this.exchanges[query.exchange]._query_quantitative_rules_via_rest(query);
         this.intercom.emit(INTERCOM_CHANNEL.REQUEST_RESPONSE, response);
     }
 }

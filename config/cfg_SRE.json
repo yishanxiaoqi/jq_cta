@@ -1,15 +1,15 @@
 {
     "alias": "SRE",
-    "clear_existing_status": true,
+    "clear_existing_status": false,
     "ini_usdt": 300,
     "act_ids": [
-        "jq_cta_02"
+        "th_binance_cny_master"
     ],
     "ex_act_id_order_uds": [
-        "BinanceU|jq_cta_02"
+        "BinanceU|th_binance_cny_master"
     ],
     "ex_act_id_pos_info": [
-        "BinanceU|jq_cta_02"
+        "BinanceU|th_binance_cny_master"
     ],
     "symbols": [
         "1000XECUSDT"
@@ -29,7 +29,7 @@
         "delta_af": 0.08,
         "bar_enter_limit": 1,
         "ini_usdt": 50,
-        "act_id": "jq_cta_02",
+        "act_id": "th_binance_cny_master",
         "cfgID": "SREXXXX"
     }
 }

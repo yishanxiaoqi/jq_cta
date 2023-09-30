@@ -20,11 +20,6 @@ class SimpleTrendStrategy extends StrategyBase{
 
         this.cfg = require(`../config/cfg_${alias}.json`);
 
-        // account_id及其对应的apiKey和apiSecret，目前一个策略只能做一个账号
-        this.account_id = "jq_cta_02";
-        this.apiKey = token.apiKey;
-        this.apiSecret = token.apiSecret;
-
         this.init_status_map();
         this.init_order_map();  // this will set order_map to be empty
         this.init_summary();

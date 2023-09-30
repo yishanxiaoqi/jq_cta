@@ -18,11 +18,6 @@ class RevTrendStrategy extends StrategyBase {
 
         this.cfg = require(`../config/cfg_${alias}.json`);
 
-        // account_id及其对应的apiKey和apiSecret，目前一个策略只能做一个账号
-        this.account_id = "jq_cta_02";
-        this.apiKey = token.apiKey;
-        this.apiSecret = token.apiSecret;
-
         this.init_status_map();
         this.init_order_map();  // this will set order_map to be empty
         this.init_summary();
@@ -1013,7 +1008,7 @@ class RevTrendStrategy extends StrategyBase {
                 this.query_quantitative_rules({
                     exchange: EXCHANGE.BINANCEU,
                     contract_type: CONTRACT_TYPE.PERP,
-                    account_id: this.account_id
+                    account_id: act_id
                 });
             } else {
                 logger.warn(`${that.alias}::on_response|${order_idf}::unknown error occured during ${action}: ${error_code}: ${error_code_msg}`);

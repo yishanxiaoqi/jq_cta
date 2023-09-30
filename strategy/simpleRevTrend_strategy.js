@@ -18,11 +18,6 @@ class SimpleRevTrendStrategy extends StrategyBase {
 
         this.cfg = require(`../config/cfg_${alias}.json`);
 
-        // account_id及其对应的apiKey和apiSecret，目前一个策略只能做一个账号
-        this.account_id = "jq_cta_02";
-        this.apiKey = token.apiKey;
-        this.apiSecret = token.apiSecret;
-
         this.init_status_map();
         this.init_order_map();  // this will set order_map to be empty
         this.init_summary();
@@ -375,8 +370,8 @@ class SimpleRevTrendStrategy extends StrategyBase {
                     that.status_map[entry]["enter"] = avg_executed_price;
                     that.status_map[entry]["sar"] = (that.status_map[entry]["status"] === "LONG")? avg_executed_price * (1 + cutloss_rate) : avg_executed_price * (1 - cutloss_rate);
 
-                    that.status_map[entry]["ep"] = stratutils.transform_with_tick_size(that.status_map[idf]["ep"], PRICE_TICK_SIZE[idf]);
-                    that.status_map[entry]["sar"] = stratutils.transform_with_tick_size(that.status_map[idf]["sar"], PRICE_TICK_SIZE[idf]);
+                    that.status_map[entry]["ep"] = stratutils.transform_with_tick_size(that.status_map[entry]["ep"], PRICE_TICK_SIZE[idf]);
+                    that.status_map[entry]["sar"] = stratutils.transform_with_tick_size(that.status_map[entry]["sar"], PRICE_TICK_SIZE[idf]);
                 }
 
                 // 订单完全成交，在order_map中删去该订单（注意：完全成交才删除，且当场删除！）
@@ -680,7 +675,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
             // 第一个单：高价反手单（limit order）
             let up_tgt_qty = stratutils.transform_with_tick_size(that.status_map[entry]["pos"] + ini_usdt / up_price, QUANTITY_TICK_SIZE[idf]);
             if (that.order_map[entry]["ANTI_L|REVERSE"] === undefined) {
-                orders_to_be_submitted.push({ label: "ANTI_L|REVERSE", target: "SHORT", quantity: up_tgt_qty, price: up_price, direction: DIRECTION.SELL });
+                orders_to_be_submitted.push({ label: "ANTI_L|REVERSE", target: "SHORT", quantity: up_tgt_qty, price: up_price, direction: DIRECTION.SELL, order_type: ORDER_TYPE.LIMIT });
             } else {
                 let current_reverse_client_order_id = that.order_map[entry]["ANTI_L|REVERSE"]["client_order_id"];
                 let current_reverse_price = that.order_map[entry]["ANTI_L|REVERSE"]["price"];
@@ -689,14 +684,14 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 if ((current_reverse_price !== up_price) || (current_reverse_qty !== up_tgt_qty)) {
                     // 若已存的对手单（反手单）和现行不一致，则撤销重新发
                     orders_to_be_cancelled.push(current_reverse_client_order_id);
-                    orders_to_be_submitted.push({ label: "ANTI_L|REVERSE", target: "SHORT", quantity: up_tgt_qty, price: up_price, direction: DIRECTION.SELL });
+                    orders_to_be_submitted.push({ label: "ANTI_L|REVERSE", target: "SHORT", quantity: up_tgt_qty, price: up_price, direction: DIRECTION.SELL, order_type: ORDER_TYPE.LIMIT });
                 }
             }
 
             // 第二个单：低价止损单（stop market order）
             let sp_tgt_qty = stratutils.transform_with_tick_size(that.status_map[entry]["pos"], QUANTITY_TICK_SIZE[idf]);
             if (that.order_map[entry]["ANTI_L|STOPLOSS"] === undefined) {
-                orders_to_be_submitted.push({ label: "ANTI_L|STOPLOSS", target: "SHORT", quantity: sp_tgt_qty, stop_price: stoploss_price, direction: DIRECTION.SELL });
+                orders_to_be_submitted.push({ label: "ANTI_L|STOPLOSS", target: "EMPTY", quantity: sp_tgt_qty, stop_price: stoploss_price, direction: DIRECTION.SELL, order_type: ORDER_TYPE.STOP_MARKET });
             } else {
                 let current_stoploss_client_order_id = that.order_map[entry]["ANTI_L|STOPLOSS"]["client_order_id"];
                 let current_stoploss_price = that.order_map[entry]["ANTI_L|STOPLOSS"]["price"];
@@ -705,7 +700,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 if ((current_stoploss_price !== stoploss_price) || (current_stoploss_qty !== sp_tgt_qty)) {
                     // 若已存的对手单（反手单）和现行不一致，则撤销重新发
                     orders_to_be_cancelled.push(current_stoploss_client_order_id);
-                    orders_to_be_submitted.push({ label: "ANTI_L|REVERSE", target: "SHORT", quantity: tgt_qty, stop_price: up_price, direction: DIRECTION.SELL });
+                    orders_to_be_submitted.push({ label: "ANTI_L|STOPLOSS", target: "EMPTY", quantity: sp_tgt_qty, stop_price: up_price, direction: DIRECTION.SELL, order_type: ORDER_TYPE.STOP_MARKET });
                 }
             }
 
@@ -737,7 +732,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
             let dn_tgt_qty = stratutils.transform_with_tick_size(- that.status_map[entry]["pos"] + ini_usdt / dn_price, QUANTITY_TICK_SIZE[idf]);
             if (that.order_map[entry]["ANTI_S|REVERSE"] === undefined) {
                 // 对手单还没有发送
-                orders_to_be_submitted.push({ label: "ANTI_S|REVERSE", target: "LONG", quantity: dn_tgt_qty, price: dn_price, direction: DIRECTION.BUY });
+                orders_to_be_submitted.push({ label: "ANTI_S|REVERSE", target: "LONG", quantity: dn_tgt_qty, price: dn_price, direction: DIRECTION.BUY, order_type: ORDER_TYPE.LIMIT });
             } else {
                 // 对手单已发，检查是否需要更改
                 let current_reverse_client_order_id = that.order_map[entry]["ANTI_S|REVERSE"]["client_order_id"];
@@ -747,7 +742,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 // 若已存的反手单和现行不一致，则撤销重新发
                 if ((current_reverse_price !== dn_price) || (current_reverse_qty !== tgt_qty)) {
                     orders_to_be_cancelled.push(current_reverse_client_order_id);
-                    orders_to_be_submitted.push({ label: "ANTI_S|REVERSE", target: "LONG", quantity: dn_tgt_qty, price: dn_price, direction: DIRECTION.BUY });
+                    orders_to_be_submitted.push({ label: "ANTI_S|REVERSE", target: "LONG", quantity: dn_tgt_qty, price: dn_price, direction: DIRECTION.BUY, order_type: ORDER_TYPE.LIMIT });
                 }
             }
 
@@ -755,7 +750,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
             let sp_tgt_qty = stratutils.transform_with_tick_size(- that.status_map[entry]["pos"], QUANTITY_TICK_SIZE[idf]);
             if (that.order_map[entry]["ANTI_S|STOPLOSS"] === undefined) {
                 // 对手单还没有发送
-                orders_to_be_submitted.push({ label: "ANTI_S|STOPLOSS", target: "LONG", quantity: sp_tgt_qty, stop_price: stoploss_price, direction: DIRECTION.BUY });
+                orders_to_be_submitted.push({ label: "ANTI_S|STOPLOSS", target: "EMPTY", quantity: sp_tgt_qty, stop_price: stoploss_price, direction: DIRECTION.BUY, order_type: ORDER_TYPE.STOP_MARKET });
             } else {
                 // 对手单已发，检查是否需要更改
                 let current_stoploss_client_order_id = that.order_map[entry]["ANTI_S|STOPLOSS"]["client_order_id"];
@@ -765,10 +760,9 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 // 若已存的反手单和现行不一致，则撤销重新发
                 if ((current_stoploss_price !== dn_price) || (current_stoploss_qty !== tgt_qty)) {
                     orders_to_be_cancelled.push(current_stoploss_client_order_id);
-                    orders_to_be_submitted.push({ label: "ANTI_S|STOPLOSS", target: "LONG", quantity: sp_tgt_qty, stop_price: stoploss_price, direction: DIRECTION.BUY });
+                    orders_to_be_submitted.push({ label: "ANTI_S|STOPLOSS", target: "EMPTY", quantity: sp_tgt_qty, stop_price: stoploss_price, direction: DIRECTION.BUY, order_type: ORDER_TYPE.STOP_MARKET });
                 }
             }
-            
         }
 
         // logger.info(`orders_to_be_cancelled: ${orders_to_be_cancelled}`);
@@ -977,7 +971,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 this.query_quantitative_rules({
                     exchange: EXCHANGE.BINANCEU,
                     contract_type: CONTRACT_TYPE.PERP,
-                    account_id: this.account_id
+                    account_id: act_id
                 });
             } else {
                 logger.warn(`${that.alias}::on_response|${order_idf}::unknown error occured during ${action}: ${error_code}: ${error_code_msg}`);

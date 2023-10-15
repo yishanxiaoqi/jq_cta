@@ -1,26 +1,35 @@
 {
     "alias": "SRE",
     "clear_existing_status": false,
-    "ini_usdt": 300,
-    "act_ids": [
-        "th_binance_cny_master"
-    ],
-    "ex_act_id_order_uds": [
-        "BinanceU|th_binance_cny_master"
-    ],
-    "ex_act_id_pos_info": [
-        "BinanceU|th_binance_cny_master"
-    ],
+    "ini_usdt": 50,
     "symbols": [
-        "1000XECUSDT"
+        "1000SHIBUSDT",
+        "ALICEUSDT",
+        "BANDUSDT",
+        "HBARUSDT",
+        "ONTUSDT",
+        "NKNUSDT",
+        "HOTUSDT"
     ],
     "idfs": [
-        "BinanceU.1000XECUSDT.perp"
+        "BinanceU.1000SHIBUSDT.perp",
+        "BinanceU.ALICEUSDT.perp",
+        "BinanceU.BANDUSDT.perp",
+        "BinanceU.HBARUSDT.perp",
+        "BinanceU.HOTUSDT.perp",
+        "BinanceU.NKNUSDT.perp",
+        "BinanceU.ONTUSDT.perp"
     ],
     "entries": [
-        "BinanceU.1000XECUSDT.perp.1h"
+        "BinanceU.1000SHIBUSDT.perp.1h",
+        "BinanceU.ALICEUSDT.perp.1h",
+        "BinanceU.BANDUSDT.perp.1h",
+        "BinanceU.HBARUSDT.perp.6h",
+        "BinanceU.ONTUSDT.perp.6h",
+        "BinanceU.NKNUSDT.perp.6h",
+        "BinanceU.HOTUSDT.perp.12h"
     ],
-    "BinanceU.1000XECUSDT.perp.1h": {
+    "BinanceU.1000SHIBUSDT.perp.1h": {
         "splitAt": 0,
         "track_ATR_n": 5,
         "track_ATR_multiplier": 1.5,
@@ -29,7 +38,79 @@
         "delta_af": 0.08,
         "bar_enter_limit": 1,
         "ini_usdt": 50,
-        "act_id": "th_binance_cny_master",
-        "cfgID": "SREXXXX"
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "SRE0001"
+    },
+    "BinanceU.ALICEUSDT.perp.1h": {
+        "splitAt": 0,
+        "track_ATR_n": 40,
+        "track_ATR_multiplier": 0.7,
+        "cutloss_rate": 0.3,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "ini_usdt": 50,
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "SRE0006"
+    },
+    "BinanceU.BANDUSDT.perp.1h": {
+        "splitAt": 0,
+        "track_ATR_n": 10,
+        "track_ATR_multiplier": 1.5,
+        "cutloss_rate": 0.4,
+        "ini_af": 0.04,
+        "delta_af": 0.04,
+        "bar_enter_limit": 1,
+        "ini_usdt": 50,
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "SRE0014"
+    },
+    "BinanceU.HBARUSDT.perp.6h": {
+        "splitAt": 5,
+        "track_ATR_n": 5,
+        "track_ATR_multiplier": 0.5,
+        "cutloss_rate": 0.4,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "ini_usdt": 50,
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "SRE0106"
+    },
+    "BinanceU.ONTUSDT.perp.6h": {
+        "splitAt": 1,
+        "track_ATR_n": 20,
+        "track_ATR_multiplier": 0.9,
+        "cutloss_rate": 0.4,
+        "ini_af": 0.1,
+        "delta_af": 0.1,
+        "bar_enter_limit": 1,
+        "ini_usdt": 50,
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "SRE0110"
+    },
+    "BinanceU.NKNUSDT.perp.6h": {
+        "splitAt": 3,
+        "track_ATR_n": 5,
+        "track_ATR_multiplier": 0.7,
+        "cutloss_rate": 0.5,
+        "ini_af": 0.01,
+        "delta_af": 0.01,
+        "bar_enter_limit": 1,
+        "ini_usdt": 50,
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "SRE0113"
+    },
+    "BinanceU.HOTUSDT.perp.12h": {
+        "splitAt": 2,
+        "track_ATR_n": 5,
+        "track_ATR_multiplier": 0.5,
+        "cutloss_rate": 0.1,
+        "ini_af": 0.01,
+        "delta_af": 0.01,
+        "bar_enter_limit": 1,
+        "ini_usdt": 50,
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "SRE0122"
     }
 }

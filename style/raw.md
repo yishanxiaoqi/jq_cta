@@ -485,6 +485,37 @@
 ## Modify Order
 
 ```json
+// BinanceU
+{
+    "orderId": 198570880253,
+    "symbol": "BTCUSDT",
+    "status": "NEW",
+    "clientOrderId": "12345678911xxx",
+    "price": "27300.00",
+    "avgPrice": "0.00",
+    "origQty": "0.010",
+    "executedQty": "0.000",
+    "cumQty": "0.000",
+    "cumQuote": "0.00000",
+    "timeInForce": "GTC",
+    "type": "LIMIT",
+    "reduceOnly": false,
+    "closePosition": false,
+    "side": "SELL",
+    "positionSide": "BOTH",
+    "stopPrice": "0.00",
+    "workingType": "CONTRACT_PRICE",
+    "priceProtect": false,
+    "origType": "LIMIT",
+    "priceMatch": "NONE",
+    "selfTradePreventionMode": "NONE",
+    "goodTillDate": 0,
+    "updateTime": 1697299690473
+}
+```
+
+```json
+// OK
 {
     "code": "0",
     "data": [
@@ -575,6 +606,10 @@
 
 # Order Update
 
+## Place Order
+
+## Cancel Order
+
 ```json
 // OKX
 {
@@ -653,3 +688,54 @@
     ]
 }
 ```
+
+## Inspect Order
+
+## Modify Order
+
+```json
+// Binance - Modify
+{
+    "e": "ORDER_TRADE_UPDATE",
+    "T": 1697301156450,
+    "E": 1697301156455,
+    "o": {
+        "s": "BTCUSDT",
+        "c": "12345678911xxx",
+        "S": "SELL",
+        "o": "LIMIT",
+        "f": "GTC",
+        "q": "0.010",
+        "p": "27800",
+        "ap": "0",
+        "sp": "0",
+        "x": "AMENDMENT",       // Execuation Type
+        "X": "NEW",             // Order Status
+        "i": 198570880253,
+        "l": "0",
+        "z": "0",
+        "L": "0",
+        "n": "0",
+        "N": "USDT",
+        "T": 1697301156450,
+        "t": 0,
+        "b": "0",
+        "a": "278",
+        "m": false,
+        "R": false,
+        "wt": "CONTRACT_PRICE",
+        "ot": "LIMIT",
+        "ps": "BOTH",
+        "cp": false,
+        "rp": "0",
+        "pP": false,
+        "si": 0,
+        "ss": 0,
+        "V": "NONE",
+        "pm": "NONE",
+        "gtd": 0
+    }
+}
+```
+
+## Query Order

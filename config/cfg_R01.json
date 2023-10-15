@@ -102,7 +102,7 @@
     },
     "BinanceU.XEMUSDT.perp": {
         "track_ATR_n": 20,
-        "track_ATR_multiplier": 0.2,
+        "track_ATR_multiplier": 0.1,
         "stoploss_rate": 0.05,
         "cutloss_rate": 0.03,
         "ini_af": 0.02,

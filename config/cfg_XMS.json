@@ -1,0 +1,45 @@
+{
+    "alias": "XES",
+    "clear_existing_status": true,
+    "max_num": 100,
+    "ini_usdt": 300,
+    "span": 3,
+    "symbols": [
+        "XEMUSDT"
+    ],
+    "idfs": [
+        "BinanceU.XEMUSDT.perp"
+    ],
+    "entries": [
+        "BinanceU.XEMUSDT.perp.15m",
+        "BinanceU.XEMUSDT.perp.30m",
+        "BinanceU.XEMUSDT.perp.1h"
+    ],
+    "BinanceU.XEMUSDT.perp.15m": {
+        "track_ATR_n": 20,
+        "track_ATR_multiplier": 0.2,
+        "bar_enter_limit": 10,
+        "splitAt": 0,
+        "ini_usdt": 500,
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "XES0001"
+    },
+    "BinanceU.XEMUSDT.perp.30m": {
+        "track_ATR_n": 20,
+        "track_ATR_multiplier": 0.2,
+        "bar_enter_limit": 10,
+        "splitAt": 0,
+        "ini_usdt": 500,
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "XES0002"
+    },
+    "BinanceU.XEMUSDT.perp.1h": {
+        "track_ATR_n": 20,
+        "track_ATR_multiplier": 0.1,
+        "bar_enter_limit": 10,
+        "splitAt": 0,
+        "ini_usdt": 500,
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "XES0003"
+    }
+}

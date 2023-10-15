@@ -1,3 +1,5 @@
+// 通过span发更多的单来增加成交概率
+// 通过cover order和stop market order来减小大趋势下的损失
 require("../config/typedef.js");
 const fs = require("fs");
 const moment = require("moment");
@@ -10,9 +12,8 @@ const request = require('../module/request.js');
 const utils = require("../utils/util_func.js");
 const stratutils = require("../utils/strat_util.js");
 const StrategyBase = require("./strategy_base.js");
-const token = require("../config/token.json");
 
-class SimpleRevTrendStrategy extends StrategyBase {
+class RevTrendXESStrategy extends StrategyBase {
     constructor(name, alias, intercom) {
         super(name, alias, intercom);
 
@@ -51,7 +52,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
         setInterval(() => {
             // 每隔5分钟查询一下active orders
             this.query_active_orders();
-        }, 1000 * 60 * 5);
+        }, 1000 * 60 * 2);
 
         setInterval(() => {
             // 每隔1小时将status_map做一个记录
@@ -72,8 +73,8 @@ class SimpleRevTrendStrategy extends StrategyBase {
 
         that.cfg["entries"].forEach((entry, index) => {
             if (!(entry in that.status_map)) return;
-            let idf  = entry.split(".").slice(0, 3).join(".");
             let item = {};
+            let idf  = entry.split(".").slice(0, 3).join(".");
             item[`${index + 1}|entry`] = entry;
             item[`${index + 1}|status`] = that.status_map[entry]["status"];
             item[`${index + 1}|triggered`] = that.status_map[entry]["triggered"];
@@ -81,8 +82,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
             item[`${index + 1}|fee`] = that.status_map[entry]["fee"];
             item[`${index + 1}|np`] = that.status_map[entry]["net_profit"];
             item[`${index + 1}|price`] = (that.prices[idf])? that.prices[idf]["price"]: "";
-            item[`${index + 1}|enter`] = that.status_map[entry]["enter"];
-            item[`${index + 1}|sar`] = that.status_map[entry]["sar"];
+            item[`${index + 1}|sp`] = that.status_map[entry]["stoploss_price"];
             item[`${index + 1}|up`] = that.status_map[entry]["up"];
             item[`${index + 1}|dn`] = that.status_map[entry]["dn"];
             sendData["data"].push(item);
@@ -93,15 +93,17 @@ class SimpleRevTrendStrategy extends StrategyBase {
 
     query_active_orders() {
         let that = this;
-        that.cfg["entries"].forEach((entry) => {
-            let [exchange, symbol, contract_type, interval] = entry.split(".");
-            let act_id = that.cfg[entry]["act_id"];
-            that.query_orders({
-                exchange: exchange,
-                symbol: symbol,
-                contract_type: contract_type,
-                account_id: act_id,
-            });
+        // 随机挑选一个entry进行query
+        let entry = that.cfg["entries"][Math.floor(Math.random() * that.cfg["entries"].length)];
+        let [exchange, symbol, contract_type, interval] = entry.split(".");
+        let act_id = that.cfg[entry]["act_id"];
+
+        logger.info(`${that.alias}|query orders on ${entry}`);
+        that.query_orders({
+            exchange: exchange,
+            symbol: symbol,
+            contract_type: contract_type,
+            account_id: act_id
         });
     }
 
@@ -130,12 +132,16 @@ class SimpleRevTrendStrategy extends StrategyBase {
             if ((that.status_map[entry] === undefined) || (that.cfg["clear_existing_status"])) {
                 that.status_map[entry] = {
                     "status": "EMPTY",
+                    "anti_order_sent": false,
                     "pos": 0,
                     "real_pos": "",
                     "triggered": "",
                     "up": "",
                     "dn": "",
-                    "enter": "",
+                    "long_enter": "",
+                    "high_since_long": "",
+                    "short_enter": "",
+                    "low_since_short": "",
                     "bar_n": "",
                     "bar_enter_n": 0,
                     "ep": "",
@@ -165,41 +171,60 @@ class SimpleRevTrendStrategy extends StrategyBase {
         let that = this;
 
         that.cfg["entries"].forEach((entry) => {
+            let interval = entry.split(".")[3];
+            assert(["1d", "12h", "8h", "6h", "4h", "3h", "2h", "1h", "30m", "15m", "5m"].includes(interval));
             that.klines[entry] = { "ts": [], "open": [], "high": [], "low": [], "ready": false };
+            let symbol = entry.split(".")[1];
 
-            let [exchange, symbol, contract_type, interval] = entry.split(".");
-            let num = (interval === "1d") ? 24 : parseInt(interval.split("h")[0]);
-            assert(["1d", "12h", "8h", "6h", "4h", "3h", "2h", "1h"].includes(interval));
-
-            let n_klines = (that.cfg[entry]["track_ATR_n"] + 1) * num;
-            let url = "https://fapi.binance.com/fapi/v1/klines/?symbol=" + symbol + "&contractType=PERPETUAL&interval=1h&limit=" + n_klines;
-            request.get({
-                url: url, json: true
-            }, function (error, res, body) {
-                let high = Number.NEGATIVE_INFINITY, low = Number.POSITIVE_INFINITY;
-                for (let i = body.length - 1; i >= 0; i--) {
-                    let ts = utils.get_human_readable_timestamp(body[i][0]);
-                    let hour = parseInt(ts.slice(8, 10));
-                    high = Math.max(high, parseFloat(body[i][2]));
-                    low = Math.min(low, parseFloat(body[i][3]));
-                    if ((interval === "1h") || (hour % num === that.cfg[entry]["splitAt"])) {
+            if (interval.endsWith("m")) { 
+                let num = parseInt(interval.split("m")[0]);
+                let n_klines = that.cfg[entry]["track_ATR_n"] + 1;
+                let url = "https://fapi.binance.com/fapi/v1/klines/?symbol=" + symbol + "&contractType=PERPETUAL&interval=" + interval + "&limit=" + n_klines;
+                request.get({
+                    url: url, json: true
+                }, function (error, res, body) {
+                    for (let i = body.length - 1; i >= 0; i--) {
+                        let ts = utils.get_human_readable_timestamp(body[i][0]);
                         that.klines[entry]["ts"].push(ts);
                         that.klines[entry]["open"].push(parseFloat(body[i][1]));
-                        that.klines[entry]["high"].push(high);
-                        that.klines[entry]["low"].push(low);
-                        high = Number.NEGATIVE_INFINITY;
-                        low = Number.POSITIVE_INFINITY;
+                        that.klines[entry]["high"].push(parseFloat(body[i][2]));
+                        that.klines[entry]["low"].push(parseFloat(body[i][3]));
                     }
-                }
-            });
-            setTimeout(() => that.klines[entry]["ready"] = true, 5000);
+                });
+            } else {
+                let num = (interval === "1d") ? 24 : parseInt(interval.split("h")[0]);
+                let n_klines = (that.cfg[entry]["track_ATR_n"] + 1) * num;
+                let url = "https://fapi.binance.com/fapi/v1/klines/?symbol=" + symbol + "&contractType=PERPETUAL&interval=1h&limit=" + n_klines;
+                request.get({
+                    url: url, json: true
+                }, function (error, res, body) {
+                    let high = Number.NEGATIVE_INFINITY, low = Number.POSITIVE_INFINITY;
+                    for (let i = body.length - 1; i >= 0; i--) {
+                        let ts = utils.get_human_readable_timestamp(body[i][0]);
+                        let hour = parseInt(ts.slice(8, 10));
+                        high = Math.max(high, parseFloat(body[i][2]));
+                        low = Math.min(low, parseFloat(body[i][3]));
+                        if ((interval === "1h") || (hour % num === that.cfg[entry]["splitAt"])) {
+                            that.klines[entry]["ts"].push(ts);
+                            that.klines[entry]["open"].push(parseFloat(body[i][1]));
+                            that.klines[entry]["high"].push(high);
+                            that.klines[entry]["low"].push(low);
+                            high = Number.NEGATIVE_INFINITY;
+                            low = Number.POSITIVE_INFINITY;
+                        }
+                    }
+                });
+            }
+
+
+            setTimeout(() => {
+                that.klines[entry]["ready"] = true;
+                console.log(JSON.stringify(that.klines))
+            }, 5000);
         });
     }
 
     on_order_update(order_update) {
-        /**
-         * client_order_id: SRE06hUPXXXXX, {0-2: alias}{3-5: interval}{6-7: short_label}
-         */
         let that = this;
 
         let exchange = order_update["exchange"];
@@ -218,23 +243,26 @@ class SimpleRevTrendStrategy extends StrategyBase {
 
         // 不是本策略的订单更新，自动过滤
         if (client_order_id.slice(0, 3) !== that.alias) return;
-        logger.info(`${that.alias}::on_order_update|${JSON.stringify(order_update)}`);
+        logger.info(`${that.alias}|${client_order_id}::on_order_update|${JSON.stringify(order_update)}!`);
 
-        // 确定label以及order_idf
         let label = client_order_id.slice(6, 8);
         if (!Object.values(LABELMAP).includes(label)) {
-            logger.info(`${that.alias}::on_order_update|unknown order label ${label}!`);
+            logger.info(`${that.alias}|${client_order_id}::on_order_update|unknown order label ${label}!`);
             return;
-        } else {
-            label = stratutils.get_key_by_value(LABELMAP, label);   
         }
-        let order_idf = [act_id, symbol, interval, direction, label, client_order_id].join("|");
+        label = stratutils.get_key_by_value(LABELMAP, label);
+        let order_idf = [act_id, entry, label, client_order_id].join("|");
 
         if (order_status === ORDER_STATUS.SUBMITTED) {
-
             let submit_price = order_update["order_info"]["submit_price"];
             let original_amount = order_update["order_info"]["original_amount"];
             logger.info(`${that.alias}::on_order_update|${order_idf} order ${original_amount} placed @${submit_price} after ${update_type}!`);
+
+            // 对手单发送成功，5秒后允许修改对手单
+            // 为了尽可能避免触发quantitative rules，这里设置为5秒
+            if (label.slice(0, 4) === "ANTI") {
+                setTimeout(() => that.status_map[entry]["anti_order_sent"] = false, 1000 * 5);
+            }
 
         } else if (order_status === ORDER_STATUS.CANCELLED) {
             logger.info(`${that.alias}::on_order_update|${order_idf} order cancelled after ${update_type}!`);
@@ -269,7 +297,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
                     client_order_id: that.order_map[entry]["DN"]["client_order_id"],
                     account_id: act_id,
                 });
-                // 这里删除以label为key的item，在on_order_update里面删除以client_order_id为key的item
+                // 这里删除label，在on_order_update里面删除client_order_id
                 delete that.order_map[entry]["DN"];
             } else if ((label === "DN") && ("UP" in that.order_map[entry])) {
                 // The DN ORDER got filled, cancel the UP order
@@ -282,51 +310,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 });
                 // 这里删除label，在on_order_update里面删除client_order_id
                 delete that.order_map[entry]["UP"];
-            } else if ((label === "ANTI_L|STOPLOSS") && ("ANTI_L|REVERSE" in that.order_map[entry])) {
-                // The DN ORDER got filled, cancel the UP order
-                that.cancel_order({
-                    exchange: exchange,
-                    symbol: symbol,
-                    contract_type: contract_type,
-                    client_order_id: that.order_map[entry]["ANTI_L|REVERSE"]["client_order_id"],
-                    account_id: act_id,
-                });
-                // 这里删除label，在on_order_update里面删除client_order_id
-                delete that.order_map[entry]["ANTI_L|REVERSE"];
-            } else if ((label === "ANTI_L|REVERSE") && ("ANTI_L|STOPLOSS" in that.order_map[entry])) {
-                // The DN ORDER got filled, cancel the UP order
-                that.cancel_order({
-                    exchange: exchange,
-                    symbol: symbol,
-                    contract_type: contract_type,
-                    client_order_id: that.order_map[entry]["ANTI_L|STOPLOSS"]["client_order_id"],
-                    account_id: act_id,
-                });
-                // 这里删除label，在on_order_update里面删除client_order_id
-                delete that.order_map[entry]["ANTI_L|STOPLOSS"];
-            } else if ((label === "ANTI_S|STOPLOSS") && ("ANTI_S|REVERSE" in that.order_map[entry])) {
-                // The DN ORDER got filled, cancel the UP order
-                that.cancel_order({
-                    exchange: exchange,
-                    symbol: symbol,
-                    contract_type: contract_type,
-                    client_order_id: that.order_map[entry]["ANTI_S|REVERSE"]["client_order_id"],
-                    account_id: act_id,
-                });
-                // 这里删除label，在on_order_update里面删除client_order_id
-                delete that.order_map[entry]["ANTI_S|REVERSE"];
-            } else if ((label === "ANTI_S|REVERSE") && ("ANTI_S|STOPLOSS" in that.order_map[entry])) {
-                // The DN ORDER got filled, cancel the UP order
-                that.cancel_order({
-                    exchange: exchange,
-                    symbol: symbol,
-                    contract_type: contract_type,
-                    client_order_id: that.order_map[entry]["ANTI_S|STOPLOSS"]["client_order_id"],
-                    account_id: act_id,
-                });
-                // 这里删除label，在on_order_update里面删除client_order_id
-                delete that.order_map[entry]["ANTI_S|STOPLOSS"];
-            } 
+            }
 
             // 更新order_map
             that.order_map[entry][client_order_id]["filled"] = filled;
@@ -353,8 +337,11 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 that.status_map[entry]["triggered"] = "";
                 if (that.status_map[entry]["status"] === "EMPTY") {
                     // 订单完全成交，仓位变为空，这说明是平仓单
-                    // 平仓之后不要继续开仓
-                    for (let item of ["bar_n", "ep", "af", "sar", "enter"]) {
+                    // 把that.pre_bar_otime[idf]变成undefined，这样就变成new_start，可以重新发开仓单
+                    // 有可能会出现依然无法重新发开仓单的情况，这种大概率是因为bar_enter_n没有进行更新
+                    that.pre_bar_otime[idf] = undefined;
+                    that.status_map[entry]["anti_order_sent"] = undefined;
+                    for (let item of ["bar_n", "ep", "af", "sar", "long_enter", "high_since_long", "short_enter", "low_since_short", "stoploss_price"]) {
                         that.status_map[entry][item] = "";
                     }
                 } else {
@@ -365,15 +352,28 @@ class SimpleRevTrendStrategy extends StrategyBase {
                     that.status_map[entry]["bar_enter_n"] += 1;
                     that.status_map[entry]["ep"] = avg_executed_price;
 
-                    that.status_map[entry]["enter"] = avg_executed_price;
-                    that.status_map[entry]["sar"] = (that.status_map[entry]["status"] === "LONG")? avg_executed_price * (1 - cutloss_rate) : avg_executed_price * (1 + cutloss_rate);
+                    if (that.status_map[entry]["status"] === "LONG") {
+                        // 仓位变为LONG，但实际上是dn break，因此用low_sinc_short
+                        that.status_map[entry]["long_enter"] = "";
+                        that.status_map[entry]["high_since_long"] = "";
+                        that.status_map[entry]["short_enter"] = avg_executed_price;
+                        that.status_map[entry]["low_since_short"] = avg_executed_price;
+                        that.status_map[entry]["sar"] = avg_executed_price * (1 + cutloss_rate);
+                    } else {
+                        // 仓位变为SHORT，但实际上是up break，因此用high_since_long
+                        that.status_map[entry]["long_enter"] = avg_executed_price;
+                        that.status_map[entry]["high_since_long"] = avg_executed_price;
+                        that.status_map[entry]["short_enter"] = "";
+                        that.status_map[entry]["low_since_short"] = "";
+                        that.status_map[entry]["sar"] = avg_executed_price * (1 - cutloss_rate);
+                    }
 
                     that.status_map[entry]["ep"] = stratutils.transform_with_tick_size(that.status_map[entry]["ep"], PRICE_TICK_SIZE[idf]);
                     that.status_map[entry]["sar"] = stratutils.transform_with_tick_size(that.status_map[entry]["sar"], PRICE_TICK_SIZE[idf]);
                 }
 
                 // 订单完全成交，在order_map中删去该订单（注意：完全成交才删除，且当场删除！）
-                delete that.order_map[entry][label];
+                delete that.order_map[entry][label.slice(0, 6)];
 
                 // remove the client_order_id from order_map 100ms later, as the on_response may need to use it!
                 setTimeout(() => delete that.order_map[entry][client_order_id], 100);
@@ -384,7 +384,6 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 let short_num = status_list.map((element) => element === "SHORT").reduce((a, b) => a + b, 0);
                 that.summary["overall"]["long_num"] = long_num;
                 that.summary["overall"]["short_num"] = short_num;
-
             } else {
                 // 订单部分成交，处于触发状态
                 that.status_map[entry]["status"] = "TBA";
@@ -393,7 +392,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
 
             // record the order filling details
             let ts = order_update["metadata"]["timestamp"];
-            let filled_info = [act_id, exchange, symbol, contract_type, client_order_id, original_amount, filled, submit_price, avg_executed_price, fee].join(",");
+            let filled_info = [act_id, entry, exchange, symbol, contract_type, interval, client_order_id, original_amount, filled, submit_price, avg_executed_price, fee].join(",");
             let order_info = (that.order_map[entry][client_order_id] === undefined) ? "" : Object.entries(that.order_map[entry][client_order_id]).filter((element) => element[0] !== "ToBeDeleted").map((element) => element[1]).join(",");
             let output_string = [ts, filled_info, order_info].join(",");
             output_string += (order_status === ORDER_STATUS.FILLED) ? ",filled\n" : ",partially_filled\n";
@@ -419,14 +418,12 @@ class SimpleRevTrendStrategy extends StrategyBase {
         if (!that.cfg["idfs"].includes(idf)) return;
         that.prices[idf] = { "price": price, "upd_ts": ts };
 
-        // logger.info(`${this.alias}::${JSON.stringify(trade)}`);
-
         let corr_entries = that.cfg["entries"].filter((entry) => entry.split(".").slice(0, 3).join(".") === idf);
         for (let entry of corr_entries) {
             if (!that.klines[entry]["ready"]) return;
-            let interval = entry.split(".")[3];
 
-            // logger.info(symbol, ts, that.cur_bar_otime[idf], that.pre_bar_otime[idf]);
+            let interval = entry.split(".")[3];
+            // logger.info(symbol, ts, that.cur_bar_otime[entry], that.pre_bar_otime[idf]);
             that.cur_bar_otime[entry] = stratutils.cal_bar_otime(ts, interval, that.cfg[entry]["splitAt"]);
             // if the pre_bar_otime is undefined, it means the strategy is re-started
             let new_start = (that.pre_bar_otime[entry] === undefined);
@@ -443,6 +440,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 if (that.status_map[entry]["status"] === "TBA") that.deal_with_TBA(entry);
             }
 
+            // 更新kline数据，这里应该用>会不会更好？
             if (that.cur_bar_otime[entry] > that.klines[entry]["ts"][0]) {
                 that.klines[entry]["ts"].unshift(that.cur_bar_otime[entry]);
                 that.klines[entry]["ts"].pop();
@@ -470,11 +468,9 @@ class SimpleRevTrendStrategy extends StrategyBase {
     }
 
     deal_with_TBA(entry) {
-        logger.info(`${this.alias}::deal with TBA: ${JSON.stringify(this.order_map)}`);
-
+        logger.info(`${this.alias}|${entry}::deal with TBA: ${JSON.stringify(this.order_map)}`);
         let that = this;
         let [exchange, symbol, contract_type, interval] = entry.split(".");
-        let idf = [exchange, symbol, contract_type].join(".");
         let act_id = that.cfg[entry]["act_id"];
 
         let triggered = that.status_map[entry]["triggered"];
@@ -487,38 +483,39 @@ class SimpleRevTrendStrategy extends StrategyBase {
 
         if (triggered === "UP") {
             // 开仓单开了一半，剩下的撤单，直接转为对应的status
-            logger.info(`${that.alias}::${act_id}|${entry} deal with TBA: cancel the remaining UP order!`);
+            logger.info(`${that.alias}::${act_id}|${idf} deal with TBA: cancel the remaining UP order!`);
             let up_client_order_id = that.order_map[entry]["UP"]["client_order_id"];
             orders_to_be_cancelled.push(up_client_order_id);
             that.status_map[entry]["status"] = "SHORT";
         } else if (triggered === "DN") {
             // 开仓单开了一半，剩下的放弃，直接转为对应的status
-            logger.info(`${that.alias}::${act_id}|${entry} deal with TBA: cancel the remaining DN order!`);
+            logger.info(`${that.alias}::${act_id}|${idf} deal with TBA: cancel the remaining DN order!`);
             let dn_client_order_id = that.order_map[entry]["DN"]["client_order_id"];
             orders_to_be_cancelled.push(dn_client_order_id);
             that.status_map[entry]["status"] = "LONG";
-        } else if (triggered === "ANTI_L|REVERSE") {
+        } else if ((triggered === "ANTI_L|STOPLOSS") || (triggered === "ANTI_L|REVERSE")) {
+            // 平仓单未能成交，撤销该单，改用市价单成交
             // 反手单未能成交，撤销该单，放弃反手，改为市价平仓
             let anti_client_order_id = that.order_map[entry]["ANTI_L"]["client_order_id"];
             orders_to_be_cancelled.push(anti_client_order_id);
 
             if (that.status_map[entry]["pos"] < 0) {
                 // 已经部分反手，放弃剩下的反手
-                logger.info(`${that.alias}::${act_id}|${entry} deal with TBA: cancel the remaining ANTI_L order!`);
+                logger.info(`${that.alias}::${act_id}|${idf} deal with TBA: cancel the remaining ANTI_L order!`);
                 that.status_map[entry]["status"] = "SHORT";
             } else if (that.status_map[entry]["pos"] === 0) {
                 // 已经平仓，放弃剩下的反手
-                logger.info(`${that.alias}::${act_id}|${entry} deal with TBA: cancel the remaining ANTI_L order!`);
+                logger.info(`${that.alias}::${act_id}|${idf} deal with TBA: cancel the remaining ANTI_L order!`);
                 that.status_map[entry]["status"] = "EMPTY";
             } else {
                 // 部分平仓，要求继续平仓，市价的0.97倍折出售，放弃剩下的反手
                 // 因为binance对限价单价格有限制，通常不能超过标记价格的5%
-                logger.info(`${that.alias}::${act_id}|${entry} deal with TBA: cover the LONG position!`);
+                logger.info(`${that.alias}::${act_id}|${idf} deal with TBA: cover the LONG position!`);
                 let tgt_qty = that.status_map[entry]["pos"];
-                orders_to_be_submitted.push({ client_order_id: that.alias + LABELMAP["ANTI_L|STOPLOSS"] + randomID(7), label: "ANTI_L|STOPLOSS", target: "EMPTY", quantity: tgt_qty, direction: DIRECTION.SELL });
+                let sell_price = stratutils.transform_with_tick_size(that.prices[idf]["price"] * 0.97, PRICE_TICK_SIZE[idf]);
+                orders_to_be_submitted.push({ client_order_id: that.alias + interval.padStart(3, '0') + LABELMAP["ANTI_L|STOPLOSS"] + randomID(7), label: "ANTI_L|STOPLOSS", target: "EMPTY", quantity: tgt_qty, price: sell_price, direction: DIRECTION.SELL });
             }
-            
-        } else if (triggered === "ANTI_S|REVERSE") {
+        } else if ((triggered === "ANTI_S|STOPLOSS") || (triggered === "ANTI_S|REVERSE")) {
             // 平仓单未能成交，撤销该单，改用市价单成交
             // 反手单未能成交，撤销该单，放弃反手，改为市价平仓
             let anti_client_order_id = that.order_map[entry]["ANTI_S"]["client_order_id"];
@@ -526,33 +523,39 @@ class SimpleRevTrendStrategy extends StrategyBase {
 
             if (that.status_map[entry]["pos"] > 0) {
                 // 已经部分反手，放弃剩下的反手
-                logger.info(`${that.alias}::${act_id}|${entry} deal with TBA: cancel the remaining ANTI_S order!`);
+                logger.info(`${that.alias}::${act_id}|${idf} deal with TBA: cancel the remaining ANTI_S order!`);
                 that.status_map[entry]["status"] = "LONG";
             } else if (that.status_map[entry]["pos"] === 0) {
                 // 已经平仓，放弃剩下的反手
-                logger.info(`${that.alias}::${act_id}|${entry} deal with TBA: cancel the remaining ANTI_S order!`);
+                logger.info(`${that.alias}::${act_id}|${idf} deal with TBA: cancel the remaining ANTI_S order!`);
                 that.status_map[entry]["status"] = "EMPTY";
             } else {
-                // 部分平仓，要求继续平仓，市价单平仓，放弃剩下的反手
+                // 部分平仓，要求继续平仓，市价1.03倍购买，放弃剩下的反手
                 // 因为binance对限价单价格有限制，通常不能超过标记价格的5%
-                logger.info(`${that.alias}::${act_id}|${entry} deal with TBA: cover the SHORT position!`);
+                logger.info(`${that.alias}::${act_id}|${idf} deal with TBA: cover the SHORT position!`);
                 let tgt_qty = - that.status_map[entry]["pos"];
-                orders_to_be_submitted.push({ client_order_id: that.alias + LABELMAP["ANTI_S|STOPLOSS"] + randomID(7), label: "ANTI_S|STOPLOSS", target: "EMPTY", quantity: tgt_qty, direction: DIRECTION.BUY });
+                let buy_price = stratutils.transform_with_tick_size(that.prices[idf]["price"] * 1.03, PRICE_TICK_SIZE[idf]);
+                orders_to_be_submitted.push({ client_order_id: that.alias + interval.padStart(3, '0') + LABELMAP["ANTI_S|STOPLOSS"] + randomID(7), label: "ANTI_S|STOPLOSS", target: "EMPTY", quantity: tgt_qty, price: buy_price, direction: DIRECTION.BUY });
             }
-
         } else {
-            logger.info(`${that.alias}::TBA and new_bar handling: unhandled ${that.status_map[entry]["triggered"]}. If nothing, ignore it!`)
+            logger.info(`${that.alias}|${entry}::TBA and new_bar handling: unhandled ${that.status_map[entry]["triggered"]}. If nothing, ignore it!`)
         }
 
         let current_status = that.status_map[entry]["status"];
         if (["LONG", "SHORT"].includes(current_status)) {
             that.status_map[entry]["bar_n"] = 0;    // 这里赋值为0，之后main_execuation中会加一
             that.status_map[entry]["af"] = that.cfg[entry]["ini_af"];
-            that.status_map[entry]["sar"] = (current_status === "SHORT") ? up_price * (1 + cutloss_rate) : dn_price * (1 - cutloss_rate);
-            that.status_map[entry]["enter"] = (current_status === "SHORT") ? up_price : dn_price;
+            that.status_map[entry]["sar"] = (current_status === "SHORT") ? up_price * (1 - cutloss_rate) : dn_price * (1 + cutloss_rate);;
+            if (current_status === "SHORT") {
+                that.status_map[entry]["long_enter"] = up_price;
+                that.status_map[entry]["high_since_long"] = up_price;
+            } else {
+                that.status_map[entry]["short_enter"] = dn_price;
+                that.status_map[entry]["low_since_short"] = dn_price;
+            }
         }
 
-        logger.info(`deal with TBA: ${JSON.stringify(that.status_map[entry])}`);
+        logger.info(`${this.alias}|${entry}:: ${JSON.stringify(that.status_map[entry])}`);
 
         orders_to_be_cancelled.forEach((client_order_id) => {
             that.cancel_order({
@@ -560,18 +563,18 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 symbol: symbol,
                 contract_type: contract_type,
                 client_order_id: client_order_id,
-                account_id: act_id,
+                account_id: act_id
             });
         });
 
         orders_to_be_submitted.forEach((order) => {
-            let client_order_id = order.client_order_id, label = order.label, target = order.target, quantity = order.quantity, direction = order.direction;
+            let client_order_id = order.client_order_id, label = order.label, target = order.target, quantity = order.quantity, price = order.price, direction = order.direction;
 
             // 发送订单，同时建立order_map
             // {"3106609167": {"label": "DN", "target": "LONG", "quantity": 21133, "time": 1669492800445, "filled": 0}}
             that.order_map[entry][client_order_id] = { label: label, target: target, quantity: quantity, time: moment.now(), filled: 0 };
             // {"ANTI_S": { "client_order_id": "3103898618",  "label": "ANTI_S|STOPLOSS", "price": 0.3214, "quantity": 100, "time": 1669492800445}}
-            that.order_map[entry][label] = { client_order_id: client_order_id, label: label, price: 0, quantity: quantity, time: moment.now() };
+            that.order_map[entry][label.slice(0, 6)] = { client_order_id: client_order_id, label: label, price: price, quantity: quantity, time: moment.now() };
 
             that.send_order({
                 label: label,
@@ -579,9 +582,10 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 exchange: exchange,
                 symbol: symbol,
                 contract_type: contract_type,
+                price: price,
                 quantity: quantity,
                 direction: direction,
-                order_type: ORDER_TYPE.MARKET,
+                order_type: ORDER_TYPE.LIMIT,
                 account_id: act_id,
                 client_order_id: client_order_id
             });
@@ -591,8 +595,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
     main_execuation(new_start, new_bar, entry) {
         let that = this;
         let [exchange, symbol, contract_type, interval] = entry.split(".");
-        let idf = [exchange, symbol, contract_type].join(".");
-
+        let idf =  [exchange, symbol, contract_type].join(".");
         let price = that.prices[idf]["price"];
         let ini_usdt = (that.cfg[entry]["ini_usdt"]) ? that.cfg[entry]["ini_usdt"] : that.cfg["ini_usdt"];
         let act_id = that.cfg[entry]["act_id"];
@@ -601,6 +604,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
         let bar_enter_n = that.status_map[entry]["bar_enter_n"];
 
         // para loading -----------------------------------------------
+        let stoploss_rate = that.cfg[entry]["stoploss_rate"];
         let track_ATR_multiplier = that.cfg[entry]["track_ATR_multiplier"];
         let delta_af = that.cfg[entry]["delta_af"];
         let bar_enter_limit = that.cfg[entry]["bar_enter_limit"];
@@ -616,13 +620,14 @@ class SimpleRevTrendStrategy extends StrategyBase {
 
         if (isNaN(up_price) || (isNaN(dn_price))) return;
 
-        // 只在new_bar或者new_start的时候才对发单进行调整
-        if (!new_bar && !new_start) return; 
+        // 重启以后将anti_order_sent置零
+        if (new_start) that.status_map[entry]["anti_order_sent"] = false;
 
         let orders_to_be_cancelled = [];    // client_order_id only
         let orders_to_be_submitted = [];    // {label: "", target: "", tgt_qty: "", price: "", direction: ""}
 
         if (that.status_map[entry]["status"] === "EMPTY") {
+            that.status_map[entry]["anti_order_sent"] = false;
 
             if ((new_start || new_bar) && (bar_enter_n < bar_enter_limit)) {
                 // 计算开仓量
@@ -639,13 +644,19 @@ class SimpleRevTrendStrategy extends StrategyBase {
                     orders_to_be_cancelled.push(that.order_map[entry]["DN"]["client_order_id"]);
                 }
 
-                // 都是limit order
-                orders_to_be_submitted.push({ label: "UP", target: "SHORT", quantity: up_qty, price: up_price, direction: DIRECTION.SELL, order_type: ORDER_TYPE.LIMIT });
-                orders_to_be_submitted.push({ label: "DN", target: "LONG", quantity: dn_qty, price: dn_price, direction: DIRECTION.BUY, order_type: ORDER_TYPE.LIMIT });
+                let [up_client_order_id, dn_client_order_id] = [that.alias + interval.padStart(3, '0') + LABELMAP["UP"] + randomID(7), that.alias + interval.padStart(3, '0') + LABELMAP["DN"] + randomID(7)];
+
+                if (that.summary["overall"]["short_num"] < that.cfg["max_num"]) {
+                    orders_to_be_submitted.push({ client_order_id: up_client_order_id, label: "UP", target: "SHORT", quantity: up_qty, price: up_price, direction: DIRECTION.SELL });
+                }
+
+                if (that.summary["overall"]["long_num"] < that.cfg["max_num"]) {
+                    orders_to_be_submitted.push({ client_order_id: dn_client_order_id, label: "DN", target: "LONG", quantity: dn_qty, price: dn_price, direction: DIRECTION.BUY });
+                }
+
             }
-
-        } else if (that.status_map[entry]["status"] === "LONG") {
-
+        } else if (that.status_map[entry]["status"] === "SHORT") {
+            // 注意：SHORT时，实际上是up_break，因此有high_since_long
             if (new_bar) {
                 // New bar and update the indicators
                 that.status_map[entry]["bar_n"] += 1;
@@ -659,51 +670,78 @@ class SimpleRevTrendStrategy extends StrategyBase {
                     that.status_map[entry]["sar"] = that.status_map[entry]["sar"] + that.status_map[entry]["af"] * (that.status_map[entry]["ep"] - that.status_map[entry]["sar"]);
                     that.status_map[entry]["sar"] = stratutils.transform_with_tick_size(that.status_map[entry]["sar"], PRICE_TICK_SIZE[idf]);
                 }
-            }
-            
-            if (that.status_map[entry]["bar_n"] === 0) {
-                // 开仓bar，ep设定为这根bar的最高价，同时不做任何处理
-                that.status_map[entry]["ep"] = that.klines[entry]["high"][0];
-                return;
-            }
-
-            let stoploss_price = that.status_map[entry]["sar"];
-
-            // 发两个单，一个高价反手单（limit order），一个低价止损单（stop market order）
-            // 第一个单：高价反手单（limit order）
-            let up_tgt_qty = stratutils.transform_with_tick_size(that.status_map[entry]["pos"] + ini_usdt / up_price, QUANTITY_TICK_SIZE[idf]);
-            if (that.order_map[entry]["ANTI_L|REVERSE"] === undefined) {
-                orders_to_be_submitted.push({ label: "ANTI_L|REVERSE", target: "SHORT", quantity: up_tgt_qty, price: up_price, direction: DIRECTION.SELL, order_type: ORDER_TYPE.LIMIT });
             } else {
-                let current_reverse_client_order_id = that.order_map[entry]["ANTI_L|REVERSE"]["client_order_id"];
-                let current_reverse_price = that.order_map[entry]["ANTI_L|REVERSE"]["price"];
-                let current_reverse_qty = that.order_map[entry]["ANTI_L|REVERSE"]["quantity"];
-
-                if ((current_reverse_price !== up_price) || (current_reverse_qty !== up_tgt_qty)) {
-                    // 若已存的对手单（反手单）和现行不一致，则撤销重新发
-                    orders_to_be_cancelled.push(current_reverse_client_order_id);
-                    orders_to_be_submitted.push({ label: "ANTI_L|REVERSE", target: "SHORT", quantity: up_tgt_qty, price: up_price, direction: DIRECTION.SELL, order_type: ORDER_TYPE.LIMIT });
+                if (that.status_map[entry]["bar_n"] === 0) {
+                    // the first bar when entered, initialize the ep value
+                    that.status_map[entry]["ep"] = Math.max(that.status_map[entry]["ep"], price);
                 }
             }
 
-            // 第二个单：低价止损单（stop market order）
-            let sp_tgt_qty = stratutils.transform_with_tick_size(that.status_map[entry]["pos"], QUANTITY_TICK_SIZE[idf]);
-            if (that.order_map[entry]["ANTI_L|STOPLOSS"] === undefined) {
-                orders_to_be_submitted.push({ label: "ANTI_L|STOPLOSS", target: "EMPTY", quantity: sp_tgt_qty, stop_price: stoploss_price, direction: DIRECTION.SELL, order_type: ORDER_TYPE.STOP_MARKET });
-            } else {
-                let current_stoploss_client_order_id = that.order_map[entry]["ANTI_L|STOPLOSS"]["client_order_id"];
-                let current_stoploss_price = that.order_map[entry]["ANTI_L|STOPLOSS"]["price"];
-                let current_stoploss_qty = that.order_map[entry]["ANTI_L|STOPLOSS"]["quantity"];
-
-                if ((current_stoploss_price !== stoploss_price) || (current_stoploss_qty !== sp_tgt_qty)) {
-                    // 若已存的对手单（反手单）和现行不一致，则撤销重新发
-                    orders_to_be_cancelled.push(current_stoploss_client_order_id);
-                    orders_to_be_submitted.push({ label: "ANTI_L|STOPLOSS", target: "EMPTY", quantity: sp_tgt_qty, stop_price: stoploss_price, direction: DIRECTION.SELL, order_type: ORDER_TYPE.STOP_MARKET });
-                }
+            if (that.status_map[entry]["high_since_long"] !== undefined) {
+                that.status_map[entry]["high_since_long"] = Math.max(that.status_map[entry]["high_since_long"], price);
             }
 
-        } else if (that.status_map[entry]["status"] === "SHORT") {
+            let stoploss_price = Math.max(that.status_map[entry]["high_since_long"] * (1 - stoploss_rate), that.status_map[entry]["sar"]);
+            stoploss_price = stratutils.transform_with_tick_size(stoploss_price, PRICE_TICK_SIZE[idf]);
+            that.status_map[entry]["stoploss_price"] = stoploss_price;
 
+            if (isNaN(stoploss_price)) {
+                logger.info(`${that.alias}: stoploss_price is null: ${that.status_map[entry]["high_since_long"]}, ${that.status_map[entry]["sar"]}, ${stoploss_rate}`)
+            }
+
+            // 对手单已经sent，但是还没有成功submitted，不做任何处理
+            if (that.status_map[entry]["anti_order_sent"] === true) return;
+
+            // 下面一行代码注释掉，意味着开仓当天可以止损或者反手
+            // if (that.status_map[entry]["bar_n"] === 0) return;
+
+            if (stoploss_price < dn_price) {
+                // dn_price更高，对手单为反手单
+                // 直接发LIMIT单等待成交，如果已经触发，就想办法在该Bar内成交；如果未触发，则一直等待；
+                let tgt_qty = stratutils.transform_with_tick_size(- that.status_map[entry]["pos"] + ini_usdt / dn_price, QUANTITY_TICK_SIZE[idf]);
+                if (that.order_map[entry]["ANTI_S"] === undefined) {
+                    // 对手单还没有发送
+                    orders_to_be_submitted.push({ client_order_id: that.alias + interval.padStart(3, '0') + LABELMAP["ANTI_S|REVERSE"] + randomID(7), label: "ANTI_S|REVERSE", target: "LONG", quantity: tgt_qty, price: dn_price, direction: DIRECTION.BUY });
+                    that.status_map[entry]["anti_order_sent"] = true;
+                } else {
+                    // 对手单已发，检查是否需要更改
+                    let anti_client_order_id = that.order_map[entry]["ANTI_S"]["client_order_id"];
+                    let anti_label = that.order_map[entry]["ANTI_S"]["label"];
+                    let anti_price = that.order_map[entry]["ANTI_S"]["price"];
+                    let anti_qty = that.order_map[entry]["ANTI_S"]["quantity"];
+
+                    // 若已存的反手单和现行不一致，则撤销重新发
+                    if ((anti_label !== "ANTI_S|REVERSE") || (anti_price !== dn_price) || (anti_qty !== tgt_qty)) {
+                        orders_to_be_cancelled.push(anti_client_order_id);
+                        orders_to_be_submitted.push({ client_order_id: that.alias + interval.padStart(3, '0') + LABELMAP["ANTI_S|REVERSE"] + randomID(7), label: "ANTI_S|REVERSE", target: "LONG", quantity: tgt_qty, price: dn_price, direction: DIRECTION.BUY });
+                        that.status_map[entry]["anti_order_sent"] = true;
+                    }
+                }
+            } else {
+                // 止损价（stoploss_price）更高，反手单为止损单
+                // 直接发LIMIT单等待成交，如果已经触发，就想办法在该Bar内成交；如果未触发，则一直等待
+                let tgt_qty = stratutils.transform_with_tick_size(- that.status_map[entry]["pos"], QUANTITY_TICK_SIZE[idf]);
+                if (that.order_map[entry]["ANTI_S"] === undefined) {
+                    // 对手单（止损单）未发送
+                    orders_to_be_submitted.push({ client_order_id: that.alias + interval.padStart(3, '0') + LABELMAP["ANTI_S|STOPLOSS"] + randomID(7), label: "ANTI_S|STOPLOSS", target: "EMPTY", quantity: tgt_qty, price: stoploss_price, direction: DIRECTION.BUY });
+                    that.status_map[entry]["anti_order_sent"] = true;
+                } else {
+                    // 对手单（止损单）已经发送，检查是否需要更改
+                    let anti_client_order_id = that.order_map[entry]["ANTI_S"]["client_order_id"];
+                    let anti_label = that.order_map[entry]["ANTI_S"]["label"];
+                    let anti_price = that.order_map[entry]["ANTI_S"]["price"];
+                    let anti_qty = that.order_map[entry]["ANTI_S"]["quantity"];
+
+                    // 若已存的平仓单（止损单）和现行不一致，则撤销重新发
+                    if ((anti_label !== "ANTI_S|STOPLOSS") || (anti_price !== stoploss_price) || (anti_qty !== tgt_qty)) {
+                        orders_to_be_cancelled.push(anti_client_order_id);
+                        orders_to_be_submitted.push({ client_order_id: that.alias + interval.padStart(3, '0') + LABELMAP["ANTI_S|STOPLOSS"] + randomID(7), label: "ANTI_S|STOPLOSS", target: "EMPTY", quantity: tgt_qty, price: stoploss_price, direction: DIRECTION.BUY });
+                        that.status_map[entry]["anti_order_sent"] = true;
+                    }
+                }
+            }
+        } else if (that.status_map[entry]["status"] === "LONG") {
+            // 状态是LONG，但交易逻辑是dn break，因此有low_since_short
             if (new_bar) {
                 that.status_map[entry]["bar_n"] += 1;
                 if (that.status_map[entry]["bar_n"] !== 1) {
@@ -715,50 +753,71 @@ class SimpleRevTrendStrategy extends StrategyBase {
                     that.status_map[entry]["sar"] = that.status_map[entry]["sar"] + that.status_map[entry]["af"] * (that.status_map[entry]["ep"] - that.status_map[entry]["sar"]);
                     that.status_map[entry]["sar"] = stratutils.transform_with_tick_size(that.status_map[entry]["sar"], PRICE_TICK_SIZE[idf]);
                 }
-            }
-
-            if (that.status_map[entry]["bar_n"] === 0) {
-                // 突破上轨当前bar，ep设定为该bar最低价，此外不做任何处理
-                that.status_map[entry]["ep"] = that.klines[entry]["low"][0];
-                return;
-            }
-
-            let stoploss_price = that.status_map[entry]["sar"];
-
-            // 发两个单，一个低价反手单（limit order），一个高价止损单（stop market order）
-            // 第一个单：低价反手单（limit order）
-            let dn_tgt_qty = stratutils.transform_with_tick_size(- that.status_map[entry]["pos"] + ini_usdt / dn_price, QUANTITY_TICK_SIZE[idf]);
-            if (that.order_map[entry]["ANTI_S|REVERSE"] === undefined) {
-                // 对手单还没有发送
-                orders_to_be_submitted.push({ label: "ANTI_S|REVERSE", target: "LONG", quantity: dn_tgt_qty, price: dn_price, direction: DIRECTION.BUY, order_type: ORDER_TYPE.LIMIT });
             } else {
-                // 对手单已发，检查是否需要更改
-                let current_reverse_client_order_id = that.order_map[entry]["ANTI_S|REVERSE"]["client_order_id"];
-                let current_reverse_price = that.order_map[entry]["ANTI_S|REVERSE"]["price"];
-                let current_reverse_qty = that.order_map[entry]["ANTI_S|REVERSE"]["quantity"];
-
-                // 若已存的反手单和现行不一致，则撤销重新发
-                if ((current_reverse_price !== dn_price) || (current_reverse_qty !== tgt_qty)) {
-                    orders_to_be_cancelled.push(current_reverse_client_order_id);
-                    orders_to_be_submitted.push({ label: "ANTI_S|REVERSE", target: "LONG", quantity: dn_tgt_qty, price: dn_price, direction: DIRECTION.BUY, order_type: ORDER_TYPE.LIMIT });
+                if (that.status_map[entry]["bar_n"] === 0) {
+                    that.status_map[entry]["ep"] = Math.min(that.status_map[entry]["ep"], price);
                 }
             }
 
-            // 第二个单：高价止损单（stop market order）
-            let sp_tgt_qty = stratutils.transform_with_tick_size(- that.status_map[entry]["pos"], QUANTITY_TICK_SIZE[idf]);
-            if (that.order_map[entry]["ANTI_S|STOPLOSS"] === undefined) {
-                // 对手单还没有发送
-                orders_to_be_submitted.push({ label: "ANTI_S|STOPLOSS", target: "EMPTY", quantity: sp_tgt_qty, stop_price: stoploss_price, direction: DIRECTION.BUY, order_type: ORDER_TYPE.STOP_MARKET });
-            } else {
-                // 对手单已发，检查是否需要更改
-                let current_stoploss_client_order_id = that.order_map[entry]["ANTI_S|STOPLOSS"]["client_order_id"];
-                let current_stoploss_price = that.order_map[entry]["ANTI_S|STOPLOSS"]["price"];
-                let current_stoploss_qty = that.order_map[entry]["ANTI_S|STOPLOSS"]["quantity"];
+            if (that.status_map[entry]["low_since_short"] !== undefined) {
+                that.status_map[entry]["low_since_short"] = Math.min(that.status_map[entry]["low_since_short"], price);
+            }
 
-                // 若已存的反手单和现行不一致，则撤销重新发
-                if ((current_stoploss_price !== dn_price) || (current_stoploss_qty !== tgt_qty)) {
-                    orders_to_be_cancelled.push(current_stoploss_client_order_id);
-                    orders_to_be_submitted.push({ label: "ANTI_S|STOPLOSS", target: "EMPTY", quantity: sp_tgt_qty, stop_price: stoploss_price, direction: DIRECTION.BUY, order_type: ORDER_TYPE.STOP_MARKET });
+            let stoploss_price = Math.min(that.status_map[entry]["low_since_short"] * (1 + stoploss_rate), that.status_map[entry]["sar"]);
+            stoploss_price = stratutils.transform_with_tick_size(stoploss_price, PRICE_TICK_SIZE[idf]);
+            that.status_map[entry]["stoploss_price"] = stoploss_price;
+
+            if (isNaN(stoploss_price)) {
+                logger.info(`stoploss_price is null: ${that.status_map[entry]["low_since_short"]}, ${that.status_map[entry]["sar"]}, ${stoploss_rate}`)
+            }
+
+            // logger.info(`${symbol}::SHORT::${JSON.stringify(that.status_map[entry])}`);
+
+            // 对手单已经sent，但是还没有成功submitted，不做任何处理
+            if (that.status_map[entry]["anti_order_sent"] === true) return;
+
+            // 下面一行代码注释掉，意味着开仓当天可以止损或者反手
+            // if (that.status_map[entry]["bar_n"] === 0) return;
+
+            if (stoploss_price > up_price) {
+                // up_price更低，对手单为反手单
+                // 直接发LIMIT单等待成交，如果已经触发，就想办法在该Bar内成交；如果未触发，则一直等待；
+                let tgt_qty = stratutils.transform_with_tick_size(that.status_map[entry]["pos"] + ini_usdt / up_price, QUANTITY_TICK_SIZE[idf]);
+                if (that.order_map[entry]["ANTI_L"] === undefined) {
+                    orders_to_be_submitted.push({ client_order_id: that.alias + interval.padStart(3, '0') + LABELMAP["ANTI_L|REVERSE"] + randomID(7), label: "ANTI_L|REVERSE", target: "SHORT", quantity: tgt_qty, price: up_price, direction: DIRECTION.SELL });
+                    that.status_map[entry]["anti_order_sent"] = true;
+                } else {
+                    let anti_client_order_id = that.order_map[entry]["ANTI_L"]["client_order_id"];
+                    let anti_label = that.order_map[entry]["ANTI_L"]["label"];
+                    let anti_price = that.order_map[entry]["ANTI_L"]["price"];
+                    let anti_qty = that.order_map[entry]["ANTI_L"]["quantity"];
+
+                    if ((anti_label !== "ANTI_L|REVERSE") || (anti_price !== up_price) || (anti_qty !== tgt_qty)) {
+                        // 若已存的对手单（反手单）和现行不一致，则撤销重新发
+                        orders_to_be_cancelled.push(anti_client_order_id);
+                        orders_to_be_submitted.push({ client_order_id: that.alias + interval.padStart(3, '0') + LABELMAP["ANTI_L|REVERSE"] + randomID(7), label: "ANTI_L|REVERSE", target: "SHORT", quantity: tgt_qty, price: up_price, direction: DIRECTION.SELL });
+                        that.status_map[entry]["anti_order_sent"] = true;
+                    }
+                }
+
+            } else {
+                // 止损价（stoploss_price）更低，对手单为止损单
+                // 直接发LIMIT单等待成交，如果已经触发，就想办法在该Bar内成交；如果未触发，则一直等待；
+                let tgt_qty = stratutils.transform_with_tick_size(that.status_map[entry]["pos"], QUANTITY_TICK_SIZE[idf]);
+                if (that.order_map[entry]["ANTI_L"] === undefined) {
+                    orders_to_be_submitted.push({ client_order_id: that.alias + interval.padStart(3, '0') + LABELMAP["ANTI_L|STOPLOSS"] + randomID(7), label: "ANTI_L|STOPLOSS", target: "EMPTY", quantity: tgt_qty, price: stoploss_price, direction: DIRECTION.SELL });
+                    that.status_map[entry]["anti_order_sent"] = true;
+                } else {
+                    let anti_client_order_id = that.order_map[entry]["ANTI_L"]["client_order_id"];
+                    let anti_label = that.order_map[entry]["ANTI_L"]["label"];
+                    let anti_price = that.order_map[entry]["ANTI_L"]["price"];
+                    let anti_qty = that.order_map[entry]["ANTI_L"]["quantity"];
+
+                    if ((anti_label !== "ANTI_L|STOPLOSS") || (anti_price !== stoploss_price) || (anti_qty !== tgt_qty)) {
+                        orders_to_be_cancelled.push(anti_client_order_id);
+                        orders_to_be_submitted.push({ client_order_id: that.alias + interval.padStart(3, '0') + LABELMAP["ANTI_L|STOPLOSS"] + randomID(7), label: "ANTI_L|STOPLOSS", target: "EMPTY", quantity: tgt_qty, price: stoploss_price, direction: DIRECTION.SELL });
+                        that.status_map[entry]["anti_order_sent"] = true;
+                    }
                 }
             }
         }
@@ -775,16 +834,15 @@ class SimpleRevTrendStrategy extends StrategyBase {
         });
 
         // logger.info(JSON.stringify(orders_to_be_submitted));
+
         orders_to_be_submitted.forEach((order) => {
-            let label = order.label, target = order.target, quantity = order.quantity, price = order.price;
-            let stop_price = order.stop_price, direction = order.direction, order_type = order.order_type;
-            let client_order_id = that.alias + interval.padStart(3, '0') + LABELMAP[label] + randomID(5);    // SRE06hSSXXXXX
+            let client_order_id = order.client_order_id, label = order.label, target = order.target, quantity = order.quantity, price = order.price, direction = order.direction;
 
             // 发送订单，同时建立order_map
             // {"3106609167": {"label": "DN", "target": "LONG", "quantity": 21133, "time": 1669492800445, "price": 0.04732, "filled": 0}}
             that.order_map[entry][client_order_id] = { label: label, target: target, quantity: quantity, time: moment.now(), filled: 0 };
-            // {"ANTI_S|REVERSE": { "client_order_id": "3103898618",  "label": "ANTI_S|STOPLOSS", "price": 0.3214, "quantity": 100, "time": 1669492800445}}
-            that.order_map[entry][label] = { client_order_id: client_order_id, label: label, price: price, quantity: quantity, time: moment.now() };
+            // {"ANTI_S": { "client_order_id": "3103898618",  "label": "ANTI_S|STOPLOSS", "price": 0.3214, "quantity": 100, "time": 1669492800445}}
+            that.order_map[entry][label.slice(0, 6)] = { client_order_id: client_order_id, label: label, price: price, quantity: quantity, time: moment.now() };
 
             that.send_order({
                 label: label,
@@ -792,44 +850,14 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 exchange: exchange,
                 symbol: symbol,
                 contract_type: contract_type,
-                price: price,       // 若为stop_market order，则为undefined
-                stop_price: stop_price,     // 若为limit或者marketorder，则为undefined
+                price: price,
                 quantity: quantity,
                 direction: direction,
-                order_type: order_type,
+                order_type: ORDER_TYPE.LIMIT,
                 account_id: act_id,
                 client_order_id: client_order_id
             });
         });
-    }
-
-    on_response(response) {
-        // 过滤不属于本策略的response
-        let ref_id = response["ref_id"];
-        if (response.action !== REQUEST_ACTIONS.QUERY_ORDERS) {
-            logger.info(`${this.alias}::on_${response.action}_response| ${JSON.stringify(response)}`);
-        }
-        if (ref_id.slice(0, 3) !== this.alias) return;
-
-        switch (response.action) {
-            case REQUEST_ACTIONS.QUERY_ORDERS:
-                this.on_query_orders_response(response);
-                break;
-            case REQUEST_ACTIONS.SEND_ORDER:
-                this.on_send_order_response(response);
-                break;
-            case REQUEST_ACTIONS.CANCEL_ORDER:
-                this.on_cancel_order_response(response);
-                break;
-            case REQUEST_ACTIONS.MODIFY_ORDER:
-                this.on_modify_order_response(response);
-                break;
-            case REQUEST_ACTIONS.INSPECT_ORDER:
-                this.on_inspect_order_response(response);
-                break;
-            default:
-                logger.debug(`Unhandled request action: ${response.action}`);
-        }
     }
 
     on_send_order_response(response) {
@@ -843,22 +871,14 @@ class SimpleRevTrendStrategy extends StrategyBase {
         let client_order_id = response["request"]["client_order_id"];
         let act_id = response["request"]["account_id"];
 
+        // send_order都会发label，因此label之前从request里面获取
+        let label = response["request"]["label"];
         let target = response["request"]["target"];
         let quantity = response["request"]["quantity"];
         let direction = response["request"]["direction"];
         let price = response["request"]["price"];
-        let order_type = response["request"]["order_type"];
 
-        // client_order_id格式: SRE06hUPXXXXX, {0-2: alias}{3-5: interval}{6-7: short_label}
         let interval = (client_order_id.slice(3, 4) === "0")? client_order_id.slice(4, 6): client_order_id.slice(3, 6);
-        let label = client_order_id.slice(6, 8);
-        if (!Object.values(LABELMAP).includes(label)) {
-            logger.info(`${that.alias}::on_send_order_response|unknown order label ${label}!`);
-            return;
-        } else {
-            label = stratutils.get_key_by_value(LABELMAP, label);
-        }
-
         let idf = [exchange, symbol, contract_type].join(".");
         let entry = [exchange, symbol, contract_type, interval].join(".");
         let order_idf = [act_id, entry, direction, label, client_order_id].join("|");
@@ -901,7 +921,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 // 2秒后重发
                 resend = true, timeout = 1000 * 2;
             } else if (error_code_msg.slice(0, 20) === "Limit price can't be") {
-                // 限价单价格发单限制，调整价格后重发
+                // 市价单价格发单限制，调整价格后重发
                 let limit_price = parseFloat(error_code_msg.split(" ").slice(-1)[0]);
                 let adj_price = stratutils.transform_with_tick_size(limit_price, PRICE_TICK_SIZE[idf]);
 
@@ -939,32 +959,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
                     logger.info(`${that.alias}::${order_idf}::price less than min, but not a DN order, check!`);
                 }
             } else if (error_code_msg === "Order would immediately trigger.") {
-                // STOP order才会报这样的错，说明止损价已经触发，直接改发market order
-                let sp_client_order_id = that.alias + interval.padStart(3, '0') + LABELMAP[label] + randomID(5);
-                that.order_map[entry][sp_client_order_id] = { label: label, target: target, quantity: quantity, time: moment.now(), filled: 0 };
-                that.order_map[entry][label] = { client_order_id: sp_client_order_id, label: label, price: 0, quantity: quantity, time: moment.now() };
-                this.send_order({
-                    label: label,
-                    target: target,
-                    exchange: exchange,
-                    symbol: symbol,
-                    contract_type: contract_type,
-                    quantity: quantity,
-                    direction: direction,
-                    order_type: ORDER_TYPE.MARKET,
-                    account_id: act_id,
-                    client_order_id: sp_client_order_id
-                });
-
-                // 撤销对应的反手单（通过on_order_update撤销）
-                // let reverse_label = `${label.slice(0, 6)}|REVERSE`;
-                // this.cancel_order({
-                //     exchange: exchange,
-                //     symbol: symbol,
-                //     contract_type: contract_type,
-                //     client_order_id: that.order_map[entry][reverse_label]["client_order_id"],
-                //     account_id: act_id
-                // });
+                // The order would be triggered immediately, STOP order才会报这样的错，本策略都是LIMIT ORDER
             } else if (error_code_msg === "Futures Trading Quantitative Rules violated, only reduceOnly order is allowed, please try again later.") {
                 this.query_quantitative_rules({
                     exchange: EXCHANGE.BINANCEU,
@@ -980,12 +975,12 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 logger.info(`${that.alias}::${order_idf}::resend the order in ${timeout} ms!`);
                 setTimeout(() => {
                     retry = (retry === undefined) ? 1 : retry + 1;
-                    let new_client_order_id = that.alias + interval.padStart(3, '0') + LABELMAP[label] + randomID(5);
+                    let new_client_order_id = that.alias + interval.padStart(3, '0') + LABELMAP[label] + randomID(7);
 
                     // 注意：order_map里面的key只有ANTI_L, ANTI_S, UP, DN四种；
                     // 但是label有六种！
                     that.order_map[entry][new_client_order_id] = { label: label, target: target, quantity: quantity, time: moment.now(), filled: 0 };
-                    that.order_map[entry][label] = { client_order_id: new_client_order_id, label: label, price: price, quantity: quantity, time: moment.now() };
+                    that.order_map[entry][label.slice(0, 6)] = { client_order_id: new_client_order_id, label: label, price: price, quantity: quantity, time: moment.now() };
 
                     that.send_order({
                         retry: retry,
@@ -997,13 +992,12 @@ class SimpleRevTrendStrategy extends StrategyBase {
                         price: price,
                         quantity: quantity,
                         direction: direction,
-                        order_type: order_type,
+                        order_type: ORDER_TYPE.LIMIT,
                         account_id: act_id,
                         client_order_id: new_client_order_id
                     });
                 }, timeout);
             }
-
         } else {
             // 订单发送成功
             logger.info(`${this.alias}::on_response|${order_idf} submitted!`);
@@ -1023,8 +1017,6 @@ class SimpleRevTrendStrategy extends StrategyBase {
         let client_order_id = response["request"]["client_order_id"];
         let direction = response["request"]["direction"];
 
-        // client_order_id格式: SRE06hUPXXXXX, {0-2: alias}{3-5: interval}{6-7: short_label}
-        let interval = (client_order_id.slice(3, 4) === "0")? client_order_id.slice(4, 6): client_order_id.slice(3, 6);
         let label = client_order_id.slice(6, 8);
         if (!Object.values(LABELMAP).includes(label)) {
             logger.info(`${that.alias}::on_cancel_order_response|unknown order label ${label}!`);
@@ -1033,6 +1025,8 @@ class SimpleRevTrendStrategy extends StrategyBase {
             label = stratutils.get_key_by_value(LABELMAP, label);
         }
 
+        let interval = (client_order_id.slice(3, 4) === "0")? client_order_id.slice(4, 6): client_order_id.slice(3, 6);
+        let idf = [exchange, symbol, contract_type].join(".");
         let entry = [exchange, symbol, contract_type, interval].join(".");
         let order_idf = [act_id, entry, direction, label, client_order_id].join("|");
 
@@ -1099,99 +1093,41 @@ class SimpleRevTrendStrategy extends StrategyBase {
         let exchange = response["request"]["exchange"];
         let symbol = response["request"]["symbol"];
         let contract_type = response["request"]["contract_type"];
-        let act_id = response["request"]["account_id"];
         let idf = [exchange, symbol, contract_type].join(".");
 
         if (response["metadata"]["metadata"]["result"] === false) {
             let error_code = response["metadata"]["metadata"]["error_code"];
             let error_code_msg = response["metadata"]["metadata"]["error_code_msg"];
-            logger.debug(`${that.alias}::${idf} an error occured during query orders: ${error_code}: ${error_code_msg}`);
+            logger.debug(`${that.alias}::${symbol} an error occured during query orders: ${error_code}: ${error_code_msg}`);
             return
         }
 
         let orders = response["metadata"]["metadata"]["orders"];
-        let active_orders = orders.map(item => item["client_order_id"]);
+        let active_orders = orders.map(item => item["client_order_id"]).filter(item => item.slice(0, 3) === that.alias);
 
-        // client_order_id|direction|filled|original_amount@price
-        let active_orders_string = orders.filter(item => item.client_order_id.slice(0, 3) === that.alias).map(item => `${item["client_order_id"]}|${item["direction"]}|${item["filled"]}|${item["original_amount"]}@${item["price"]}`);
-        active_orders_string = active_orders_string.join(", ")
-
-        // 检查异常单
-        let wierd_orders = orders.filter(item => !ALIASES.includes(item.client_order_id.slice(0, 3)));
-        if (wierd_orders.length > 0) logger.warn(`${that.alias}::wierd orders found: ${JSON.stringify(wierd_orders)}`);
-
-        // logger.info(`${that.alias}::${symbol} active_orders| ${active_orders_string}`);
-
-        let order_map_string = [];
         let corr_entries = that.cfg["entries"].filter((entry) => entry.split(".").slice(0, 3).join(".") === idf);
         for (let entry of corr_entries) {
-            for (let [key, value] of Object.entries(that.order_map[entry])) {
-                // 在order_map中，有以下几种key：UP DN ANTI_L|REVERSE ANTI_L|STOPLOSS ANTI_S|REVERSE ANTI_L|STOPLOSS
-                if (["UP", "DN", "ANTI_L|REVERSE", "ANTI_L|STOPLOSS", "ANTI_S|REVERSE", "ANTI_S|STOPLOSS"].includes(key)) {
-                    // 如"DN": { "client_order_id": "5552202427", "label": "DN", "price": 0.1843, "quantity": 2713, "time": 1674091084105 }
-                    // 其中price，对于stop market order就是stop price
-                    let client_order_id = value["client_order_id"];
-                    let time = value["time"];;
-                    let label = value["label"];
-                    let price = value["price"];
-                    let quantity = value["quantity"];
-                    order_map_string.push(`${client_order_id}|${label}|${quantity}@${price}`);
-    
-                    if ((!active_orders.includes(client_order_id)) && (moment.now() - time > 1000 * 60 * 10)) {
-                        logger.debug(`${that.alias}::${symbol}|${key}|${client_order_id}::order not active (label as key) and submitted over 10 min before, will be deleted, please check it!`);
-                        logger.info(`${that.alias}::${JSON.stringify(response)}`);      // TODO: check the response
-                        that.slack_publish({
-                            "type": "warn",
-                            "msg": `${that.alias}::${symbol}|${key}|${client_order_id}::order not active (label as key) and submitted over 10 min before, will be deleted, please check it!`
-                        });
-                        if (that.order_map[entry][key]["ToBeDeleted"]) {
-                            delete that.order_map[entry][key];
-                        } else {
-                            that.order_map[entry][key]["ToBeDeleted"] = true;
-                        }
-    
-                    }
-                } else {
-                    // 如{"3106609167": {"label": "DN", "target": "LONG", "quantity": 21133, "time": 1669492800445, "price": 0.04732, "filled": 0}}
-                    let label = value["label"];
-                    let time = value["time"];
-    
-                    order_map_string.push(key);
-    
-                    if (!(active_orders.includes(key)) && (moment.now() - time > 1000 * 60 * 10)) {
-                        // 该order不在active orders里面，并且距今已经超过10分钟，直接删掉
-                        logger.debug(`${that.alias}::${symbol}|${label}|${key}::order not active (client_order_id as key) and submitted over 10 min before, will be deleted, please check it!`);
-                        that.slack_publish({
-                            "type": "warn",
-                            "msg": `${that.alias}::${symbol}|${label}|${key}::order not active (client_order_id as key) and submitted over 10 min before, will be deleted, please check it!`
-                        });
-    
-                        logger.info(JSON.stringify(that.order_map), entry, key);
-    
-                        if (that.order_map[entry][key]["ToBeDeleted"]) {
-                            delete that.order_map[entry][key];
-                        } else {
-                            that.order_map[entry][key]["ToBeDeleted"] = true;
-                        }
-                    }
-                }
+            let interval = entry.split(".")[3];
+            let corr_active_orders = active_orders.filter(item => item.slice(3, 6) === interval.padStart(3, '0'));
+            let string = corr_active_orders.join(",");
+
+            let index = that.cfg["entries"].indexOf(entry);
+
+            let sendData = {
+                "tableName": this.alias,
+                "tabName": "PortfolioMonitor",
+                "data": []
             }
+            let item = {};
+            item[`${index + 1}|orders`] = string;
+            sendData["data"].push(item);
+
+            this.intercom.emit("UI_update", sendData, INTERCOM_SCOPE.UI);
         }
-
-        // ## UI information update, not in use for now!
-        // ## 以下UI更新方法不对
-        // order_map_string = order_map_string.join(", ");
-
-        // let index = that.cfg["entries"].indexOf(entry);
-        // let item = {};
-        // item[`${index + 1}|entry`] = entry;
-        // item[`${index + 1}|order_map`] = order_map_string;
-        // item[`${index + 1}|active_orders`] = active_orders_string;
-        // let data = [item];
     }
 }
 
-module.exports = SimpleRevTrendStrategy;
+module.exports = RevTrendXESStrategy;
 
 let strategy;
 
@@ -1201,7 +1137,7 @@ process.argv.forEach((val) => {
             .option("alias", {
                 alias: "a",
                 describe: "-a <env> specify the stragey alias",
-                default: "SRE",
+                default: "undefined",
             })
             .help()
             .alias("h", "help")
@@ -1215,26 +1151,26 @@ process.argv.forEach((val) => {
             INTERCOM_CONFIG[`LOCALHOST_UI`]
         ];
 
-        strategy = new SimpleRevTrendStrategy("SimpleRevTrend", alias, new Intercom(intercom_config));
+        strategy = new RevTrendXESStrategy("RevTrendXES", alias, new Intercom(intercom_config));
         strategy.start();
     }
 });
 
-process.on('SIGINT', async () => {
-    logger.info(`${strategy.alias}::SIGINT`);
-    /* Note: Just work under pm2 environment */
-    // strategy._test_cancel_order(strategy.test_order_id);
-    setTimeout(() => process.exit(), 3000)
-});
+// process.on('SIGINT', async () => {
+//     logger.info(`${strategy.alias}::SIGINT`);
+//     /* Note: Just work under pm2 environment */
+//     // strategy._test_cancel_order(strategy.test_order_id);
+//     setTimeout(() => process.exit(), 3000)
+// });
 
-process.on('exit', async () => {
-    logger.info(`${strategy.alias}:: exit`);
-});
+// process.on('exit', async () => {
+//     logger.info(`${strategy.alias}:: exit`);
+// });
 
-process.on('uncaughtException', (err) => {
-    logger.error(`uncaughtException: ${JSON.stringify(err.stack)}`);
-});
+// process.on('uncaughtException', (err) => {
+//     logger.error(`uncaughtException: ${JSON.stringify(err.stack)}`);
+// });
 
-process.on('unhandledRejection', (reason, p) => {
-    logger.error(`unhandledRejection: ${p}, reason: ${reason}`);
-});
+// process.on('unhandledRejection', (reason, p) => {
+//     logger.error(`unhandledRejection: ${p}, reason: ${reason}`);
+// });

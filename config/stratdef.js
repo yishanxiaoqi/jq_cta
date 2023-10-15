@@ -15,6 +15,7 @@ SUBSCRIPTION_LIST = [
     'BinanceU|1000SHIBUSDT|perp|trade',
     'BinanceU|1000XECUSDT|perp|trade',
     'BinanceU|ADAUSDT|perp|trade',
+    'BinanceU|ALICEUSDT|perp|trade',
     'BinanceU|ALGOUSDT|perp|trade',
     'BinanceU|ALPHAUSDT|perp|trade',
     'BinanceU|ANKRUSDT|perp|trade',
@@ -30,8 +31,8 @@ SUBSCRIPTION_LIST = [
     'BinanceU|C98USDT|perp|trade',
     'BinanceU|CELOUSDT|perp|trade',
     'BinanceU|CELRUSDT|perp|trade',
-    'BinanceU|COTIUSDT|perp|trade',
     'BinanceU|CTKUSDT|perp|trade',
+    'BinanceU|CRVUSDT|perp|trade',
     'BinanceU|DASHUSDT|perp|trade',
     'BinanceU|DOTUSDT|perp|trade',
     'BinanceU|DYDXUSDT|perp|trade',
@@ -41,8 +42,10 @@ SUBSCRIPTION_LIST = [
     'BinanceU|ETHUSDT|perp|trade',
     'BinanceU|FILUSDT|perp|trade',
     'BinanceU|FTMUSDT|perp|trade',
+    'BinanceU|FLOWUSDT|perp|trade',
     'BinanceU|GRTUSDT|perp|trade',
     'BinanceU|GTCUSDT|perp|trade',
+    'BinanceU|HBARUSDT|perp|trade',
     'BinanceU|HOTUSDT|perp|trade',
     'BinanceU|KLAYUSDT|perp|trade',
     'BinanceU|KSMUSDT|perp|trade',
@@ -54,6 +57,7 @@ SUBSCRIPTION_LIST = [
     'BinanceU|NEARUSDT|perp|trade',
     'BinanceU|NKNUSDT|perp|trade',
     'BinanceU|OCEANUSDT|perp|trade',
+    'BinanceU|ONTUSDT|perp|trade',
     'BinanceU|QTUMUSDT|perp|trade',
     'BinanceU|REEFUSDT|perp|trade',
     'BinanceU|RSRUSDT|perp|trade',
@@ -74,8 +78,7 @@ SUBSCRIPTION_LIST = [
     'BinanceU|ZILUSDT|perp|trade',
 
     // spread arbitrage
-    // 'BinanceU|CRVUSDT|perp|bestquote',
-    // 'OKX|CRVUSDT|perp|bestquote',
+    'BinanceU|CRVUSDT|perp|bestquote',
     'OKX|CRVUSDT|perp|bestquote'
 ]
 
@@ -1380,9 +1383,7 @@ QUANTITY_TICK_SIZE = {
 
     'BinanceU.BTCUSDT.perp': 0.001,
     'BinanceU.ETHUSDT.perp': 0.001,
-    // 'BinanceU.BNBUSDT.perp': 0.02,
     "BinanceU.BNBUSDT.perp": 0.01,
-    // 'BinanceU.FTTUSDT.perp': 0.2,
     "BinanceU.FTTUSDT.perp": 0.1,
     "BinanceU.BCHUSDT.perp": 0.001,
     "BinanceU.XRPUSDT.perp": 0.1,
@@ -1702,6 +1703,8 @@ QUANTITY_TICK_SIZE = {
     'BitMEX.LTCUSD.perp': 1,
     'BitMEX.LUNAUSD.perp': 1,
     'BitMEX.SOLUSD.perp': 1,
+
+    'OKX.CRVUSDT.perp': 1,
 
     'OKExC.BTCUSD.perp': 1,
     'OKExC.BTCUSD.this_week': 1,

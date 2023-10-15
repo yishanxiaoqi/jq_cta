@@ -24,6 +24,27 @@
 }
 ```
 
+```json
+// OKX的best quote
+{
+    "exchange": "OKX",
+    "symbol": "CRVUSDT",
+    "contract_type": "perp",
+    "data_type": "bestquote",
+    "metadata": [
+        [
+            "1696392996007",
+            "20231004121636007",
+            0.4819,
+            1496,
+            0.4818,
+            7090
+        ]
+    ],
+    "timestamp": "20231004121636060"
+}
+```
+
 # 1. RESPONSE (rest)
 ## 1.1 send order response
 
@@ -197,6 +218,116 @@
         "account_id": "jq_cta_02",
         "client_order_id": "12345678910111",
         "ref_id": "DMOEKXhtvDyCL4jQKKInFmlX7UcJ73"
+    }
+}
+```
+
+### Send Post Only Order
+
+```json
+// BinanceU发送Post Only Order成功
+{
+    "ref_id": "DMOeT1lZ0wtdGjlk6XCuByIDOTwcyY",
+    "action": "place_order",
+    "strategy": "BinanceU",
+    "metadata": {
+        "exchange": "BinanceU",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "event": "place_order",
+        "metadata": {
+            "result": true,
+            "account_id": "th_binance_cny_sub01",
+            "order_id": 24439966213,
+            "client_order_id": "12345678910111",
+            "timestamp": 1696349600858
+        },
+        "timestamp": "20231004001320868"
+    },
+    "request": {
+        "exchange": "BinanceU",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "quantity": 20,
+        "direction": "Sell",
+        "order_type": "post_only",
+        "price": 0.5,
+        "account_id": "th_binance_cny_sub01",
+        "client_order_id": "12345678910111",
+        "ref_id": "DMOeT1lZ0wtdGjlk6XCuByIDOTwcyY",
+        "send_time": "20231004001320810"
+    }
+}
+```
+
+```json
+// BinanceU发送 Post Only Order失败：价格过低（limit order的要求
+{
+    "ref_id": "DMOrpgkB1Qsvr1yonk5XxgfVIWK1dq",
+    "action": "place_order",
+    "strategy": "BinanceU",
+    "metadata": {
+        "exchange": "BinanceU",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "event": "place_order",
+        "metadata": {
+            "account_id": "th_binance_cny_sub01",
+            "result": false,
+            "order_id": 0,
+            "error_code": -4024,
+            "error_code_msg": "Limit price can't be lower than 0.437."
+        },
+        "timestamp": "20231004001632338"
+    },
+    "request": {
+        "exchange": "BinanceU",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "quantity": 20,
+        "direction": "Sell",
+        "order_type": "post_only",
+        "price": 0.4,
+        "account_id": "th_binance_cny_sub01",
+        "client_order_id": "12345678910111",
+        "ref_id": "DMOrpgkB1Qsvr1yonk5XxgfVIWK1dq",
+        "send_time": "20231004001632285"
+    }
+}
+```
+
+```json
+// BinanceU发送 Post Only Order失败：发送后会立即成交
+{
+    "ref_id": "DMOS6Ores6MIK0zKFUE8UdEboxrItN",
+    "action": "place_order",
+    "strategy": "BinanceU",
+    "metadata": {
+        "exchange": "BinanceU",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "event": "place_order",
+        "metadata": {
+            "account_id": "th_binance_cny_sub01",
+            "result": false,
+            "order_id": 0,
+            "error_code": -5022,
+            "error_code_msg": "Due to the order could not be executed as maker, the Post Only order will be rejected. The order will not be recorded in the order history"
+        },
+        "timestamp": "20231004001832704"
+    },
+    "request": {
+        "exchange": "BinanceU",
+        "symbol": "CRVUSDT",
+        "contract_type": "perp",
+        "quantity": 20,
+        "direction": "Sell",
+        "order_type": "post_only",
+        "price": 0.48,
+        "account_id": "th_binance_cny_sub01",
+        "client_order_id": "12345678910111",
+        "ref_id": "DMOS6Ores6MIK0zKFUE8UdEboxrItN",
+        "send_time": "20231004001832643"
     }
 }
 ```
@@ -389,6 +520,46 @@
 ```
 
 ## Modify Order Response
+
+```json
+// BinanceU - 改单失败
+{
+    "ref_id": "DMODNctknggXvJnMya2R5zmeQFmhYJ",
+    "action": "modify_order",
+    "strategy": "BinanceU",
+    "metadata": {
+        "exchange": "BinanceU",
+        "symbol": "XEMUSDT",
+        "contract_type": "perp",
+        "event": "modify_order",
+        "metadata": {
+            "account_id": "th_binance_cny_sub01",
+            "result": false,
+            "error_code": -2013,
+            "error_code_msg": "Order does not exist."
+        },
+        "order_info": {
+            "original_amount": 0,
+            "filled": 0,
+            "avg_executed_price": 0,
+            "status": "unknown"
+        },
+        "timestamp": "20231014234912533"
+    },
+    "request": {
+        "exchange": "BinanceU",
+        "symbol": "XEMUSDT",
+        "contract_type": "perp",
+        "price": 0.025,
+        "quantity": 400,
+        "direction": "Sell",
+        "account_id": "th_binance_cny_sub01",
+        "client_order_id": "12345678911xxx",
+        "ref_id": "DMODNctknggXvJnMya2R5zmeQFmhYJ",
+        "send_time": "20231014234912483"
+    }
+}
+```
 
 ```json
 OKX：改单成功
@@ -594,43 +765,47 @@ OKX：改单成功
 
 ```json
 {
-    "ref_id": "DMO1FyWMWiDBiZ9VR3ZrOwrPOftDBO",
+    "ref_id": "DMOtDoJ6ooV5Sguqp4B9Qo19Uxsnon",
     "action": "query_account",
-    "strategy": "Demo",
+    "strategy": "BinanceU",
     "metadata": {
         "exchange": "BinanceU",
         "contract_type": "perp",
         "event": "query_account",
         "metadata": {
             "result": true,
-            "account_id": "jq_cta_02",
+            "account_id": "th_binance_cny_master",
             "balance": {
-                "wallet_balance_in_USD": 5301.82469244,
-                "unrealized_pnl_in_USD": -29.44308836,
-                "equity_in_USD": 5272.38160408,
-                "wallet_balance_in_USDT": 5302.06572435,
-                "unrealized_pnl_in_USDT": -29.4444269,
-                "equity_in_USDT": 5272.62129745
+                "wallet_balance_in_USD": 54576.1743854,
+                "unrealized_pnl_in_USD": 132.56147155,
+                "equity_in_USD": 54708.73585695,
+                "wallet_balance_in_USDT": 54579.61126353,
+                "unrealized_pnl_in_USDT": 132.56981947,
+                "equity_in_USDT": 54712.181083,
+                "position_initial_margin_in_USDT": 6460.65022161,
+                "open_order_initial_margin_in_USDT": 18145.32712898
             },
             "positions": [
-                // 仅返回有仓位的symbol，以下内容有省略
                 {
                     "symbol": "WAVESUSDT",
-                    "position": -40.2,
-                    "entryPrice": 1.9721,
-                    "unRealizedProfit": -2.52295159,
-                    "last_updated_time": "20230722120209534"
+                    "position": 363.9,
+                    "entryPrice": 1.6183,
+                    "unRealizedProfit": -18.30417,
+                    "positionInitialMargin": 114.11904,
+                    "leverage": 5,
+                    "last_updated_time": "20231003105948369"
                 }
             ],
-            "timestamp": "20230722120209540"
+            "timestamp": "20231003105948371"
         },
-        "timestamp": "20230722120209540"
+        "timestamp": "20231003105948371"
     },
     "request": {
         "exchange": "BinanceU",
         "contract_type": "perp",
-        "account_id": "jq_cta_02",
-        "ref_id": "DMO1FyWMWiDBiZ9VR3ZrOwrPOftDBO"
+        "account_id": "th_binance_cny_master",
+        "ref_id": "DMOtDoJ6ooV5Sguqp4B9Qo19Uxsnon",
+        "send_time": "20231003105948306"
     }
 }
 ```
@@ -891,6 +1066,36 @@ OKX：改单成功
         "avg_executed_price": 0.0301,
         "submit_price": 0,
         "status": "filled"
+    }
+}
+```
+
+## 2.4 Modify Order 
+
+```json
+// BinanceU - modify order
+{
+    "exchange": "BinanceU",
+    "symbol": "BTCUSDT",
+    "contract_type": "perp",
+    "metadata": {
+        "result": true,
+        "account_id": "th_binance_cny_sub01",
+        "order_id": 198570880253,
+        "client_order_id": "12345678911xxx",
+        "direction": "Sell",
+        "timestamp": "20231015004726838",
+        "fee": 0,
+        "update_type": "modified"           // update_type和status不同
+    },
+    "timestamp": "20231015004726851",
+    "order_info": {
+        "original_amount": 0.01,
+        "filled": 0,
+        "new_filled": 0,
+        "avg_executed_price": 0,
+        "submit_price": 27700,
+        "status": "new"             // update_type和status不同
     }
 }
 ```

@@ -188,7 +188,7 @@ class StrategyBase {
 
     async send_order(order, ref_id = this.alias + randomID(27)) {
         let idf = [order.exchange, order.symbol, order.contract_type].join(".");
-        logger.debug(`Emitting send order request from ${this.name}|${this.alias}|${idf}|${order["client_order_id"]}|${order["label"]}`);
+        logger.debug(`Emitting send order request from ${this.name}|${this.alias}|${idf}|${order.client_order_id}|${order.label}|${order.quantity}@${order.price}`);
 
         // 这里可以放一些下单信息的检查和更新
         if (order["ref_id"] === undefined) order["ref_id"] = ref_id;

@@ -14,7 +14,8 @@ ORDER_TYPE = {
     LIMIT: "limit",
     MARKET: "market",
     STOP_MARKET: "stop_market",
-    STOP_LIMIT: "stop_limit"
+    STOP_LIMIT: "stop_limit",
+    POST_ONLY: "post_only"
 }
 
 TRADE_SIDE = {
@@ -32,6 +33,7 @@ DIRECTION = {
 ORDER_UPDATE_TYPE = {
     SUBMITTED: "submitted",
     CANCELLED: "cancelled",
+    MODIFIED: "modified",
     EXECUTED: "executed",
     EXPIRED: "expired",
     LIQUIDATED: "liquidated"
@@ -41,7 +43,8 @@ ORDER_STATUS = {
     SUBMITTED: "new",
     CANCELLED: "cancelled",
     FILLED: "filled",
-    PARTIALLY_FILLED: "partially_filled"
+    PARTIALLY_FILLED: "partially_filled",
+    MODIFIED: "modified"
 }
 
 MARKET_DATA = {
@@ -63,6 +66,15 @@ ORDER_ACTIONS = {
     INSPECT: 'inspect_order',
     MODIFY: 'modify_order'
 };
+
+ERROR_MSG = {
+    // BinanceU - Send Order
+    POST_ONLY_FAIL: "Due to the order could not be executed as maker, the Post Only order will be rejected. The order will not be recorded in the order history",
+    
+    // BinanceU - Cancel Order
+    CANCEL_ORDER_FAIL: "Unknown order sent."
+
+}
 
 REQUEST_ACTIONS = {
     SEND_ORDER: 'place_order',

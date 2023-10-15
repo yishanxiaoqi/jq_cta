@@ -414,9 +414,9 @@ class ExchangeOKX extends ExchangeBase {
             case "mmp_canceled":
                 return ORDER_STATUS.CANCELLED;
             case "partially_filled":
-                return ORDER_STATUS.FILLED;
-            case "filled":
                 return ORDER_STATUS.PARTIALLY_FILLED;
+            case "filled":
+                return ORDER_STATUS.FILLED;
             default:
                 logger.warn(`No predefined order status conversion rule in ${this.name} for ${status}`);
                 return "unknown";

@@ -8,6 +8,7 @@
         "restUrlGetHistoryOrder": "/fapi/v1/allOrders",
         "restUrlGetHistoryTrade": "/fapi/v1/userTrades",
         "restUrlCancelOrder": "/fapi/v1/order",
+        "restUrlModifyOrder": "/fapi/v1/order",
         "restUrlPlaceOrder": "/fapi/v1/order",
         "restUrlGetOrder": "/fapi/v1/order",
         "restUrlQueryOrders": "/fapi/v1/allOrders",
@@ -22,7 +23,8 @@
             "limit": "LIMIT",
             "market": "MARKET",
             "stop_limit": "STOP",
-            "stop_market": "STOP_MARKET"
+            "stop_market": "STOP_MARKET",
+            "post_only": "LIMIT"
         }
     },
     "OKX": {

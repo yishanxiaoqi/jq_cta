@@ -1,0 +1,18 @@
+{
+    "alias": "MMS",
+    "clear_existing_status": true,
+    "ini_usdt": 50,
+    "symbols": [
+        "XEMUSDT"
+    ],
+    "idfs": [
+        "BinanceU.XEMUSDT.perp"
+    ],
+    "act_ids": [
+        "th_binance_cny_sub01"
+    ],
+    "BinanceU.XEMUSDT.perp": {
+        "quantity": 3000,
+        "act_id": "th_binance_cny_sub01"
+    }
+}

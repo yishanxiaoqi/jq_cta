@@ -95,7 +95,7 @@ class ExchangeBinanceU extends ExchangeBase {
 
             if (jdata["e"] === "ORDER_TRADE_UPDATE") {
                 // order_update更新
-                let order_update = this._format_order_update(jdata);
+                let order_update = this._format_order_update(jdata, account_id);
                 this.intercom.emit("ORDER_UPDATE", order_update, INTERCOM_SCOPE.FEED);
             } else if (["aggTrade", "bookTicker"].includes(jdata["e"])) {
                 // trade价格更新
@@ -192,14 +192,14 @@ class ExchangeBinanceU extends ExchangeBase {
         }
     }
 
-    _format_order_update(jdata) {
+    _format_order_update(jdata, account_id) {
         let order_update = {
             exchange: EXCHANGE.BINANCEU,
             symbol: jdata["o"]["s"],
             contract_type: "perp",
             metadata: {
                 result: true,
-                account_id: this.account_id,
+                account_id: account_id,
                 order_id: jdata["o"]["i"],
                 client_order_id: jdata["o"]["c"],
                 direction: (jdata["o"]["S"] === "SELL") ? DIRECTION.SELL : DIRECTION.BUY,
@@ -235,7 +235,7 @@ class ExchangeBinanceU extends ExchangeBase {
                     ]
                 ];
                 market_data = {
-                    exchange: "BinanceU",
+                    exchange: EXCHANGE.BINANCEU,
                     symbol: jdata["s"],
                     contract_type: "perp",
                     data_type: MARKET_DATA.TRADE,
@@ -255,9 +255,9 @@ class ExchangeBinanceU extends ExchangeBase {
                     ]
                 ];
                 market_data = {
-                    exchange: "BinanceU",
+                    exchange: EXCHANGE.BINANCEU,
                     symbol: jdata["s"],
-                    contract_type: "perp",
+                    contract_type: CONTRACT_TYPE.PERP,
                     data_type: MARKET_DATA.BESTQUOTE,
                     metadata: metadata,
                     timestamp: utils._util_get_human_readable_timestamp()
@@ -299,6 +299,8 @@ class ExchangeBinanceU extends ExchangeBase {
             case "partially_filled":
             case "2":
                 return ORDER_STATUS.PARTIALLY_FILLED;
+            case "modified":
+                return ORDER_STATUS.MODIFIED; 
             default:
                 logger.warn(`No predefined order status conversion rule in ${this.name} for ${status}`);
                 return "unknown";
@@ -317,6 +319,7 @@ class ExchangeBinanceU extends ExchangeBase {
                 return ORDER_UPDATE_TYPE.EXPIRED;
             case "TRADE":
                 return ORDER_UPDATE_TYPE.EXECUTED;
+            case "AMENDMENT":
             case "AMENDMENT - Order Modified":
                 return ORDER_UPDATE_TYPE.MODIFIED;
         }
@@ -353,7 +356,7 @@ class ExchangeBinanceU extends ExchangeBase {
 
         let params;
         let url = apiconfig.BinanceU.restUrl + apiconfig.BinanceU.restUrlPlaceOrder;
-        if (order_type === "market") {
+        if (order_type === ORDER_TYPE.MARKET) {
             // 市价单走这里
             params = this._get_rest_options(url, {
                 symbol: exg_symbol,
@@ -364,8 +367,7 @@ class ExchangeBinanceU extends ExchangeBase {
                 newClientOrderId: client_order_id,
                 timestamp: Date.now(),
             }, account_id);
-        } else if (order_type === "limit") {
-            console.log(account_id);
+        } else if (order_type === ORDER_TYPE.LIMIT) {
             // 限价单走这里
             params = this._get_rest_options(url, {
                 symbol: exg_symbol,
@@ -378,7 +380,20 @@ class ExchangeBinanceU extends ExchangeBase {
                 newClientOrderId: client_order_id,
                 timestamp: Date.now(),
             }, account_id);
-        } else if (order_type === "stop_market") {
+        } else if (order_type === ORDER_TYPE.POST_ONLY) {
+            // post_only单走这里
+            params = this._get_rest_options(url, {
+                symbol: exg_symbol,
+                side: exg_direction,
+                type: exg_order_type,
+                quantity: absAmount,
+                timeInForce: "GTX ",
+                price: String(price),
+                newOrderRespType: "FULL",
+                newClientOrderId: client_order_id,
+                timestamp: Date.now(),
+            }, account_id);
+        } else if (order_type === ORDER_TYPE.STOP_MARKET) {
             params = this._get_rest_options(url, {
                 symbol: exg_symbol,
                 side: exg_direction,
@@ -552,6 +567,120 @@ class ExchangeBinanceU extends ExchangeBase {
         let response = {
             ref_id: ref_id,
             action: ORDER_ACTIONS.CANCEL,
+            strategy: this.name,
+            metadata: cxl_resp,
+            request: order
+        }
+
+        return response;
+    }
+
+    async _modify_order_via_rest(order) {
+
+        let ref_id = order["ref_id"];
+        let symbol = order["symbol"];
+        let contract_type = order["contract_type"];
+        let price = order["price"];
+        let quantity = order["quantity"];
+        let direction = order["direction"];
+        let order_id = order["order_id"];
+        let client_order_id = order["client_order_id"];
+        let account_id = order["account_id"];
+
+        let params;
+        let cxl_resp;
+        let url = apiconfig.BinanceU.restUrl + apiconfig.BinanceU.restUrlModifyOrder;
+        if (order_id) {
+            // 优先使用order_id进行撤单
+            params = this._get_rest_options(url, {
+                symbol: symbol,
+                orderId: order_id,
+                side: direction.toUpperCase(),
+                quantity: quantity,
+                price: price,
+                timestamp: Date.now(),
+            }, account_id);
+        } else {
+            params = this._get_rest_options(url, {
+                symbol: symbol,
+                origClientOrderId: client_order_id,
+                side: direction.toUpperCase(),
+                quantity: quantity,
+                price: price,
+                timestamp: Date.now(),
+            }, account_id);
+        }
+
+        var options = {
+            url: params["url"] + params["postbody"],
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-MBX-APIKEY": token[account_id].apiKey
+            }
+        };
+
+        try {
+            let body = await rp.put(options);
+            //body, e.g:{ symbol: 'BNBBTC',origClientOrderId: 'Q6KYAotfs3rC4Sh99vBVAv',orderId: 55949780,clientOrderId: 'TNJyVOwfgjJCglNldbogbG' }
+            body = JSON.parse(body);
+            console.log(JSON.stringify(body));
+            if (typeof body !== "undefined" && body["orderId"]) {
+                body["result"] = true;
+                // BinanceU里面返回的status是NEW
+            } else {
+                body["result"] = false;
+                body["status"] = "modify error";
+            }
+
+            let metadata = {
+                result: true,
+                account_id: account_id,
+                order_id: body["orderId"],
+                client_order_id: body["clientOrderId"],
+                timestamp: body["updateTime"]
+            };
+            let order_info = {
+                original_amount: +body["origQty"],
+                avg_executed_price: +body["avgPrice"],
+                filled: +body["executedQty"],
+                status: this._convert_to_standard_order_status(body["status"])
+            };
+            cxl_resp = {
+                exchange: EXCHANGE.BINANCEU,
+                symbol: symbol,
+                contract_type: contract_type,
+                event: ORDER_ACTIONS.MODIFY,
+                metadata: metadata,
+                order_info: order_info,
+                timestamp: utils._util_get_human_readable_timestamp()
+            };
+        } catch (ex) {
+            logger.error(ex.stack);
+            let error =  ex.error ? JSON.parse(ex.error): undefined;
+            cxl_resp = {
+                exchange: EXCHANGE.BINANCEU,
+                symbol: symbol,
+                contract_type: contract_type,
+                event: ORDER_ACTIONS.MODIFY,
+                metadata: {
+                    account_id: account_id,
+                    result: false,
+                    error_code: error.code || 999999,
+                    error_code_msg: error.msg || ex.toString()
+                },
+                order_info: {
+                    original_amount: 0,
+                    filled: 0,
+                    avg_executed_price: 0,
+                    status: 'unknown'
+                },
+                timestamp: utils._util_get_human_readable_timestamp()
+            };
+        }
+
+        let response = {
+            ref_id: ref_id,
+            action: ORDER_ACTIONS.MODIFY,
             strategy: this.name,
             metadata: cxl_resp,
             request: order

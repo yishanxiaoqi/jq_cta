@@ -152,6 +152,14 @@ function cal_bar_otime(ts, interval, splitAt = 8) {
     let bar_otime;
     if (interval === "1m") {
         bar_otime = ts.slice(0, 12) + "00000";
+    } else if (interval.endsWith("m")) {
+        let num = parseInt(interval.split("m")[0]);
+        let min = parseInt(ts.slice(10, 12));
+        let new_min = Math.floor(min / num) * num;
+        let new_date_hour = ts.slice(0, 10);
+
+        new_min = (new_min < 10)? `0${new_min}`: `${new_min}`;
+        bar_otime = `${new_date_hour}${new_min}00000`;
     } else if (["1d", "12h", "8h", "6h", "4h", "3h", "2h", "1h"].includes(interval)) {
         let num = (interval === "1d")? 24: parseInt(interval.split("h")[0]);
         let hour = parseInt(ts.slice(8, 10));

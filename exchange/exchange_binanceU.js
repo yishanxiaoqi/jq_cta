@@ -844,6 +844,7 @@ class ExchangeBinanceU extends ExchangeBase {
 
             for (let i of active_orders) {
                 formatted_active_orders.push({
+                    symbol: i["symbol"],
                     order_id: i["orderId"],
                     client_order_id: i['clientOrderId'],
                     original_amount: +i["origQty"],

@@ -17,8 +17,8 @@ class DemoStrategy extends StrategyBase {
             // this._test_send_order();
             // this._test_cancel_order();
             // this._test_inspect_order();
-            // this._test_query_orders();
-            this._test_modify_order();
+            this._test_query_orders();
+            // this._test_modify_order();
             // this._test_query_account();
         }, 1000);
     }

@@ -15,20 +15,24 @@ class BalanceMonitor extends StrategyBase {
         this.accounts = [
             "BinanceU.th_binance_cny_master.perp",
             "BinanceU.th_binance_cny_sub01.perp",
+            "BinanceU.th_binance_cny_sub02.perp"
         ];
         this.init_equity = {
             "BinanceU.th_binance_cny_master.perp": 53984.51,
-            "BinanceU.th_binance_cny_sub01.perp": 1100
+            "BinanceU.th_binance_cny_sub01.perp": 1100,
+            "BinanceU.th_binance_cny_sub02.perp": 1287.40
         };
         this.denominator = {
             "BinanceU.th_binance_cny_master.perp": 49337.34,
-            "BinanceU.th_binance_cny_sub01.perp": 1100
+            "BinanceU.th_binance_cny_sub01.perp": 1100,
+            "BinanceU.th_binance_cny_sub02.perp": 1287.40
         };
         this.init_dates = {
             "BinanceU.th_binance_cny_master.perp": moment("2023-06-23"),
-            "BinanceU.th_binance_cny_sub01.perp": moment("2023-10-08")
+            "BinanceU.th_binance_cny_sub01.perp": moment("2023-10-08"),
+            "BinanceU.th_binance_cny_sub02.perp": moment("2023-10-24")
         };
-        this.aliases = ["R01", "R06", "R12", "R24", "STR", "SRE"];
+        this.aliases = ["R01", "R06", "R12", "R24", "STR", "SRE", "XEM", "XES"];
 
         this.account_summary = {};
         for (let account of this.accounts) {
@@ -39,18 +43,18 @@ class BalanceMonitor extends StrategyBase {
     start() {
         let that = this;
         this._register_events();
-        
-        for (let account of this.accounts) {
-            let [exchange, account_id, contract_type] = account.split(".");
-            setInterval(() => { 
+
+        setInterval(() => { 
+            for (let account of this.accounts) {
+                let [exchange, account_id, contract_type] = account.split(".");
                 this.query_account({
                     exchange: exchange,
                     contract_type: contract_type,
                     account_id: account_id
                 }) 
-            }, 1000 * 60 * 1);
-        }
-
+            }
+        }, 1000 * 60 * 1);
+        
         setInterval(() => { 
             this.update_status_map_to_slack();
             // 10秒钟内发送的消息会被过滤掉，因此设置为10秒后
@@ -84,18 +88,23 @@ class BalanceMonitor extends StrategyBase {
             let cfg = JSON.parse(fs.readFileSync(`./config/cfg_${alias}.json`, 'utf8'));
             let loop_entries;
 
-            if (alias === "SRE") { 
+            // 需要修改！！！
+            if (["SRE", "XEM"].includes(alias)) { 
                 loop_entries = cfg["entries"];
                 add_items = ["status", "triggered", "pos", "net_profit"]; 
-                text += `========${alias}========\nentry\tstatus\tpos\tfee\tnp\tsar(sp)\tup\tdn\n`;
+                text += `========${alias}========\nentry\tstatus\tpos\tfee\tnp`;
             } else if (alias === "STR") {
                 loop_entries = cfg["entries"];
                 add_items = ["status", "pos", "net_profit"]; 
-                text += `========${alias}========\nentry\tstatus\tpos\tfee\tnp\tsar(sp)\tup\tdn\n`;
+                text += `========${alias}========\nentry\tstatus\tpos\tnp`;
+            } else if (alias === "XES") {
+                loop_entries = cfg["entries"];
+                add_items = ["pos", "net_profit"]; 
+                text += `========${alias}========\nentry\tpos\tnp`;
             } else {
                 loop_entries = cfg["idfs"];
                 add_items = ["status", "triggered", "pos", "net_profit"];
-                text += `========${alias}========\nidf\tstatus\ttriggered\tpos\tfee\tnp\tsp\tup\tdn\n`;
+                text += `========${alias}========\nidf\tstatus\ttriggered\tpos\tnp`;
             }
 
             for (let idf of loop_entries) {
@@ -177,8 +186,8 @@ class BalanceMonitor extends StrategyBase {
         this.account_summary[account]["annual_ret"] = stratutils.round(this.account_summary[account]["ret"] / n_days * 365, 4); 
 
         this.account_summary[account]["total_position_initial_margin_in_USDT"] = stratutils.round(real_positions.map(e => e.positionInitialMargin * e.leverage).reduce((a, b) => a + b), 2); 
-        this.account_summary[account]["total_long_position_initial_margin_in_USDT"] = stratutils.round(real_positions.filter(e => e.position > 0).map(e => e.positionInitialMargin * e.leverage).reduce((a, b) => a + b), 2); 
-        this.account_summary[account]["total_short_position_initial_margin_in_USDT"] = stratutils.round(real_positions.filter(e => e.position < 0).map(e => e.positionInitialMargin * e.leverage).reduce((a, b) => a + b), 2); 
+        this.account_summary[account]["total_long_position_initial_margin_in_USDT"] = stratutils.round(real_positions.filter(e => e.position > 0).map(e => e.positionInitialMargin * e.leverage).reduce((a, b) => a + b, 0), 2); 
+        this.account_summary[account]["total_short_position_initial_margin_in_USDT"] = stratutils.round(real_positions.filter(e => e.position < 0).map(e => e.positionInitialMargin * e.leverage).reduce((a, b) => a + b, 0), 2); 
  
         this.account_summary[account]["long_lev"] = stratutils.round(this.account_summary[account]["total_long_position_initial_margin_in_USDT"] / this.account_summary[account]["equity"], 2); 
         this.account_summary[account]["short_lev"] = stratutils.round(this.account_summary[account]["total_short_position_initial_margin_in_USDT"] / this.account_summary[account]["equity"], 2); 
@@ -211,12 +220,12 @@ class BalanceMonitor extends StrategyBase {
 
         this.intercom.emit("UI_update", sendData, INTERCOM_SCOPE.UI);
 
-        if (account_id === "th_binance_cny_sub01") return;
+        // if (account_id === "th_binance_cny_sub01") return;
         // 计算仓位是否和预想一致
         for (let alias of this.aliases) {
             let cfg = JSON.parse(fs.readFileSync(`./config/cfg_${alias}.json`, 'utf8'));
             let status_map = JSON.parse(fs.readFileSync(`./config/status_map_${alias}.json`, 'utf8'));
-            let loop_items = (["STR", "SRE"].includes(alias))? cfg["entries"]: cfg["idfs"];
+            let loop_items = (["STR", "SRE", "XEM", "XES"].includes(alias))? cfg["entries"]: cfg["idfs"];
 
             for (let item of loop_items) {
                 if (cfg[item].act_id !== account_id) continue;
@@ -254,15 +263,17 @@ class BalanceMonitor extends StrategyBase {
     }
 
     update_account_summary_to_slack() {
-        let text = "";
+        let that = this;
+        let txt = "";
 
-        for (let account of this.accounts) {
-            let {wb, unrealized_pnl, equity, pnl, ret, annual_ret, leverage} = this.account_summary[account];
+        for (let account of that.accounts) {
+            let {pnl, ret, leverage} = that.account_summary[account];
             let ret_per = `${parseFloat(ret * 100).toFixed(2)}%`;
-            let annual_ret_per = `${parseFloat(annual_ret * 100).toFixed(2)}%`;
             
-            txt += `====Summary====\ninit_equity\t\tequity\t\tpnl\t\tret\t\tannual\t\tleverage\n${this.init_equity[account]}\t\t${equity}\t\t${pnl}\t\t${ret_per}\t\t${annual_ret_per}\t\t${leverage}`;
+            txt += `====${account}====\npnl\t\tret\t\tleverage\n${pnl}\t\t${ret_per}\t\t${leverage}\n`;
         }
+
+        console.log(txt);
 
         this.slack_publish({
             "type": "info",

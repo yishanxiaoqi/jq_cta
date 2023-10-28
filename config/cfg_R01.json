@@ -10,8 +10,7 @@
         "BNBUSDT",
         "DYDXUSDT",
         "SKLUSDT",
-        "SOLUSDT",
-        "XEMUSDT"
+        "SOLUSDT"
     ],
     "idfs": [
         "BinanceU.ADAUSDT.perp",
@@ -19,8 +18,7 @@
         "BinanceU.BNBUSDT.perp",
         "BinanceU.DYDXUSDT.perp",
         "BinanceU.SKLUSDT.perp",
-        "BinanceU.SOLUSDT.perp",
-        "BinanceU.XEMUSDT.perp"
+        "BinanceU.SOLUSDT.perp"
     ],
     "BinanceU.ADAUSDT.perp": {
         "splitAt": 0,
@@ -99,18 +97,5 @@
         "ini_usdt": 1886,
         "act_id": "th_binance_cny_master",
         "cfgID": "R010095"
-    },
-    "BinanceU.XEMUSDT.perp": {
-        "track_ATR_n": 20,
-        "track_ATR_multiplier": 0.1,
-        "stoploss_rate": 0.05,
-        "cutloss_rate": 0.03,
-        "ini_af": 0.02,
-        "delta_af": 0.02,
-        "bar_enter_limit": 1,
-        "splitAt": 0,
-        "ini_usdt": 1886,
-        "act_id": "th_binance_cny_master",
-        "cfgID": "R010056"
     }
 }

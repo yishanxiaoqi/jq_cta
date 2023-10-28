@@ -266,6 +266,11 @@ function _util_get_key_by_value(object, value) {
     return Object.keys(object).find(key => object[key] === value);
 }
 
+function _util_get_key_by_value_l2(object, value, l2key) {
+    return Object.keys(object).filter(key => object[key][l2key] === value);
+}
+
+
 
 function HMAC(algorithm, key, str) {
     if (!algorithm || !key || !str) {
@@ -288,5 +293,6 @@ module.exports = {
     get_human_readable_timestamp: get_human_readable_timestamp,
     _util_transform_precision: _util_transform_precision,
     _util_transform_minimum_tick_size: _util_transform_minimum_tick_size,
-    _util_get_key_by_value: _util_get_key_by_value
+    _util_get_key_by_value: _util_get_key_by_value,
+    _util_get_key_by_value_l2: _util_get_key_by_value_l2
 }

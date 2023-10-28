@@ -609,30 +609,18 @@ OKX：改单成功
             "account_id": "jq_okx_cny_master",
             "orders": [
                 {
-                    "order_id": "624732617652719618",
-                    "client_order_id": "",
-                    "original_amount": 5,
+                    "symbol": "HOTUSDT",
+                    "order_id": 3526913422,
+                    "client_order_id": "SRE12hDN5vyeI",
+                    "original_amount": 41186,
                     "avg_executed_price": 0,
                     "filled": 0,
                     "status": "new",
-                    "direction": "sell",
-                    "price": 0.46,
+                    "direction": "buy",
+                    "price": 0.001214,
                     "contract_type": "perp",
-                    "create_time": "20230920223708033",
-                    "last_updated_time": "20230920223708033"
-                },
-                {
-                    "order_id": "624719944319913991",
-                    "client_order_id": "12345678910",
-                    "original_amount": 5,
-                    "avg_executed_price": 0,
-                    "filled": 0,
-                    "status": "new",
-                    "direction": "sell",
-                    "price": 0.45,
-                    "contract_type": "perp",
-                    "create_time": "20230920223708033",
-                    "last_updated_time": "20230920223708033"
+                    "create_time": "20231017210444660",
+                    "last_updated_time": "20231017210444660"
                 }
             ],
             "timestamp": "20230920223708033"

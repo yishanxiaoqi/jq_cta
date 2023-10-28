@@ -272,7 +272,7 @@ class StrategyBase {
     async query_account(query, ref_id = this.alias + randomID(27)) {
         // 目前来看query_account覆盖了query_position的功能
         // 区别在于query position可以指定一个symbol进行query
-        logger.debug(`Emitting query balance request from ${this.name}|${this.alias}`);
+        logger.debug(`Emitting query balance request from ${this.name}|${this.alias}|${query.account_id}`);
 
         // 这里可以放一些下单信息的检查和更新
         if (query["ref_id"] === undefined) query["ref_id"] = ref_id;

@@ -48,9 +48,9 @@ class RevTrendXEMStrategy extends StrategyBase {
         }, 1000 * 3);
 
         setInterval(() => {
-            // 每隔5分钟查询一下active orders
+            // 每隔1分钟查询一下active orders
             this.query_active_orders();
-        }, 1000 * 60 * 2);
+        }, 1000 * 60 * 1);
 
         setInterval(() => {
             // 每隔1小时将status_map做一个记录
@@ -90,18 +90,10 @@ class RevTrendXEMStrategy extends StrategyBase {
     }
 
     query_active_orders() {
-        let that = this;
-        // 随机挑选一个entry进行query
-        let entry = that.cfg["entries"][Math.floor(Math.random() * that.cfg["entries"].length)];
-        let [exchange, symbol, contract_type, interval] = entry.split(".");
-        let act_id = that.cfg[entry]["act_id"];
-
-        logger.info(`${that.alias}|query orders on ${entry}`);
-        that.query_orders({
-            exchange: exchange,
-            symbol: symbol,
-            contract_type: contract_type,
-            account_id: act_id
+        this.query_orders({
+            exchange: EXCHANGE.BINANCEU,
+            contract_type: CONTRACT_TYPE.PERP,
+            account_id: "th_binance_cny_sub01"
         });
     }
 
@@ -403,6 +395,45 @@ class RevTrendXEMStrategy extends StrategyBase {
         }
     }
 
+    on_response(response) {
+        // 过滤不属于本策略的response
+        let ref_id = response["ref_id"];
+        if (response.action !== REQUEST_ACTIONS.QUERY_ORDERS) {
+            logger.info(`${this.alias}::on_${response.action}_response| ${JSON.stringify(response)}`);
+        }
+        
+        if (ref_id.slice(0, 3) !== this.alias) return;
+
+        switch (response.action) {
+            case REQUEST_ACTIONS.QUERY_ORDERS:
+                this.on_query_orders_response(response);
+                break;
+            case REQUEST_ACTIONS.SEND_ORDER:
+                this.on_send_order_response(response);
+                break;
+            case REQUEST_ACTIONS.CANCEL_ORDER:
+                this.on_cancel_order_response(response);
+                break;
+            case REQUEST_ACTIONS.MODIFY_ORDER:
+                this.on_modify_order_response(response);
+                break;            
+            case REQUEST_ACTIONS.INSPECT_ORDER:
+                this.on_inspect_order_response(response);
+                break;
+            case REQUEST_ACTIONS.QUERY_POSITION:
+                this.on_query_position_response(response);
+                break;
+            case REQUEST_ACTIONS.QUERY_ACCOUNT:
+                this.on_query_account_response(response);
+                break;
+            case REQUEST_ACTIONS.QUERY_QUANTITATIVE_RULES:
+                this.on_query_quantitative_rules_response(response);
+                break;
+            default:
+                logger.debug(`Unhandled request action: ${response.action}`);
+        }
+    }
+
     _on_market_data_trade_ready(trade) {
         let that = this;
 
@@ -471,6 +502,7 @@ class RevTrendXEMStrategy extends StrategyBase {
         let that = this;
         let [exchange, symbol, contract_type, interval] = entry.split(".");
         let act_id = that.cfg[entry]["act_id"];
+        let idf =  [exchange, symbol, contract_type].join(".");
 
         let triggered = that.status_map[entry]["triggered"];
         let up_price = that.status_map[entry]["up"];
@@ -531,7 +563,7 @@ class RevTrendXEMStrategy extends StrategyBase {
             } else {
                 // 部分平仓，要求继续平仓，市价1.03倍购买，放弃剩下的反手
                 // 因为binance对限价单价格有限制，通常不能超过标记价格的5%
-                logger.info(`${that.alias}::${act_id}|${idf} deal with TBA: cover the SHORT position!`);
+                logger.info(`${that.alias}::${act_id}|${entry} deal with TBA: cover the SHORT position!`);
                 let tgt_qty = - that.status_map[entry]["pos"];
                 let buy_price = stratutils.transform_with_tick_size(that.prices[idf]["price"] * 1.03, PRICE_TICK_SIZE[idf]);
                 orders_to_be_submitted.push({ client_order_id: that.alias + interval.padStart(3, '0') + LABELMAP["ANTI_S|STOPLOSS"] + randomID(7), label: "ANTI_S|STOPLOSS", target: "EMPTY", quantity: tgt_qty, price: buy_price, direction: DIRECTION.BUY });
@@ -1089,40 +1121,55 @@ class RevTrendXEMStrategy extends StrategyBase {
     on_query_orders_response(response) {
         let that = this;
 
-        let exchange = response["request"]["exchange"];
-        let symbol = response["request"]["symbol"];
-        let contract_type = response["request"]["contract_type"];
-        let idf = [exchange, symbol, contract_type].join(".");
+        // let exchange = response["request"]["exchange"];
+        // let contract_type = response["request"]["contract_type"];
 
         if (response["metadata"]["metadata"]["result"] === false) {
             let error_code = response["metadata"]["metadata"]["error_code"];
             let error_code_msg = response["metadata"]["metadata"]["error_code_msg"];
-            logger.debug(`${that.alias}::${symbol} an error occured during query orders: ${error_code}: ${error_code_msg}`);
+            logger.debug(`${that.alias}:: an error occured during query orders: ${error_code}: ${error_code_msg}`);
             return
         }
 
         let orders = response["metadata"]["metadata"]["orders"];
-        let active_orders = orders.map(item => item["client_order_id"]).filter(item => item.slice(0, 3) === that.alias);
+        let active_orders = orders.filter(item => item.client_order_id.slice(0, 3) === that.alias);
 
-        let corr_entries = that.cfg["entries"].filter((entry) => entry.split(".").slice(0, 3).join(".") === idf);
-        for (let entry of corr_entries) {
+        let sendData = {
+            "tableName": this.alias,
+            "tabName": "PortfolioMonitor",
+            "data": []
+        }
+
+        for (let entry of that.cfg["entries"]) {
+            let symbol = entry.split(".")[1];
             let interval = entry.split(".")[3];
-            let corr_active_orders = active_orders.filter(item => item.slice(3, 6) === interval.padStart(3, '0'));
-            let string = corr_active_orders.join(",");
+            let corr_active_orders = active_orders.filter(item => (item.client_order_id.slice(3, 6) === interval.padStart(3, '0')) && (item.symbol === symbol));
+            let corr_active_client_order_ids = corr_active_orders.map(item => item.client_order_id);
+            let string = corr_active_client_order_ids.join(",");
 
             let index = that.cfg["entries"].indexOf(entry);
 
-            let sendData = {
-                "tableName": this.alias,
-                "tabName": "PortfolioMonitor",
-                "data": []
-            }
             let item = {};
             item[`${index + 1}|orders`] = string;
             sendData["data"].push(item);
 
-            this.intercom.emit("UI_update", sendData, INTERCOM_SCOPE.UI);
+            // TODO: 从order_map删除item
+            for (let [key, value] of Object.entries(that.order_map[entry])) {
+                if (key.startsWith(that.alias)) {
+                    if (corr_active_client_order_ids.includes(key)) continue;
+                } else {
+                    if (corr_active_client_order_ids.includes(value.client_order_id)) continue;
+                }
+
+                if (that.order_map[entry][key]["ToBeDeleted"]) {
+                    delete that.order_map[entry][key];
+                } else {
+                    that.order_map[entry][key]["ToBeDeleted"] = true;
+                }
+            }
         }
+
+        this.intercom.emit("UI_update", sendData, INTERCOM_SCOPE.UI);
     }
 }
 
@@ -1155,21 +1202,19 @@ process.argv.forEach((val) => {
     }
 });
 
-// process.on('SIGINT', async () => {
-//     logger.info(`${strategy.alias}::SIGINT`);
-//     /* Note: Just work under pm2 environment */
-//     // strategy._test_cancel_order(strategy.test_order_id);
-//     setTimeout(() => process.exit(), 3000)
-// });
+process.on('SIGINT', async () => {
+    logger.info(`${strategy.alias}::SIGINT`);
+    setTimeout(() => process.exit(), 3000)
+});
 
-// process.on('exit', async () => {
-//     logger.info(`${strategy.alias}:: exit`);
-// });
+process.on('exit', async () => {
+    logger.info(`${strategy.alias}:: exit`);
+});
 
-// process.on('uncaughtException', (err) => {
-//     logger.error(`uncaughtException: ${JSON.stringify(err.stack)}`);
-// });
+process.on('uncaughtException', (err) => {
+    logger.error(`uncaughtException: ${JSON.stringify(err.stack)}`);
+});
 
-// process.on('unhandledRejection', (reason, p) => {
-//     logger.error(`unhandledRejection: ${p}, reason: ${reason}`);
-// });
+process.on('unhandledRejection', (reason, p) => {
+    logger.error(`unhandledRejection: ${p}, reason: ${reason}`);
+});

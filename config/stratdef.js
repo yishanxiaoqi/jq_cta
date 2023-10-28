@@ -47,6 +47,7 @@ SUBSCRIPTION_LIST = [
     'BinanceU|GTCUSDT|perp|trade',
     'BinanceU|HBARUSDT|perp|trade',
     'BinanceU|HOTUSDT|perp|trade',
+    'BinanceU|IOTAUSDT|perp|trade',
     'BinanceU|KLAYUSDT|perp|trade',
     'BinanceU|KSMUSDT|perp|trade',
     'BinanceU|LINAUSDT|perp|trade',
@@ -59,7 +60,6 @@ SUBSCRIPTION_LIST = [
     'BinanceU|OCEANUSDT|perp|trade',
     'BinanceU|ONTUSDT|perp|trade',
     'BinanceU|QTUMUSDT|perp|trade',
-    'BinanceU|REEFUSDT|perp|trade',
     'BinanceU|RSRUSDT|perp|trade',
     'BinanceU|RUNEUSDT|perp|trade',
     'BinanceU|RVNUSDT|perp|trade',
@@ -77,9 +77,15 @@ SUBSCRIPTION_LIST = [
     'BinanceU|ZECUSDT|perp|trade',
     'BinanceU|ZILUSDT|perp|trade',
 
-    // spread arbitrage
+    // XES
+    'BinanceU|XEMUSDT|perp|bestquote',
+    'BinanceU|CELOUSDT|perp|bestquote',
+    'BinanceU|FLOWUSDT|perp|bestquote',
     'BinanceU|CRVUSDT|perp|bestquote',
-    'OKX|CRVUSDT|perp|bestquote'
+
+    // spread arbitrage
+    // 'BinanceU|XEMUSDT|perp|bestquote',
+    // 'OKX|CRVUSDT|perp|bestquote'
 ]
 
 POS_STATUS = {

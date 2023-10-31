@@ -1,5 +1,7 @@
 # Place Order
 ## BinanceU
+- -5022: Due to the order could not be executed as maker, the Post Only order will be rejected. The order will not be recorded in the order history
+
 ## OKX
 
 # Cancel Order

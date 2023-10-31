@@ -738,7 +738,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 let current_reverse_qty = that.order_map[entry]["ANTI_S|REVERSE"]["quantity"];
 
                 // 若已存的反手单和现行不一致，则撤销重新发
-                if ((current_reverse_price !== dn_price) || (current_reverse_qty !== tgt_qty)) {
+                if ((current_reverse_price !== dn_price) || (current_reverse_qty !== dn_tgt_qty)) {
                     orders_to_be_cancelled.push(current_reverse_client_order_id);
                     orders_to_be_submitted.push({ label: "ANTI_S|REVERSE", target: "LONG", quantity: dn_tgt_qty, price: dn_price, direction: DIRECTION.BUY, order_type: ORDER_TYPE.LIMIT });
                 }
@@ -756,7 +756,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 let current_stoploss_qty = that.order_map[entry]["ANTI_S|STOPLOSS"]["quantity"];
 
                 // 若已存的反手单和现行不一致，则撤销重新发
-                if ((current_stoploss_price !== dn_price) || (current_stoploss_qty !== tgt_qty)) {
+                if ((current_stoploss_price !== dn_price) || (current_stoploss_qty !== sp_tgt_qty)) {
                     orders_to_be_cancelled.push(current_stoploss_client_order_id);
                     orders_to_be_submitted.push({ label: "ANTI_S|STOPLOSS", target: "EMPTY", quantity: sp_tgt_qty, stop_price: stoploss_price, direction: DIRECTION.BUY, order_type: ORDER_TYPE.STOP_MARKET });
                 }

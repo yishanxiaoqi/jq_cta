@@ -212,7 +212,7 @@ class RevTrendXESStrategy extends StrategyBase {
         if (client_order_id.slice(0, 3) !== that.alias) return;
         logger.info(`${that.alias}|${client_order_id}::on_order_update|${JSON.stringify(order_update)}!`);
 
-        let label = that.order_map[entry][client_order_id]["label"];
+        let label = that.order_map[entry][client_order_id] ? that.order_map[entry][client_order_id]["label"] : undefined;
         let order_idf = [act_id, entry, label, client_order_id].join("|");
 
         if (order_status === ORDER_STATUS.SUBMITTED) {
@@ -266,12 +266,6 @@ class RevTrendXESStrategy extends StrategyBase {
             logger.info(`${that.alias}|${entry}::${JSON.stringify(that.status_map[entry])}`);
             logger.info(`${that.alias}|${entry}::${JSON.stringify(that.order_map[entry])}`);
 
-            if (order_status === ORDER_STATUS.FILLED) {
-                delete that.order_map[entry][client_order_id]
-                // remove the client_order_id from order_map 100ms later, as the on_response may need to use it!
-                // setTimeout(() => delete that.order_map[entry][client_order_id], 100);
-            }
-
             // record the order filling details
             let ts = order_update["metadata"]["timestamp"];
             let filled_info = [act_id, entry, exchange, symbol, contract_type, interval, client_order_id, original_amount, filled, submit_price, avg_executed_price, fee].join(",");
@@ -281,6 +275,8 @@ class RevTrendXESStrategy extends StrategyBase {
             fs.writeFile(`./log/order_filling_${this.alias}.csv`, output_string, { flag: "a+" }, (err) => {
                 if (err) logger.info(`${this.alias}::${err}`);
             });
+
+            if (order_status === ORDER_STATUS.FILLED) delete that.order_map[entry][client_order_id];
         } else {
             logger.info(`${this.alias}::on_order_update|Unhandled order update status: ${order_status}!`)
         }
@@ -805,8 +801,19 @@ class RevTrendXESStrategy extends StrategyBase {
 
         let orders = response["metadata"]["metadata"]["orders"];
         let active_orders = orders.filter(item => item["client_order_id"].slice(0, 3) === that.alias);
+        let active_client_order_ids = active_orders.map(item => item["client_order_id"]);
 
         for (let entry of that.cfg["entries"]) {
+
+            // 对于order_map已经不active的order，要及时检查并删除
+            for (let client_order_id of Object.keys(that.order_map[entry]).filter(e => ! active_client_order_ids.includes(e))) {
+                if (that.order_map[entry][client_order_id]["toBeDeleted"] === true) {
+                    delete that.order_map[entry][client_order_id];
+                } else {
+                    that.order_map[entry][client_order_id]["toBeDeleted"] = true;
+                }
+            }
+
             let {span} = that.cfg[entry];
             let interval = entry.split(".")[3];
             let corr_active_orders = active_orders.filter(item => item["client_order_id"].slice(3, 6) === interval.padStart(3, '0'));

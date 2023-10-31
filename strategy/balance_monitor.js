@@ -12,6 +12,12 @@ class BalanceMonitor extends StrategyBase {
         super(name, alias, intercom);
 
         // 需要自行修改 ========
+        // this.accounts = [
+        //     "BinanceU.th_binance_cny_master.perp",
+        //     "BinanceU.th_binance_cny_sub01.perp",
+        //     "BinanceU.th_binance_cny_sub02.perp",
+        //     "BinanceU.th_binance_cny_sub03.perp"
+        // ];
         this.accounts = [
             "BinanceU.th_binance_cny_master.perp",
             "BinanceU.th_binance_cny_sub01.perp",
@@ -20,17 +26,20 @@ class BalanceMonitor extends StrategyBase {
         this.init_equity = {
             "BinanceU.th_binance_cny_master.perp": 53984.51,
             "BinanceU.th_binance_cny_sub01.perp": 1100,
-            "BinanceU.th_binance_cny_sub02.perp": 1287.40
+            "BinanceU.th_binance_cny_sub02.perp": 1287.40,
+            "BinanceU.th_binance_cny_sub03.perp": 2554.27
         };
         this.denominator = {
             "BinanceU.th_binance_cny_master.perp": 49337.34,
             "BinanceU.th_binance_cny_sub01.perp": 1100,
-            "BinanceU.th_binance_cny_sub02.perp": 1287.40
+            "BinanceU.th_binance_cny_sub02.perp": 1287.40,
+            "BinanceU.th_binance_cny_sub03.perp": 2554.27
         };
         this.init_dates = {
             "BinanceU.th_binance_cny_master.perp": moment("2023-06-23"),
             "BinanceU.th_binance_cny_sub01.perp": moment("2023-10-08"),
-            "BinanceU.th_binance_cny_sub02.perp": moment("2023-10-24")
+            "BinanceU.th_binance_cny_sub02.perp": moment("2023-10-24"),
+            "BinanceU.th_binance_cny_sub03.perp": moment("2023-10-27")
         };
         this.aliases = ["R01", "R06", "R12", "R24", "STR", "SRE", "XEM", "XES"];
 
@@ -89,22 +98,23 @@ class BalanceMonitor extends StrategyBase {
             let loop_entries;
 
             // 需要修改！！！
+            // 需要怎么修改？以后一定要规范写注释！
             if (["SRE", "XEM"].includes(alias)) { 
                 loop_entries = cfg["entries"];
                 add_items = ["status", "triggered", "pos", "net_profit"]; 
-                text += `========${alias}========\nentry\tstatus\tpos\tfee\tnp`;
+                text += `========${alias}========\nentry\tstatus\tpos\tfee\tnp\n`;
             } else if (alias === "STR") {
                 loop_entries = cfg["entries"];
                 add_items = ["status", "pos", "net_profit"]; 
-                text += `========${alias}========\nentry\tstatus\tpos\tnp`;
-            } else if (alias === "XES") {
+                text += `========${alias}========\nentry\tstatus\tpos\tnp\n`;
+            } else if (["XES", "MMS"].includes(alias)) {
                 loop_entries = cfg["entries"];
                 add_items = ["pos", "net_profit"]; 
-                text += `========${alias}========\nentry\tpos\tnp`;
+                text += `========${alias}========\nentry\tpos\tnp\n`;
             } else {
                 loop_entries = cfg["idfs"];
                 add_items = ["status", "triggered", "pos", "net_profit"];
-                text += `========${alias}========\nidf\tstatus\ttriggered\tpos\tnp`;
+                text += `========${alias}========\nidf\tstatus\ttriggered\tpos\tnp\n`;
             }
 
             for (let idf of loop_entries) {
@@ -185,9 +195,9 @@ class BalanceMonitor extends StrategyBase {
         this.account_summary[account]["ret"] = stratutils.round(this.account_summary[account]["nv"] - 1, 4); 
         this.account_summary[account]["annual_ret"] = stratutils.round(this.account_summary[account]["ret"] / n_days * 365, 4); 
 
-        this.account_summary[account]["total_position_initial_margin_in_USDT"] = stratutils.round(real_positions.map(e => e.positionInitialMargin * e.leverage).reduce((a, b) => a + b), 2); 
-        this.account_summary[account]["total_long_position_initial_margin_in_USDT"] = stratutils.round(real_positions.filter(e => e.position > 0).map(e => e.positionInitialMargin * e.leverage).reduce((a, b) => a + b, 0), 2); 
-        this.account_summary[account]["total_short_position_initial_margin_in_USDT"] = stratutils.round(real_positions.filter(e => e.position < 0).map(e => e.positionInitialMargin * e.leverage).reduce((a, b) => a + b, 0), 2); 
+        this.account_summary[account]["total_position_initial_margin_in_USDT"] = (real_positions.length > 0) ? stratutils.round(real_positions.map(e => e.positionInitialMargin * e.leverage).reduce((a, b) => a + b), 2) : 0; 
+        this.account_summary[account]["total_long_position_initial_margin_in_USDT"] = (real_positions.length > 0) ? stratutils.round(real_positions.filter(e => e.position > 0).map(e => e.positionInitialMargin * e.leverage).reduce((a, b) => a + b, 0), 2) : 0; 
+        this.account_summary[account]["total_short_position_initial_margin_in_USDT"] = (real_positions.length > 0) ? stratutils.round(real_positions.filter(e => e.position < 0).map(e => e.positionInitialMargin * e.leverage).reduce((a, b) => a + b, 0), 2) : 0; 
  
         this.account_summary[account]["long_lev"] = stratutils.round(this.account_summary[account]["total_long_position_initial_margin_in_USDT"] / this.account_summary[account]["equity"], 2); 
         this.account_summary[account]["short_lev"] = stratutils.round(this.account_summary[account]["total_short_position_initial_margin_in_USDT"] / this.account_summary[account]["equity"], 2); 

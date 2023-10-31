@@ -73,7 +73,7 @@ class DemoStrategy extends StrategyBase {
         this.query_account({
             exchange: EXCHANGE.BINANCEU,
             contract_type: CONTRACT_TYPE.PERP,
-            account_id: "th_binance_cny_master"
+            account_id: "th_binance_cny_sub03"
         });
     }
 
@@ -82,11 +82,11 @@ class DemoStrategy extends StrategyBase {
             exchange: EXCHANGE.BINANCEU,
             symbol: "BTCUSDT",
             contract_type: CONTRACT_TYPE.PERP,
-            price: 27000,
+            price: 35000,
             quantity: 0.01,
             direction: DIRECTION.SELL,
             order_type: ORDER_TYPE.LIMIT,
-            account_id: "th_binance_cny_sub01",
+            account_id: "th_binance_cny_sub03",
             client_order_id: "12345678911xxx"
         });
     };

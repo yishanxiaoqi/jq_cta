@@ -78,7 +78,7 @@ logger = new (winston.Logger)({
             datePattern: 'YYYY-MM-DD',
             zippedArchive: false,
             maxSize: '1g',          // kb, mb, gb (bit). 'k', 'm', 'g' (byte)
-            maxFiles: '5d',        // this can be a number of files or number of days. If using days, add 'd' as the suffix
+            maxFiles: '10d',        // this can be a number of files or number of days. If using days, add 'd' as the suffix
             level: "debug",
             name: "debug-file",
             timestamp: log_timestamp

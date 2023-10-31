@@ -1,6 +1,6 @@
 {
     "alias": "XES",
-    "clear_existing_status": true,
+    "clear_existing_status": false,
     "max_num": 100,
     "ini_usdt": 300,
     "span": 3,
@@ -85,7 +85,7 @@
         "ini_usdt": 100,
         "span": 3, 
         "fix_q": 100,
-        "min_q": 10.7,
+        "min_q": 15,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "XES0005"
     },
@@ -96,7 +96,7 @@
         "ini_usdt": 100,
         "span": 3, 
         "fix_q": 100,
-        "min_q": 10.7,
+        "min_q": 15,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "XES0006"
     },
@@ -107,7 +107,7 @@
         "ini_usdt": 100,
         "span": 3, 
         "fix_q": 100,
-        "min_q": 10.7,
+        "min_q": 15,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "XES0007"
     },
@@ -118,7 +118,7 @@
         "ini_usdt": 100,
         "span": 3, 
         "fix_q": 100,
-        "min_q": 10.7,
+        "min_q": 15,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "XES0008"
     },
@@ -129,7 +129,7 @@
         "ini_usdt": 100,
         "span": 3, 
         "fix_q": 100,
-        "min_q": 9.4,
+        "min_q": 15,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "XES0009"
     },
@@ -140,7 +140,7 @@
         "ini_usdt": 100,
         "span": 3, 
         "fix_q": 100,
-        "min_q": 9.4,
+        "min_q": 15,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "XES0010"
     },
@@ -151,7 +151,7 @@
         "ini_usdt": 100,
         "span": 3, 
         "fix_q": 100,
-        "min_q": 9.4,
+        "min_q": 15,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "XES0011"
     },
@@ -162,7 +162,7 @@
         "ini_usdt": 100,
         "span": 3, 
         "fix_q": 100,
-        "min_q": 9.4,
+        "min_q": 15,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "XES0012"
     },
@@ -173,7 +173,7 @@
         "ini_usdt": 100,
         "span": 3, 
         "fix_q": 100,
-        "min_q": 10.8,
+        "min_q": 15,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "XES0013"
     },
@@ -184,7 +184,7 @@
         "ini_usdt": 100,
         "span": 3, 
         "fix_q": 100,
-        "min_q": 10.8,
+        "min_q": 15,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "XES0014"
     },
@@ -195,7 +195,7 @@
         "ini_usdt": 100,
         "span": 3, 
         "fix_q": 100,
-        "min_q": 10.8,
+        "min_q": 15,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "XES0015"
     },
@@ -206,7 +206,7 @@
         "ini_usdt": 100,
         "span": 3, 
         "fix_q": 100,
-        "min_q": 10.8,
+        "min_q": 15,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "XES0016"
     }

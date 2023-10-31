@@ -455,7 +455,7 @@ class ExchangeBinanceU extends ExchangeBase {
                 };
             }
         } catch (ex) {
-            logger.error(ex.stack);
+            // logger.error(ex.stack);
             let error =  ex.error ? JSON.parse(ex.error): undefined;
             cxl_resp = {
                 exchange: EXCHANGE.BINANCEU,
@@ -547,7 +547,7 @@ class ExchangeBinanceU extends ExchangeBase {
                 timestamp: utils._util_get_human_readable_timestamp()
             };
         } catch (ex) {
-            logger.error(ex.stack);
+            // logger.error(ex.stack);
             let error =  ex.error ? JSON.parse(ex.error): undefined;
             cxl_resp = {
                 exchange: EXCHANGE.BINANCEU,
@@ -655,7 +655,7 @@ class ExchangeBinanceU extends ExchangeBase {
                 timestamp: utils._util_get_human_readable_timestamp()
             };
         } catch (ex) {
-            logger.error(ex.stack);
+            // logger.error(ex.stack);
             let error =  ex.error ? JSON.parse(ex.error): undefined;
             cxl_resp = {
                 exchange: EXCHANGE.BINANCEU,
@@ -769,7 +769,7 @@ class ExchangeBinanceU extends ExchangeBase {
                 };
             }
         } catch (ex) {
-            logger.error(ex.stack);
+            // logger.error(ex.stack);
             let error =  ex.error ? JSON.parse(ex.error): undefined;
             let order_info = {
                 original_amount: 0,
@@ -854,8 +854,8 @@ class ExchangeBinanceU extends ExchangeBase {
                     direction: i["side"].toLowerCase(),
                     price: +i["price"],
                     contract_type: contract_type,
-                    create_time: utils._util_get_human_readable_timestamp(i["time"]),
-                    last_updated_time: utils._util_get_human_readable_timestamp(i['updateTime'])
+                    create_time: utils.get_human_readable_timestamp(i["time"]),
+                    last_updated_time: utils.get_human_readable_timestamp(i['updateTime'])
                 });
             }
 
@@ -937,7 +937,7 @@ class ExchangeBinanceU extends ExchangeBase {
                     entryPrice: +i["entryPrice"],
                     markPrice: +i["markPrice"],
                     unRealizedProfit: +i["unRealizedProfit"],
-                    last_updated_time: utils._util_get_human_readable_timestamp(i['updateTime'])
+                    last_updated_time: utils.get_human_readable_timestamp(i['updateTime'])
                 });
             }
 
@@ -1028,7 +1028,7 @@ class ExchangeBinanceU extends ExchangeBase {
                     unRealizedProfit: +i["unrealizedProfit"],
                     positionInitialMargin: +i["positionInitialMargin"],
                     leverage: +i["leverage"],
-                    last_updated_time: utils._util_get_human_readable_timestamp(i['updateTime'])
+                    last_updated_time: utils.get_human_readable_timestamp(i['updateTime'])
                 });
             }
 
@@ -1106,7 +1106,7 @@ class ExchangeBinanceU extends ExchangeBase {
                     result: true,
                     account_id: account_id,
                     indicators: body.indicators,
-                    timestamp: utils._util_get_human_readable_timestamp(body['updateTime'])
+                    timestamp: utils.get_human_readable_timestamp(body['updateTime'])
                 },
                 timestamp: utils._util_get_human_readable_timestamp()
             };

@@ -50,9 +50,9 @@ class RevTrendStrategy extends StrategyBase {
         }, 1000 * 3);
 
         setInterval(() => {
-            // 每隔5分钟查询一下active orders
+            // 每隔1分钟查询一下active orders
             this.query_active_orders();
-        }, 1000 * 60 * 5);
+        }, 1000 * 60 * 1);
 
         setInterval(() => {
             // 每隔1小时将status_map做一个记录
@@ -92,15 +92,10 @@ class RevTrendStrategy extends StrategyBase {
 
     query_active_orders() {
         let that = this;
-        that.cfg["idfs"].forEach((idf) => {
-            let [exchange, symbol, contract_type] = idf.split(".");
-            let act_id = that.cfg[idf]["act_id"];
-            that.query_orders({
-                exchange: exchange,
-                symbol: symbol,
-                contract_type: contract_type,
-                account_id: act_id,
-            });
+        that.query_orders({
+            exchange: EXCHANGE.BINANCEU,
+            contract_type: CONTRACT_TYPE.PERP,
+            account_id: "th_binance_cny_master",
         });
     }
 
@@ -131,7 +126,6 @@ class RevTrendStrategy extends StrategyBase {
                     "status": "EMPTY",
                     "anti_order_sent": false,
                     "pos": 0,
-                    "real_pos": "",
                     "triggered": "",
                     "up": "",
                     "dn": "",
@@ -1146,78 +1140,45 @@ class RevTrendStrategy extends StrategyBase {
         }
 
         let orders = response["metadata"]["metadata"]["orders"];
-        let active_orders = orders.map(item => item["client_order_id"]);
+        let active_orders = orders.filter(item => item.client_order_id.slice(0, 3) === that.alias);
 
-        // client_order_id|direction|filled|original_amount@price
-        let active_orders_string = orders.filter(item => item.client_order_id.slice(0, 3) === that.alias).map(item => `${item["client_order_id"]}|${item["direction"]}|${item["filled"]}|${item["original_amount"]}@${item["price"]}`);
-        active_orders_string = active_orders_string.join(", ")
+        let sendData = {
+            "tableName": this.alias,
+            "tabName": "PortfolioMonitor",
+            "data": []
+        }
 
-        // 检查异常单
-        let wierd_orders = orders.filter(item => !ALIASES.includes(item.client_order_id.slice(0, 3)));
-        if (wierd_orders.length > 0) logger.warn(`${that.alias}::wierd orders found: ${JSON.stringify(wierd_orders)}`);
+        for (let idf of that.cfg["idfs"]) {
+            let symbol = idf.split(".")[1];
+            let corr_active_orders = active_orders.filter(item => (item.symbol === symbol));
+            let corr_active_client_order_ids = corr_active_orders.map(item => item.client_order_id);
+            let string = corr_active_client_order_ids.join(",");
 
-        // logger.info(`${that.alias}::${symbol} active_orders| ${active_orders_string}`);
+            let index = that.cfg["idfs"].indexOf(idf);
 
-        let order_map_string = [];
+            let item = {};
+            item[`${index + 1}|orders`] = string;
+            sendData["data"].push(item);
 
-        for (let [key, value] of Object.entries(that.order_map[idf])) {
-            if (["UP", "DN", "ANTI_L", "ANTI_S"].includes(key)) {
-                // 如"DN": { "client_order_id": "5552202427", "label": "DN", "price": 0.1843, "quantity": 2713, "time": 1674091084105 }
-                let client_order_id = value["client_order_id"];
-                let time = value["time"];;
-                let label = value["label"];
-                let price = value["price"];
-                let quantity = value["quantity"];
-                order_map_string.push(`${client_order_id}|${label}|${quantity}@${price}`);
-
-                if ((!active_orders.includes(client_order_id)) && (moment.now() - time > 1000 * 60 * 10)) {
-                    logger.debug(`${that.alias}::${symbol}|${key}|${client_order_id}::order not active (label as key) and submitted over 10 min before, will be deleted, please check it!`);
-                    logger.info(`${that.alias}::${JSON.stringify(response)}`);      // TODO: check the response
-                    that.slack_publish({
-                        "type": "warn",
-                        "msg": `${that.alias}::${symbol}|${key}|${client_order_id}::order not active (label as key) and submitted over 10 min before, will be deleted, please check it!`
-                    });
-                    if (that.order_map[idf][key]["ToBeDeleted"]) {
-                        delete that.order_map[idf][key];
-                    } else {
-                        that.order_map[idf][key]["ToBeDeleted"] = true;
-                    }
-
+            // TODO: 从order_map删除item
+            for (let [key, value] of Object.entries(that.order_map[idf])) {
+                
+                if (key.startsWith(that.alias)) {
+                    // 以
+                    if (corr_active_client_order_ids.includes(key)) continue;
+                } else {
+                    if (corr_active_client_order_ids.includes(value.client_order_id)) continue;
                 }
-            } else {
-                // 如{"3106609167": {"label": "DN", "target": "LONG", "quantity": 21133, "time": 1669492800445, "price": 0.04732, "filled": 0}}
-                let label = value["label"];
-                let time = value["time"];
 
-                order_map_string.push(key);
-
-                if (!(active_orders.includes(key)) && (moment.now() - time > 1000 * 60 * 10)) {
-                    // 该order不在active orders里面，并且距今已经超过10分钟，直接删掉
-                    logger.debug(`${that.alias}::${symbol}|${label}|${key}::order not active (client_order_id as key) and submitted over 10 min before, will be deleted, please check it!`);
-                    that.slack_publish({
-                        "type": "warn",
-                        "msg": `${that.alias}::${symbol}|${label}|${key}::order not active (client_order_id as key) and submitted over 10 min before, will be deleted, please check it!`
-                    });
-
-                    logger.info(JSON.stringify(that.order_map), idf, key);
-
-                    if (that.order_map[idf][key]["ToBeDeleted"]) {
-                        delete that.order_map[idf][key];
-                    } else {
-                        that.order_map[idf][key]["ToBeDeleted"] = true;
-                    }
+                if (that.order_map[idf][key]["ToBeDeleted"]) {
+                    delete that.order_map[idf][key];
+                } else {
+                    that.order_map[idf][key]["ToBeDeleted"] = true;
                 }
             }
         }
 
-        order_map_string = order_map_string.join(", ");
-
-        let index = that.cfg["idfs"].indexOf(idf);
-        let item = {};
-        item[`${index + 1}|idf`] = idf;
-        item[`${index + 1}|order_map`] = order_map_string;
-        item[`${index + 1}|active_orders`] = active_orders_string;
-        let data = [item];
+        this.intercom.emit("UI_update", sendData, INTERCOM_SCOPE.UI);
     }
 }
 

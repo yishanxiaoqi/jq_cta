@@ -1171,9 +1171,17 @@ class RevTrendStrategy extends StrategyBase {
                 }
 
                 if (that.order_map[idf][key]["ToBeDeleted"]) {
-                    delete that.order_map[idf][key];
+                    // 超过10秒才删除，避免order_update推送延迟，导致order_update的处理过程中order_map中信息缺失
+                    if (moment.now() - value["ToBeDeletedTime"] > 1000 * 10) {
+                        that.slack_publish({
+                            "type": "alert",
+                            "msg": `${that.alias}:: order not active, but still in the order map, will be deleted! ${key}: ${JSON.stringify(that.order_map[idf][key])}`
+                        });
+                        delete that.order_map[idf][key];
+                    }
                 } else {
                     that.order_map[idf][key]["ToBeDeleted"] = true;
+                    that.order_map[idf][key]["ToBeDeletedTime"] = moment.now();
                 }
             }
         }

@@ -45,8 +45,12 @@ class ExchangeBinanceU extends ExchangeBase {
                 this.ws_connections[account_id]["ws_keep_alive_interval"] = undefined;
             }
             this.ws_connections[account_id]["ws_keep_alive_interval"] = setInterval(() => {
-                this.ws_connections[account_id]["ws"].ping(() => { });
-                this.ws_connections[account_id]["ws"].pong(() => { });
+                try {
+                    this.ws_connections[account_id]["ws"].ping(() => { });
+                    this.ws_connections[account_id]["ws"].pong(() => { });
+                } catch (ex) {
+                    logger.error(`${account_id}|${ex}`);
+                }
 
                 if (Date.now() - this.ws_connections[account_id]["ws_connected_ts"] > 23 * 60 * 60 * 1000) {
                     logger.warn(`${this.name}|${account_id}: reconnect this WS...`)
@@ -837,6 +841,8 @@ class ExchangeBinanceU extends ExchangeBase {
         try {
             let body = await rp.get(options);
             body = JSON.parse(body);
+
+            console.log(JSON.stringify(body));
 
             // BinanceU中订单只有5中状态：NEW, PARTIALLY_FILLED, FILLED, CANCELLED, EXPIRED
             let active_orders = body.filter((order) => (["NEW", "PARTIALLY_FILLED"].includes(order.status)));

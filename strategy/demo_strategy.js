@@ -130,7 +130,7 @@ class DemoStrategy extends StrategyBase {
     _test_query_orders() {
         this.query_orders({
             exchange: EXCHANGE.BINANCEU,
-            // symbol: "CRVUSDT",
+            // symbol: "BALUSDT",
             contract_type: CONTRACT_TYPE.PERP,
             account_id: "th_binance_cny_sub01"
         });

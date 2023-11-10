@@ -246,7 +246,7 @@ class RevTrendXESStrategy extends StrategyBase {
             logger.info(`${that.alias}::on_order_update|${order_idf} order ${filled}/${original_amount} filled @${avg_executed_price}/${submit_price}!`);
 
             // 更新order_map
-            that.order_map[entry][client_order_id]["filled"] = filled;
+            if (that.order_map[entry][client_order_id]) that.order_map[entry][client_order_id]["filled"] = filled;
 
             // 更新position
             // let pre_pos = that.status_map[entry]["pos"];
@@ -269,14 +269,14 @@ class RevTrendXESStrategy extends StrategyBase {
             // record the order filling details
             let ts = order_update["metadata"]["timestamp"];
             let filled_info = [act_id, entry, exchange, symbol, contract_type, interval, client_order_id, original_amount, filled, submit_price, avg_executed_price, fee].join(",");
-            let order_info = (that.order_map[entry][client_order_id] === undefined) ? "" : Object.entries(that.order_map[entry][client_order_id]).filter((element) => element[0] !== "ToBeDeleted").map((element) => element[1]).join(",");
+            let order_info = (that.order_map[entry][client_order_id] === undefined) ? ",,,," : Object.entries(that.order_map[entry][client_order_id]).filter((element) => element[0] !== "ToBeDeleted").map((element) => element[1]).join(",");
             let output_string = [ts, filled_info, order_info].join(",");
             output_string += (order_status === ORDER_STATUS.FILLED) ? ",filled\n" : ",partially_filled\n";
             fs.writeFile(`./log/order_filling_${this.alias}.csv`, output_string, { flag: "a+" }, (err) => {
                 if (err) logger.info(`${this.alias}::${err}`);
             });
 
-            if (order_status === ORDER_STATUS.FILLED) delete that.order_map[entry][client_order_id];
+            if ((order_status === ORDER_STATUS.FILLED) && (that.order_map[entry][client_order_id])) delete that.order_map[entry][client_order_id];
         } else {
             logger.info(`${this.alias}::on_order_update|Unhandled order update status: ${order_status}!`)
         }
@@ -807,10 +807,10 @@ class RevTrendXESStrategy extends StrategyBase {
 
             // 对于order_map已经不active的order，要及时检查并删除
             for (let client_order_id of Object.keys(that.order_map[entry]).filter(e => ! active_client_order_ids.includes(e))) {
-                if (that.order_map[entry][client_order_id]["toBeDeleted"] === true) {
+                if (that.order_map[entry][client_order_id]["ToBeDeleted"] === true) {
                     delete that.order_map[entry][client_order_id];
                 } else {
-                    that.order_map[entry][client_order_id]["toBeDeleted"] = true;
+                    that.order_map[entry][client_order_id]["ToBeDeleted"] = true;
                 }
             }
 

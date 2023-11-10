@@ -330,7 +330,7 @@ class RevTrendXEMStrategy extends StrategyBase {
                     // 订单完全成交，仓位变为空，这说明是平仓单
                     // 把that.pre_bar_otime[idf]变成undefined，这样就变成new_start，可以重新发开仓单
                     // 有可能会出现依然无法重新发开仓单的情况，这种大概率是因为bar_enter_n没有进行更新
-                    that.pre_bar_otime[idf] = undefined;
+                    that.pre_bar_otime[entry] = undefined;
                     that.status_map[entry]["anti_order_sent"] = undefined;
                     for (let item of ["bar_n", "ep", "af", "sar", "long_enter", "high_since_long", "short_enter", "low_since_short", "stoploss_price"]) {
                         that.status_map[entry][item] = "";
@@ -744,7 +744,7 @@ class RevTrendXEMStrategy extends StrategyBase {
                     // 若已存的反手单和现行不一致，则撤销重新发
                     if ((anti_label !== "ANTI_S|REVERSE") || (anti_price !== dn_price) || (anti_qty !== tgt_qty)) {
                         orders_to_be_cancelled.push(anti_client_order_id);
-                        orders_to_be_submitted.push({ client_order_id: that.alias + interval.padStart(3, '0') + track_ATR_multiplier_str + ["ANTI_S|REVERSE"] + randomID(7), label: "ANTI_S|REVERSE", target: "LONG", quantity: tgt_qty, price: dn_price, direction: DIRECTION.BUY });
+                        orders_to_be_submitted.push({ client_order_id: that.alias + interval.padStart(3, '0') + track_ATR_multiplier_str + LABELMAP["ANTI_S|REVERSE"] + randomID(7), label: "ANTI_S|REVERSE", target: "LONG", quantity: tgt_qty, price: dn_price, direction: DIRECTION.BUY });
                         that.status_map[entry]["anti_order_sent"] = true;
                     }
                 }

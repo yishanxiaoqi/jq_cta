@@ -24,16 +24,16 @@ class BalanceMonitor extends StrategyBase {
             "BinanceU.th_binance_cny_sub02.perp"
         ];
         this.init_equity = {
-            "BinanceU.th_binance_cny_master.perp": 53984.51,
-            "BinanceU.th_binance_cny_sub01.perp": 1100,
-            "BinanceU.th_binance_cny_sub02.perp": 1287.40,
-            "BinanceU.th_binance_cny_sub03.perp": 2554.27
+            "BinanceU.th_binance_cny_master.perp": 71696.51,
+            "BinanceU.th_binance_cny_sub01.perp": 2469.25,
+            "BinanceU.th_binance_cny_sub02.perp": 2469.25,
+            "BinanceU.th_binance_cny_sub03.perp": 0
         };
         this.denominator = {
-            "BinanceU.th_binance_cny_master.perp": 49337.34,
-            "BinanceU.th_binance_cny_sub01.perp": 1100,
-            "BinanceU.th_binance_cny_sub02.perp": 1287.40,
-            "BinanceU.th_binance_cny_sub03.perp": 2554.27
+            "BinanceU.th_binance_cny_master.perp": 64198.04,
+            "BinanceU.th_binance_cny_sub01.perp": 2169.75,
+            "BinanceU.th_binance_cny_sub02.perp": 2365.25,
+            "BinanceU.th_binance_cny_sub03.perp": 0
         };
         this.init_dates = {
             "BinanceU.th_binance_cny_master.perp": moment("2023-06-23"),
@@ -41,7 +41,7 @@ class BalanceMonitor extends StrategyBase {
             "BinanceU.th_binance_cny_sub02.perp": moment("2023-10-24"),
             "BinanceU.th_binance_cny_sub03.perp": moment("2023-10-27")
         };
-        this.aliases = ["R01", "R06", "R12", "R24", "STR", "SRE", "XEM", "XES"];
+        this.aliases = ["R01", "R06", "R12", "R24", "STR", "SRE", "XEM"];
 
         this.account_summary = {};
         for (let account of this.accounts) {
@@ -235,10 +235,13 @@ class BalanceMonitor extends StrategyBase {
         for (let alias of this.aliases) {
             let cfg = JSON.parse(fs.readFileSync(`./config/cfg_${alias}.json`, 'utf8'));
             let status_map = JSON.parse(fs.readFileSync(`./config/status_map_${alias}.json`, 'utf8'));
+            // 不在cfg里面的不需要进行统计
             let loop_items = (["STR", "SRE", "XEM", "XES"].includes(alias))? cfg["entries"]: cfg["idfs"];
 
             for (let item of loop_items) {
                 if (cfg[item].act_id !== account_id) continue;
+                if (status_map[item] === undefined) continue;
+                
                 let symbol = item.split(".")[1];
                 if (symbol in cal_positions) {
                     cal_positions[symbol] += status_map[item]["pos"];

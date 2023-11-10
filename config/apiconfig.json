@@ -11,7 +11,7 @@
         "restUrlModifyOrder": "/fapi/v1/order",
         "restUrlPlaceOrder": "/fapi/v1/order",
         "restUrlGetOrder": "/fapi/v1/order",
-        "restUrlQueryOrders": "/fapi/v1/allOrders",
+        "restUrlQueryOrders": "/fapi/v1/openOrders",
         "restUrlQueryPositions": "/fapi/v2/positionRisk",
         "restUrlQueryAccount": "/fapi/v2/account",
         "restUrlListenKey": "/fapi/v1/listenKey",

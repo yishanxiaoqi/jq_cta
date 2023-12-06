@@ -10,7 +10,7 @@
         "BinanceU.XEMUSDT.perp",
         "BinanceU.CELOUSDT.perp",
         "BinanceU.FLOWUSDT.perp",
-        "BinanceU.CRVUSDT.perp"
+        "BinanceU.BTCUSDT.perp"
     ],
     "entries": [
         "BinanceU.XEMUSDT.perp.30m.010",
@@ -25,10 +25,10 @@
         "BinanceU.FLOWUSDT.perp.30m.020",
         "BinanceU.FLOWUSDT.perp.1h.010",
         "BinanceU.FLOWUSDT.perp.1h.020",
-        "BinanceU.CRVUSDT.perp.30m.010",
-        "BinanceU.CRVUSDT.perp.30m.020",
-        "BinanceU.CRVUSDT.perp.1h.010",
-        "BinanceU.CRVUSDT.perp.1h.020"
+        "BinanceU.BTCUSDT.perp.30m.010",
+        "BinanceU.BTCUSDT.perp.30m.020",
+        "BinanceU.BTCUSDT.perp.1h.010",
+        "BinanceU.BTCUSDT.perp.1h.020"
     ],
     "BinanceU.XEMUSDT.perp.30m.010": {
         "track_ATR_n": 20,
@@ -52,7 +52,7 @@
         "delta_af": 0.02,
         "bar_enter_limit": 10,
         "splitAt": 0,
-        "ini_usdt": 200,
+        "ini_usdt": 100,
         "act_id": "th_binance_cny_sub01",
         "cfgID": "XEM0002"
     },
@@ -65,7 +65,7 @@
         "delta_af": 0.02,
         "bar_enter_limit": 10,
         "splitAt": 0,
-        "ini_usdt": 200,
+        "ini_usdt": 100,
         "act_id": "th_binance_cny_sub01",
         "cfgID": "XEM0003"
     },
@@ -78,7 +78,7 @@
         "delta_af": 0.02,
         "bar_enter_limit": 10,
         "splitAt": 0,
-        "ini_usdt": 200,
+        "ini_usdt": 100,
         "act_id": "th_binance_cny_sub01",
         "cfgID": "XEM0004"
     },
@@ -91,7 +91,7 @@
         "delta_af": 0.02,
         "bar_enter_limit": 10,
         "splitAt": 0,
-        "ini_usdt": 200,
+        "ini_usdt": 100,
         "act_id": "th_binance_cny_sub01",
         "cfgID": "XEM0005"
     },
@@ -130,7 +130,7 @@
         "delta_af": 0.02,
         "bar_enter_limit": 10,
         "splitAt": 0,
-        "ini_usdt": 200,
+        "ini_usdt": 100,
         "act_id": "th_binance_cny_sub01",
         "cfgID": "XEM0008"
     },
@@ -156,7 +156,7 @@
         "delta_af": 0.02,
         "bar_enter_limit": 10,
         "splitAt": 0,
-        "ini_usdt": 200,
+        "ini_usdt": 100,
         "act_id": "th_binance_cny_sub01",
         "cfgID": "XEM0010"
     },
@@ -182,11 +182,11 @@
         "delta_af": 0.02,
         "bar_enter_limit": 10,
         "splitAt": 0,
-        "ini_usdt": 200,
+        "ini_usdt": 100,
         "act_id": "th_binance_cny_sub01",
         "cfgID": "XEM0012"
     },
-    "BinanceU.CRVUSDT.perp.30m.010": {
+    "BinanceU.BTCUSDT.perp.30m.010": {
         "track_ATR_n": 20,
         "track_ATR_multiplier": 0.1,
         "stoploss_rate": 0.05,
@@ -195,11 +195,11 @@
         "delta_af": 0.02,
         "bar_enter_limit": 10,
         "splitAt": 0,
-        "ini_usdt": 100,
+        "ini_usdt": 200,
         "act_id": "th_binance_cny_sub01",
-        "cfgID": "XEM0013"
+        "cfgID": "XEM0017"
     },
-    "BinanceU.CRVUSDT.perp.30m.020": {
+    "BinanceU.BTCUSDT.perp.30m.020": {
         "track_ATR_n": 20,
         "track_ATR_multiplier": 0.2,
         "stoploss_rate": 0.05,
@@ -210,9 +210,9 @@
         "splitAt": 0,
         "ini_usdt": 200,
         "act_id": "th_binance_cny_sub01",
-        "cfgID": "XEM0014"
+        "cfgID": "XEM0018"
     },
-    "BinanceU.CRVUSDT.perp.1h.010": {
+    "BinanceU.BTCUSDT.perp.1h.010": {
         "track_ATR_n": 20,
         "track_ATR_multiplier": 0.1,
         "stoploss_rate": 0.05,
@@ -221,11 +221,11 @@
         "delta_af": 0.02,
         "bar_enter_limit": 10,
         "splitAt": 0,
-        "ini_usdt": 100,
+        "ini_usdt": 200,
         "act_id": "th_binance_cny_sub01",
-        "cfgID": "XEM0015"
+        "cfgID": "XEM0019"
     },
-    "BinanceU.CRVUSDT.perp.1h.020": {
+    "BinanceU.BTCUSDT.perp.1h.020": {
         "track_ATR_n": 20,
         "track_ATR_multiplier": 0.2,
         "stoploss_rate": 0.05,
@@ -236,6 +236,6 @@
         "splitAt": 0,
         "ini_usdt": 200,
         "act_id": "th_binance_cny_sub01",
-        "cfgID": "XEM0016"
+        "cfgID": "XEM0020"
     }
 }

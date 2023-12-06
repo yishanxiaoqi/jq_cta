@@ -40,10 +40,10 @@ class FeedApp {
     start() {
         this._register_events();
         let bn = new BinanceU("BinanceU", this.intercom);
-        let ok = new OKX("OKX", this.intercom);
+        // let ok = new OKX("OKX", this.intercom);
 
         bn.start();
-        ok.start();
+        // ok.start();
     }
 }
 

@@ -9,7 +9,8 @@
         "HBARUSDT",
         "ONTUSDT",
         "NKNUSDT",
-        "HOTUSDT"
+        "HOTUSDT",
+        "XEMUSDT"
     ],
     "idfs": [
         "BinanceU.1000SHIBUSDT.perp",
@@ -18,12 +19,14 @@
         "BinanceU.HBARUSDT.perp",
         "BinanceU.HOTUSDT.perp",
         "BinanceU.NKNUSDT.perp",
-        "BinanceU.ONTUSDT.perp"
+        "BinanceU.ONTUSDT.perp",
+        "BinanceU.XEMUSDT.perp"
     ],
     "entries": [
         "BinanceU.1000SHIBUSDT.perp.1h",
         "BinanceU.ALICEUSDT.perp.1h",
         "BinanceU.BANDUSDT.perp.1h",
+        "BinanceU.XEMUSDT.perp.1h",
         "BinanceU.HBARUSDT.perp.6h",
         "BinanceU.ONTUSDT.perp.6h",
         "BinanceU.NKNUSDT.perp.6h",
@@ -64,6 +67,18 @@
         "ini_usdt": 50,
         "act_id": "th_binance_cny_sub01",
         "cfgID": "SRE0014"
+    },
+    "BinanceU.XEMUSDT.perp.1h": {
+        "splitAt": 0,
+        "track_ATR_n": 5,
+        "track_ATR_multiplier": 0.5,
+        "cutloss_rate": 0.2,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "ini_usdt": 50,
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "SRE0064"
     },
     "BinanceU.HBARUSDT.perp.6h": {
         "splitAt": 5,

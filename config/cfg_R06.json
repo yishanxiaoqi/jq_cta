@@ -22,6 +22,7 @@
         "HOTUSDT",
         "MKRUSDT",
         "MTLUSDT",
+        "QTUMUSDT",
         "SANDUSDT"
     ],
     "idfs": [
@@ -33,6 +34,7 @@
         "BinanceU.HOTUSDT.perp",
         "BinanceU.MKRUSDT.perp",
         "BinanceU.MTLUSDT.perp",
+        "BinanceU.QTUMUSDT.perp",
         "BinanceU.SANDUSDT.perp"
     ],
     "BinanceU.1000SHIBUSDT.perp": {
@@ -138,6 +140,19 @@
         "ini_usdt": 2500,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060038"
+    },
+    "BinanceU.QTUMUSDT.perp": {
+        "splitAt": 3,
+        "track_ATR_n": 10,
+        "track_ATR_multiplier": 0.8,
+        "stoploss_rate": 0.04,
+        "cutloss_rate": 0.04,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "ini_usdt": 2500,
+        "act_id": "th_binance_cny_master",
+        "cfgID": "R060041"
     },
     "BinanceU.SANDUSDT.perp": {
         "splitAt": 5,

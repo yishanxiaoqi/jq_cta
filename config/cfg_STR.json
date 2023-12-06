@@ -16,7 +16,6 @@
         "BinanceU.ALPHAUSDT.perp",
         "BinanceU.ANKRUSDT.perp",
         "BinanceU.AVAXUSDT.perp",
-        "BinanceU.BALUSDT.perp",
         "BinanceU.BNBUSDT.perp",
         "BinanceU.BTCDOMUSDT.perp",
         "BinanceU.BTCUSDT.perp",
@@ -46,7 +45,6 @@
         "BinanceU.ZILUSDT.perp"
     ],
     "entries": [
-        "BinanceU.BALUSDT.perp.1h",
         "BinanceU.FTMUSDT.perp.1h",
         "BinanceU.RUNEUSDT.perp.1h",
         "BinanceU.AVAXUSDT.perp.6h",
@@ -93,18 +91,6 @@
         "BinanceU.VETUSDT.perp.1d",
         "BinanceU.ZECUSDT.perp.1d"
     ],
-    "BinanceU.BALUSDT.perp.1h": {
-        "ini_usdt": 200,
-        "splitAt": 0,
-        "track_ATR_multiplier": 0.9,
-        "track_ATR_n": 60,
-        "cutloss_rate": 0.3,
-        "ini_af": 0.02,
-        "delta_af": 0.02,
-        "bar_enter_limit": 1,
-        "act_id": "th_binance_cny_master",
-        "cfgID": "STR0038"
-    },
     "BinanceU.FTMUSDT.perp.1h": {
         "ini_usdt": 200,
         "splitAt": 0,

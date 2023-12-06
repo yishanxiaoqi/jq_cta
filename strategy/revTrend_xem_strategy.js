@@ -384,7 +384,7 @@ class RevTrendXEMStrategy extends StrategyBase {
             // record the order filling details
             let ts = order_update["metadata"]["timestamp"];
             let filled_info = [act_id, entry, exchange, symbol, contract_type, interval, client_order_id, original_amount, filled, submit_price, avg_executed_price, fee].join(",");
-            let order_info = (that.order_map[entry][client_order_id] === undefined) ? "" : Object.entries(that.order_map[entry][client_order_id]).filter((element) => element[0] !== "ToBeDeleted").map((element) => element[1]).join(",");
+            let order_info = (that.order_map[entry][client_order_id] === undefined) ? "" : Object.entries(that.order_map[entry][client_order_id]).filter((element) => ["label", "target", "quantity", "time", "filled"].includes(element[0])).map((element) => element[1]).join(",");
             let output_string = [ts, filled_info, order_info].join(",");
             output_string += (order_status === ORDER_STATUS.FILLED) ? ",filled\n" : ",partially_filled\n";
             fs.writeFile(`./log/order_filling_${this.alias}.csv`, output_string, { flag: "a+" }, (err) => {
@@ -518,12 +518,16 @@ class RevTrendXEMStrategy extends StrategyBase {
             let up_client_order_id = that.order_map[entry]["UP"]["client_order_id"];
             orders_to_be_cancelled.push(up_client_order_id);
             that.status_map[entry]["status"] = "SHORT";
+
+            delete that.order_map[entry]["UP"];
         } else if (triggered === "DN") {
             // 开仓单开了一半，剩下的放弃，直接转为对应的status
             logger.info(`${that.alias}::${act_id}|${idf} deal with TBA: cancel the remaining DN order!`);
             let dn_client_order_id = that.order_map[entry]["DN"]["client_order_id"];
             orders_to_be_cancelled.push(dn_client_order_id);
             that.status_map[entry]["status"] = "LONG";
+
+            delete that.order_map[entry]["DN"];
         } else if ((triggered === "ANTI_L|STOPLOSS") || (triggered === "ANTI_L|REVERSE")) {
             // 平仓单未能成交，撤销该单，改用市价单成交
             // 反手单未能成交，撤销该单，放弃反手，改为市价平仓
@@ -546,6 +550,8 @@ class RevTrendXEMStrategy extends StrategyBase {
                 let sell_price = stratutils.transform_with_tick_size(that.prices[idf]["price"] * 0.97, PRICE_TICK_SIZE[idf]);
                 orders_to_be_submitted.push({ client_order_id: that.alias + interval.padStart(3, '0') + track_ATR_multiplier_str + LABELMAP["ANTI_L|STOPLOSS"] + randomID(7), label: "ANTI_L|STOPLOSS", target: "EMPTY", quantity: tgt_qty, price: sell_price, direction: DIRECTION.SELL });
             }
+
+            delete that.order_map[entry]["ANTI_L"];
         } else if ((triggered === "ANTI_S|STOPLOSS") || (triggered === "ANTI_S|REVERSE")) {
             // 平仓单未能成交，撤销该单，改用市价单成交
             // 反手单未能成交，撤销该单，放弃反手，改为市价平仓
@@ -568,6 +574,8 @@ class RevTrendXEMStrategy extends StrategyBase {
                 let buy_price = stratutils.transform_with_tick_size(that.prices[idf]["price"] * 1.03, PRICE_TICK_SIZE[idf]);
                 orders_to_be_submitted.push({ client_order_id: that.alias + interval.padStart(3, '0') + track_ATR_multiplier_str + LABELMAP["ANTI_S|STOPLOSS"] + randomID(7), label: "ANTI_S|STOPLOSS", target: "EMPTY", quantity: tgt_qty, price: buy_price, direction: DIRECTION.BUY });
             }
+
+            delete that.order_map[entry]["ANTI_S"];
         } else {
             logger.info(`${that.alias}|${entry}::TBA and new_bar handling: unhandled ${that.status_map[entry]["triggered"]}. If nothing, ignore it!`)
         }
@@ -1138,6 +1146,8 @@ class RevTrendXEMStrategy extends StrategyBase {
             "data": []
         }
 
+        let alert_string = "";
+
         for (let entry of that.cfg["entries"]) {
             let symbol = entry.split(".")[1];
             let interval = entry.split(".")[3];
@@ -1161,14 +1171,29 @@ class RevTrendXEMStrategy extends StrategyBase {
                 }
 
                 if (that.order_map[entry][key]["ToBeDeleted"]) {
-                    delete that.order_map[entry][key];
+                    // 超过10秒才删除，避免order_update推送延迟，导致order_update的处理过程中order_map中信息缺失
+                    if (moment.now() - value["ToBeDeletedTime"] > 1000 * 10) {
+                        alert_string += `${key}: ${JSON.stringify(that.order_map[idf][key])}\n`;
+                        // 如果delete了，在deal_with_TBA里面又会报错？
+                        // delete that.order_map[idf][key];
+                    }
                 } else {
                     that.order_map[entry][key]["ToBeDeleted"] = true;
+                    that.order_map[entry][key]["ToBeDeletedTime"] = moment.now();
                 }
             }
         }
 
         this.intercom.emit("UI_update", sendData, INTERCOM_SCOPE.UI);
+
+        if (alert_string !== "") {
+            // ToBeDeleted in the future
+            logger.info(`${that.alias}:: order not active, but still in the order map as follows, \n${alert_string}`);
+            that.slack_publish({
+                "type": "alert",
+                "msg": `${that.alias}:: order not active, but still in the order map as follows, \n${alert_string}`
+            });
+        }
     }
 }
 

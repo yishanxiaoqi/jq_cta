@@ -21,7 +21,7 @@ class BalanceMonitor extends StrategyBase {
         this.accounts = [
             "BinanceU.th_binance_cny_master.perp",
             "BinanceU.th_binance_cny_sub01.perp",
-            "BinanceU.th_binance_cny_sub02.perp"
+            // "BinanceU.th_binance_cny_sub02.perp"
         ];
         this.init_equity = {
             "BinanceU.th_binance_cny_master.perp": 71696.51,

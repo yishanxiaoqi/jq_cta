@@ -77,10 +77,10 @@ SUBSCRIPTION_LIST = [
     'BinanceU|ZILUSDT|perp|trade',
 
     // XES
-    'BinanceU|XEMUSDT|perp|bestquote',
-    'BinanceU|CELOUSDT|perp|bestquote',
-    'BinanceU|FLOWUSDT|perp|bestquote',
-    'BinanceU|CRVUSDT|perp|bestquote',
+    // 'BinanceU|XEMUSDT|perp|bestquote',
+    // 'BinanceU|CELOUSDT|perp|bestquote',
+    // 'BinanceU|FLOWUSDT|perp|bestquote',
+    // 'BinanceU|CRVUSDT|perp|bestquote',
 
     // spread arbitrage
     // 'BinanceU|XEMUSDT|perp|bestquote',

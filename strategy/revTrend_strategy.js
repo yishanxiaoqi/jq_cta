@@ -10,7 +10,6 @@ const request = require('../module/request.js');
 const utils = require("../utils/util_func");
 const stratutils = require("../utils/strat_util.js");
 const StrategyBase = require("./strategy_base.js");
-const token = require("../config/token.json");
 
 class RevTrendStrategy extends StrategyBase {
     constructor(name, alias, intercom) {
@@ -74,6 +73,11 @@ class RevTrendStrategy extends StrategyBase {
         that.cfg["idfs"].forEach((idf, index) => {
             if (!(idf in that.status_map)) return;
             let item = {};
+            
+            // 计算enter
+            // let status = that.status_map[idf]["status"];
+            // let enter = (status === "LONG") ? that.status_map[idf]["long_enter"] : ((status === "SHORT") ? that.status_map[idf]["short_enter"] : "");
+            
             item[`${index + 1}|idf`] = idf;
             item[`${index + 1}|status`] = that.status_map[idf]["status"];
             item[`${index + 1}|triggered`] = that.status_map[idf]["triggered"];
@@ -403,7 +407,8 @@ class RevTrendStrategy extends StrategyBase {
             // record the order filling details
             let ts = order_update["metadata"]["timestamp"];
             let filled_info = [act_id, exchange, symbol, contract_type, client_order_id, original_amount, filled, submit_price, avg_executed_price, fee].join(",");
-            let order_info = (that.order_map[idf][client_order_id] === undefined) ? "" : Object.entries(that.order_map[idf][client_order_id]).filter((element) => element[0] !== "ToBeDeleted").map((element) => element[1]).join(",");
+            // order_map中只提取label,target,quantity,time,filled等信息
+            let order_info = (that.order_map[idf][client_order_id] === undefined) ? ",,,," : Object.entries(that.order_map[idf][client_order_id]).filter((element) => ["label", "target", "quantity", "time", "filled"].includes(element[0])).map((element) => element[1]).join(",");
             let output_string = [ts, filled_info, order_info].join(",");
             output_string += (order_status === ORDER_STATUS.FILLED) ? ",filled\n" : ",partially_filled\n";
             fs.writeFile(`./log/order_filling_${this.alias}.csv`, output_string, { flag: "a+" }, (err) => {
@@ -1004,6 +1009,8 @@ class RevTrendStrategy extends StrategyBase {
                     contract_type: CONTRACT_TYPE.PERP,
                     account_id: act_id
                 });
+            } else if (error_code_msg === "Server is currently overloaded with other requests. Please try again in a few minutes.") {
+                resend = true, timeout = 1000 * 10;
             } else {
                 logger.warn(`${that.alias}::on_response|${order_idf}::unknown error occured during ${action}: ${error_code}: ${error_code_msg}`);
                 return;
@@ -1126,16 +1133,10 @@ class RevTrendStrategy extends StrategyBase {
     on_query_orders_response(response) {
         let that = this;
 
-        let exchange = response["request"]["exchange"];
-        let symbol = response["request"]["symbol"];
-        let contract_type = response["request"]["contract_type"];
-        let act_id = response["request"]["account_id"];
-        let idf = [exchange, symbol, contract_type].join(".");
-
         if (response["metadata"]["metadata"]["result"] === false) {
             let error_code = response["metadata"]["metadata"]["error_code"];
             let error_code_msg = response["metadata"]["metadata"]["error_code_msg"];
-            logger.debug(`${that.alias}::${symbol} an error occured during query orders: ${error_code}: ${error_code_msg}`);
+            logger.debug(`${that.alias}:: an error occured during query orders: ${error_code}: ${error_code_msg}`);
             return
         }
 
@@ -1147,6 +1148,8 @@ class RevTrendStrategy extends StrategyBase {
             "tabName": "PortfolioMonitor",
             "data": []
         }
+
+        let alert_string = "";
 
         for (let idf of that.cfg["idfs"]) {
             let symbol = idf.split(".")[1];
@@ -1173,11 +1176,9 @@ class RevTrendStrategy extends StrategyBase {
                 if (that.order_map[idf][key]["ToBeDeleted"]) {
                     // 超过10秒才删除，避免order_update推送延迟，导致order_update的处理过程中order_map中信息缺失
                     if (moment.now() - value["ToBeDeletedTime"] > 1000 * 10) {
-                        that.slack_publish({
-                            "type": "alert",
-                            "msg": `${that.alias}:: order not active, but still in the order map, will be deleted! ${key}: ${JSON.stringify(that.order_map[idf][key])}`
-                        });
-                        delete that.order_map[idf][key];
+                        alert_string += `${key}: ${JSON.stringify(that.order_map[idf][key])}\n`;
+                        // 如果delete了，在deal_with_TBA里面又会报错？
+                        // delete that.order_map[idf][key];
                     }
                 } else {
                     that.order_map[idf][key]["ToBeDeleted"] = true;
@@ -1186,7 +1187,16 @@ class RevTrendStrategy extends StrategyBase {
             }
         }
 
-        this.intercom.emit("UI_update", sendData, INTERCOM_SCOPE.UI);
+        that.intercom.emit("UI_update", sendData, INTERCOM_SCOPE.UI);
+
+        if (alert_string !== "") {
+            // ToBeDeleted in the future
+            logger.info(`${that.alias}:: order not active, but still in the order map as follows, \n${alert_string}`);
+            that.slack_publish({
+                "type": "alert",
+                "msg": `${that.alias}:: order not active, but still in the order map as follows, \n${alert_string}`
+            });
+        }
     }
 }
 

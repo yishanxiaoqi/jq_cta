@@ -99,6 +99,16 @@
             "date": 1701823039623,
             "name": "log/error-2023-12-06.log",
             "hash": "bd1ed1994fa6c4e66555ccc7e1b30f02"
+        },
+        {
+            "date": 1701824014563,
+            "name": "log/info-2023-12-06.log",
+            "hash": "6ba4d326a9af207964dd300c93381675"
+        },
+        {
+            "date": 1701824014565,
+            "name": "log/error-2023-12-06.log",
+            "hash": "45b725f8b51b22dea7d93bc6bbb1b68d"
         }
     ]
 }

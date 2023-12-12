@@ -31,7 +31,7 @@ class ExchangeBinanceU extends ExchangeBase {
             await this.get_listenKey(account_id);
         }
 
-        this.ws_connections[account_id]["ws"] = new WS(apiconfig.BinanceU.privateWebsocketUrl + this.listenKey + "?listenKey=" + this.listenKey);
+        this.ws_connections[account_id]["ws"] = new WS(apiconfig.BinanceU.privateWebsocketUrl + this.listenKey);
 
         this.ws_connections[account_id]["ws"].on("open", (evt) => {
             logger.info(`${this.name}|${account_id}: WS is CONNECTED.`);
@@ -63,7 +63,8 @@ class ExchangeBinanceU extends ExchangeBase {
             }, 1000 * 60 * 50);
 
             // 100毫秒后订阅频道
-            if(account_id === "th_binance_cny_master") {
+            if(account_id === "th_binance_cny_sub03") {
+                // 用th_binance_cny_sub03账号来订阅market_data，th_binance_cny_sub03目前没有任何资金
                 setTimeout(() => {
                     const sub_id = +randomID(6, '0');
                     const sub_streams = this._format_subscription_list();

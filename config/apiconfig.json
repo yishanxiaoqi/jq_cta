@@ -1,8 +1,7 @@
 {
     "BinanceU": {
         "websocketUrl": "wss://fstream.binance.com/stream?streams=",
-        "privateWebsocketUri": "wss://fstream.binance.com/ws/",
-        "privateWebsocketUrl": "wss://fstream-auth.binance.com/ws/",
+        "privateWebsocketUrl": "wss://fstream.binance.com/ws/",
         "restUrl": "https://fapi.binance.com",
         "restUrlGetBalance": "/fapi/v2/balance",
         "restUrlGetHistoryOrder": "/fapi/v1/allOrders",

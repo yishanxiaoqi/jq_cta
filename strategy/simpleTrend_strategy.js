@@ -521,7 +521,6 @@ class SimpleTrendStrategy extends StrategyBase{
         if (label !== undefined) {
             let client_order_id = that.alias + interval.padStart(3, '0') + LABELMAP[label] + randomID(5);  // client_order_id总共13位
             that.status_map[entry]["status"] = "TBA";
-            logger.info(label, target, tgt_qty);
             that.order_map[entry][client_order_id] = {label: label, target: target, quantity: tgt_qty, time: moment.now(), filled: 0};
             
             that.send_order({

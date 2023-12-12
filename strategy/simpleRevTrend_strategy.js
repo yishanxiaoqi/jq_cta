@@ -453,6 +453,11 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 logger.debug(`${that.alias}::${entry}::cur_bar_otime is smaller than klines ts[0]?`);
             }
 
+            if (new_bar) {
+                // 检查一下kline
+                logger.info(`${that.alias}::${entry}::NEW BAR::${that.klines[entry]}!`);
+            }
+
             // update bar open time and net_profit
             that.pre_bar_otime[entry] = that.cur_bar_otime[entry];
 
@@ -659,6 +664,9 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 // 开仓bar，ep设定为这根bar的最高价，同时不做任何处理
                 that.status_map[entry]["ep"] = that.klines[entry]["high"][0];
                 return;
+            } else if (that.status_map[entry]["bar_n"] === 1) {
+                // 开仓后的第一个bar，ep设定为上一个bar的最高价
+                that.status_map[entry]["ep"] = that.klines[entry]["high"][1];
             }
 
             let stoploss_price = that.status_map[entry]["sar"];
@@ -715,6 +723,9 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 // 突破上轨当前bar，ep设定为该bar最低价，此外不做任何处理
                 that.status_map[entry]["ep"] = that.klines[entry]["low"][0];
                 return;
+            } else if (that.status_map[entry]["bar_n"] === 1) {
+                // 开仓后的第一个bar，ep设定为上一个bar的最低价
+                that.status_map[entry]["ep"] = that.klines[entry]["low"][1];
             }
 
             let stoploss_price = that.status_map[entry]["sar"];

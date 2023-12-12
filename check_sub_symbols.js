@@ -17,6 +17,7 @@ let sub_idfs = SUBSCRIPTION_LIST.map(e => e.split("|").slice(0, 3).join("."));
 
 // console.log(live_idfs, live_idfs.length);
 // console.log(sub_idfs, sub_idfs.length);
+console.log("正在订阅的频道个数：", sub_idfs.length);
 
 // 需要订阅，但是没有订阅的idf
 let diff_1 = live_idfs.filter(e => !sub_idfs.includes(e));

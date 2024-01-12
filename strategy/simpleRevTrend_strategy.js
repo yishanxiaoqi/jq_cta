@@ -74,13 +74,16 @@ class SimpleRevTrendStrategy extends StrategyBase {
             if (!(entry in that.status_map)) return;
             let idf  = entry.split(".").slice(0, 3).join(".");
             let item = {};
+
+            let gap = (that.prices[idf])? Math.round((moment.now() - utils._util_convert_timestamp_to_date(that.prices[idf]["upd_ts"])) / 1000) : "";
+
             item[`${index + 1}|entry`] = entry;
             item[`${index + 1}|status`] = that.status_map[entry]["status"];
             item[`${index + 1}|triggered`] = that.status_map[entry]["triggered"];
             item[`${index + 1}|pos`] = that.status_map[entry]["pos"];
             item[`${index + 1}|fee`] = that.status_map[entry]["fee"];
             item[`${index + 1}|np`] = that.status_map[entry]["net_profit"];
-            item[`${index + 1}|price`] = (that.prices[idf])? that.prices[idf]["price"]: "";
+            item[`${index + 1}|price`] = (that.prices[idf])? `${that.prices[idf]["price"]}|${gap}`: "";
             item[`${index + 1}|enter`] = that.status_map[entry]["enter"];
             item[`${index + 1}|sar`] = that.status_map[entry]["sar"];
             item[`${index + 1}|up`] = that.status_map[entry]["up"];
@@ -92,11 +95,14 @@ class SimpleRevTrendStrategy extends StrategyBase {
     }
 
     query_active_orders() {
-        this.query_orders({
-            exchange: EXCHANGE.BINANCEU,
-            contract_type: CONTRACT_TYPE.PERP,
-            account_id: "th_binance_cny_sub01",
-        });
+        let that = this;
+        for (let act_id of that.cfg["act_ids"]) {
+            that.query_orders({
+                exchange: EXCHANGE.BINANCEU,
+                contract_type: CONTRACT_TYPE.PERP,
+                account_id: act_id,
+            });
+        }
     }
 
     init_order_map() {
@@ -455,7 +461,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
 
             if (new_bar) {
                 // 检查一下kline
-                logger.info(`${that.alias}::${entry}::NEW BAR::${that.klines[entry]}!`);
+                logger.info(`${that.alias}::${entry}::NEW BAR::${JSON.stringify(that.klines[entry])}!`);
             }
 
             // update bar open time and net_profit
@@ -498,7 +504,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
             that.status_map[entry]["status"] = "LONG";
         } else if (triggered === "ANTI_L|REVERSE") {
             // 反手单未能成交，撤销该单，放弃反手，改为市价平仓
-            let anti_client_order_id = that.order_map[entry]["ANTI_L"]["client_order_id"];
+            let anti_client_order_id = that.order_map[entry]["ANTI_L|REVERSE"]["client_order_id"];
             orders_to_be_cancelled.push(anti_client_order_id);
 
             if (that.status_map[entry]["pos"] < 0) {
@@ -514,13 +520,13 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 // 因为binance对限价单价格有限制，通常不能超过标记价格的5%
                 logger.info(`${that.alias}::${act_id}|${entry} deal with TBA: cover the LONG position!`);
                 let tgt_qty = that.status_map[entry]["pos"];
-                orders_to_be_submitted.push({ client_order_id: that.alias + LABELMAP["ANTI_L|STOPLOSS"] + randomID(7), label: "ANTI_L|STOPLOSS", target: "EMPTY", quantity: tgt_qty, direction: DIRECTION.SELL });
+                orders_to_be_submitted.push({ client_order_id: that.alias + interval.padStart(3, '0') + LABELMAP["ANTI_L|STOPLOSS"] + randomID(7), label: "ANTI_L|STOPLOSS", target: "EMPTY", quantity: tgt_qty, direction: DIRECTION.SELL });
             }
             
         } else if (triggered === "ANTI_S|REVERSE") {
             // 平仓单未能成交，撤销该单，改用市价单成交
             // 反手单未能成交，撤销该单，放弃反手，改为市价平仓
-            let anti_client_order_id = that.order_map[entry]["ANTI_S"]["client_order_id"];
+            let anti_client_order_id = that.order_map[entry]["ANTI_S|REVERSE"]["client_order_id"];
             orders_to_be_cancelled.push(anti_client_order_id);
 
             if (that.status_map[entry]["pos"] > 0) {
@@ -536,7 +542,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 // 因为binance对限价单价格有限制，通常不能超过标记价格的5%
                 logger.info(`${that.alias}::${act_id}|${entry} deal with TBA: cover the SHORT position!`);
                 let tgt_qty = - that.status_map[entry]["pos"];
-                orders_to_be_submitted.push({ client_order_id: that.alias + LABELMAP["ANTI_S|STOPLOSS"] + randomID(7), label: "ANTI_S|STOPLOSS", target: "EMPTY", quantity: tgt_qty, direction: DIRECTION.BUY });
+                orders_to_be_submitted.push({ client_order_id: that.alias + interval.padStart(3, '0') + LABELMAP["ANTI_S|STOPLOSS"] + randomID(7), label: "ANTI_S|STOPLOSS", target: "EMPTY", quantity: tgt_qty, direction: DIRECTION.BUY });
             }
 
         } else {
@@ -925,7 +931,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
 
             } else if (error_code_msg === "Exceeded the maximum allowable position at current leverage.") {
                 // 杠杆问题，降低杠杆
-                let key = KEY[act_id];
+                let key = token[act_id]["apiKey"];
                 let url = "https://fapi.binance.com/fapi/v1/leverage";
                 stratutils.set_leverage_by_rest(symbol, 10, url, key);
 
@@ -976,6 +982,8 @@ class SimpleRevTrendStrategy extends StrategyBase {
                     contract_type: CONTRACT_TYPE.PERP,
                     account_id: act_id
                 });
+            } else if (error_code_msg === "Quantity greater than max quantity.") {
+                if (label === "DN") delete that.order_map[entry]["DN"];
             } else {
                 logger.warn(`${that.alias}::on_response|${order_idf}::unknown error occured during ${action}: ${error_code}: ${error_code_msg}`);
                 return;
@@ -987,8 +995,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
                     retry = (retry === undefined) ? 1 : retry + 1;
                     let new_client_order_id = that.alias + interval.padStart(3, '0') + LABELMAP[label] + randomID(5);
 
-                    // 注意：order_map里面的key只有ANTI_L, ANTI_S, UP, DN四种；
-                    // 但是label有六种！
+                    // 注意：order_map里面的key有六种，对应的label也是六种，这和REV是不一样的；
                     that.order_map[entry][new_client_order_id] = { label: label, target: target, quantity: quantity, time: moment.now(), filled: 0 };
                     that.order_map[entry][label] = { client_order_id: new_client_order_id, label: label, price: price, quantity: quantity, time: moment.now() };
 
@@ -1108,6 +1115,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
             return
         }
 
+        let act_id = response["metadata"]["metadata"]["account_id"];
         let orders = response["metadata"]["metadata"]["orders"];
         let active_orders = orders.filter(item => item.client_order_id.slice(0, 3) === that.alias);
 
@@ -1118,6 +1126,8 @@ class SimpleRevTrendStrategy extends StrategyBase {
         }
 
         for (let entry of that.cfg["entries"]) {
+            if (act_id !== that.cfg[entry]["act_id"]) continue;
+
             let symbol = entry.split(".")[1];
             let corr_active_orders = active_orders.filter(item => (item.symbol === symbol));
             let corr_active_client_order_ids = corr_active_orders.map(item => item.client_order_id);

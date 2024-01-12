@@ -1,10 +1,14 @@
 {
     "alias": "SRE",
-    "clear_existing_status": false,
-    "ini_usdt": 200,
+    "clear_existing_status": true,
+    "ini_usdt": 100,
+    "act_ids": [
+        "th_binance_cny_sub02"
+    ],
     "symbols": [
         "1000SHIBUSDT",
         "ALICEUSDT",
+        "ALPHAUSDT",
         "ANTUSDT",
         "CTSIUSDT",
         "XEMUSDT",
@@ -22,6 +26,7 @@
     "idfs": [
         "BinanceU.1000SHIBUSDT.perp",
         "BinanceU.ALICEUSDT.perp",
+        "BinanceU.ALPHAUSDT.perp",
         "BinanceU.ANKRUSDT.perp",
         "BinanceU.ANTUSDT.perp",
         "BinanceU.ARPAUSDT.perp",
@@ -51,6 +56,7 @@
         "BinanceU.HBARUSDT.perp.6h",
         "BinanceU.ONTUSDT.perp.6h",
         "BinanceU.NKNUSDT.perp.6h",
+        "BinanceU.ALPHAUSDT.perp.1d",
         "BinanceU.MTLUSDT.perp.1d"
     ],
     "BinanceU.1000SHIBUSDT.perp.1h": {
@@ -61,8 +67,8 @@
         "ini_af": 0.08,
         "delta_af": 0.08,
         "bar_enter_limit": 1,
-        "ini_usdt": 200,
-        "act_id": "th_binance_cny_sub01",
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0001"
     },
     "BinanceU.ALICEUSDT.perp.1h": {
@@ -73,8 +79,8 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 200,
-        "act_id": "th_binance_cny_sub01",
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0006"
     },
     "BinanceU.ANTUSDT.perp.1h": {
@@ -85,8 +91,8 @@
         "ini_af": 0.06,
         "delta_af": 0.06,
         "bar_enter_limit": 1,
-        "ini_usdt": 200,
-        "act_id": "th_binance_cny_sub01",
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0007"
     },
     "BinanceU.CTSIUSDT.perp.1h": {
@@ -97,8 +103,8 @@
         "ini_af": 0.04,
         "delta_af": 0.04,
         "bar_enter_limit": 1,
-        "ini_usdt": 200,
-        "act_id": "th_binance_cny_sub01",
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0020"
     },
     "BinanceU.XEMUSDT.perp.1h": {
@@ -109,8 +115,8 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 200,
-        "act_id": "th_binance_cny_sub01",
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0064"
     },
     "BinanceU.XMRUSDT.perp.1h": {
@@ -121,8 +127,8 @@
         "ini_af": 0.01,
         "delta_af": 0.01,
         "bar_enter_limit": 1,
-        "ini_usdt": 200,
-        "act_id": "th_binance_cny_sub01",
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0065"
     },
     "BinanceU.STMXUSDT.perp.6h": {
@@ -133,8 +139,8 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 200,
-        "act_id": "th_binance_cny_sub01",
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0070"
     },
     "BinanceU.ARPAUSDT.perp.6h": {
@@ -145,8 +151,8 @@
         "ini_af": 0.08,
         "delta_af": 0.08,
         "bar_enter_limit": 1,
-        "ini_usdt": 200,
-        "act_id": "th_binance_cny_sub01",
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0076"
     },
     "BinanceU.PEOPLEUSDT.perp.6h": {
@@ -157,8 +163,8 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 200,
-        "act_id": "th_binance_cny_sub01",
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0087"
     },
     "BinanceU.ANKRUSDT.perp.6h": {
@@ -169,8 +175,8 @@
         "ini_af": 0.01,
         "delta_af": 0.01,
         "bar_enter_limit": 1,
-        "ini_usdt": 200,
-        "act_id": "th_binance_cny_sub01",
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0095"
     },
     "BinanceU.C98USDT.perp.6h": {
@@ -181,8 +187,8 @@
         "ini_af": 0.1,
         "delta_af": 0.1,
         "bar_enter_limit": 1,
-        "ini_usdt": 200,
-        "act_id": "th_binance_cny_sub01",
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0099"
     },
     "BinanceU.HBARUSDT.perp.6h": {
@@ -193,8 +199,8 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 200,
-        "act_id": "th_binance_cny_sub01",
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0106"
     },
     "BinanceU.ONTUSDT.perp.6h": {
@@ -205,8 +211,8 @@
         "ini_af": 0.1,
         "delta_af": 0.1,
         "bar_enter_limit": 1,
-        "ini_usdt": 200,
-        "act_id": "th_binance_cny_sub01",
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0110"
     },
     "BinanceU.NKNUSDT.perp.6h": {
@@ -217,9 +223,21 @@
         "ini_af": 0.01,
         "delta_af": 0.01,
         "bar_enter_limit": 1,
-        "ini_usdt": 200,
-        "act_id": "th_binance_cny_sub01",
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0113"
+    },
+    "BinanceU.ALPHAUSDT.perp.1d": {
+        "splitAt": 9,
+        "track_ATR_n": 10,
+        "track_ATR_multiplier": 0.7,
+        "cutloss_rate": 0.4,
+        "ini_af": 0.06,
+        "delta_af": 0.06,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
+        "cfgID": "SRE0168"
     },
     "BinanceU.MTLUSDT.perp.1d": {
         "splitAt": 21,
@@ -229,8 +247,8 @@
         "ini_af": 0.06,
         "delta_af": 0.06,
         "bar_enter_limit": 1,
-        "ini_usdt": 200,
-        "act_id": "th_binance_cny_sub01",
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0176"
     }
 }

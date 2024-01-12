@@ -21,17 +21,17 @@ class BalanceMonitor extends StrategyBase {
         this.accounts = [
             "BinanceU.th_binance_cny_master.perp",
             "BinanceU.th_binance_cny_sub01.perp",
-            // "BinanceU.th_binance_cny_sub02.perp"
+            "BinanceU.th_binance_cny_sub02.perp"
         ];
         this.init_equity = {
             "BinanceU.th_binance_cny_master.perp": 71696.51,
-            "BinanceU.th_binance_cny_sub01.perp": 2469.25,
+            "BinanceU.th_binance_cny_sub01.perp": 8223.74,
             "BinanceU.th_binance_cny_sub02.perp": 2469.25,
             "BinanceU.th_binance_cny_sub03.perp": 0
         };
         this.denominator = {
             "BinanceU.th_binance_cny_master.perp": 64198.04,
-            "BinanceU.th_binance_cny_sub01.perp": 2169.75,
+            "BinanceU.th_binance_cny_sub01.perp": 6832.04,
             "BinanceU.th_binance_cny_sub02.perp": 2365.25,
             "BinanceU.th_binance_cny_sub03.perp": 0
         };
@@ -43,9 +43,17 @@ class BalanceMonitor extends StrategyBase {
         };
         this.aliases = ["R01", "R06", "R12", "R24", "STR", "SRE", "XEM"];
 
+        // 初始化各个账户的结单
         this.account_summary = {};
         for (let account of this.accounts) {
             this.account_summary[account] = {};
+        }
+
+        // 初始化各个订阅频道的更新时间
+        this.subscription_list = SUBSCRIPTION_LIST;
+        this.sub_streams_upd_ts = {};
+        for (let subscription of this.subscription_list) {
+            this.sub_streams_upd_ts[subscription] = moment.now();
         }
     }
 
@@ -66,10 +74,11 @@ class BalanceMonitor extends StrategyBase {
         
         setInterval(() => { 
             this.update_status_map_to_slack();
-            // 10秒钟内发送的消息会被过滤掉，因此设置为10秒后
+            // 设置为5秒后发送账户总结
             setTimeout(() => {
                 this.update_account_summary_to_slack();
-            }, 1000 * 10);
+                this.update_subscription_ts_to_slack();
+            }, 1000 * 5);
         }, 1000 * 60 * 5);
 
         // 记录净值
@@ -101,20 +110,20 @@ class BalanceMonitor extends StrategyBase {
             // 需要怎么修改？以后一定要规范写注释！
             if (["SRE", "XEM"].includes(alias)) { 
                 loop_entries = cfg["entries"];
-                add_items = ["status", "triggered", "pos", "net_profit"]; 
-                text += `========${alias}========\nentry\tstatus\tpos\tfee\tnp\n`;
+                add_items = ["status", "triggered", "net_profit"]; 
+                text += `========${alias}========\nentry\tstatus\tfee\tnp\n`;
             } else if (alias === "STR") {
                 loop_entries = cfg["entries"];
-                add_items = ["status", "pos", "net_profit"]; 
-                text += `========${alias}========\nentry\tstatus\tpos\tnp\n`;
+                add_items = ["status", "net_profit"]; 
+                text += `========${alias}========\nentry\tstatus\tnp\n`;
             } else if (["XES", "MMS"].includes(alias)) {
                 loop_entries = cfg["entries"];
-                add_items = ["pos", "net_profit"]; 
-                text += `========${alias}========\nentry\tpos\tnp\n`;
+                add_items = ["net_profit"]; 
+                text += `========${alias}========\nentry\tnp\n`;
             } else {
                 loop_entries = cfg["idfs"];
-                add_items = ["status", "triggered", "pos", "net_profit"];
-                text += `========${alias}========\nidf\tstatus\ttriggered\tpos\tnp\n`;
+                add_items = ["status", "triggered", "net_profit"];
+                text += `========${alias}========\nidf\tstatus\ttriggered\tnp\n`;
             }
 
             for (let idf of loop_entries) {
@@ -129,6 +138,18 @@ class BalanceMonitor extends StrategyBase {
                 text += "\n";
             }
         }
+
+        this.slack_publish({
+            "type": "info",
+            "msg": text
+        });
+    }
+
+    update_subscription_ts_to_slack() {
+        let obj = this.sub_streams_upd_ts;
+        let most_lag_subscription = Object.keys(obj).reduce(function(a, b) { return obj[a] < obj[b] ? a : b });
+        let max_time_lag = round((moment.now() - this.sub_streams_upd_ts[most_lag_subscription]) / 1000);
+        let text = `[===IMPORTANT===] Haven't received ${most_lag_subscription} data for ${max_time_lag} s!`
 
         this.slack_publish({
             "type": "info",
@@ -248,6 +269,9 @@ class BalanceMonitor extends StrategyBase {
                 } else {
                     cal_positions[symbol] = status_map[item]["pos"];
                 }
+
+                let idf = item.split(".").slice(0, 3).join(".");
+                cal_positions[symbol] = stratutils.transform_with_tick_size(cal_positions[symbol], QUANTITY_TICK_SIZE[idf]);
             }
         }
 
@@ -301,6 +325,8 @@ class BalanceMonitor extends StrategyBase {
     }
 
     _on_market_data_trade_ready(trade) {
+        let subscription = [trade.exchange, trade.symbol, trade.contract_type, "trade"].join("|");
+        this.sub_streams_upd_ts[subscription] = moment.now();
     }
 }
 

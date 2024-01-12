@@ -73,13 +73,16 @@ class RevTrendXEMStrategy extends StrategyBase {
             if (!(entry in that.status_map)) return;
             let item = {};
             let idf  = entry.split(".").slice(0, 3).join(".");
+
+            let gap = (that.prices[idf])? Math.round((moment.now() - utils._util_convert_timestamp_to_date(that.prices[idf]["upd_ts"])) / 1000) : "";
+
             item[`${index + 1}|entry`] = entry;
             item[`${index + 1}|status`] = that.status_map[entry]["status"];
             item[`${index + 1}|triggered`] = that.status_map[entry]["triggered"];
             item[`${index + 1}|pos`] = that.status_map[entry]["pos"];
             item[`${index + 1}|fee`] = that.status_map[entry]["fee"];
             item[`${index + 1}|np`] = that.status_map[entry]["net_profit"];
-            item[`${index + 1}|price`] = (that.prices[idf])? that.prices[idf]["price"]: "";
+            item[`${index + 1}|price`] = (that.prices[idf])? `${that.prices[idf]["price"]}|${gap}`: "";
             item[`${index + 1}|sp`] = that.status_map[entry]["stoploss_price"];
             item[`${index + 1}|up`] = that.status_map[entry]["up"];
             item[`${index + 1}|dn`] = that.status_map[entry]["dn"];

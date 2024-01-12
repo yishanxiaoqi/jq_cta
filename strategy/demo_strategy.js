@@ -159,6 +159,21 @@ class DemoStrategy extends StrategyBase {
     on_query_account_response(response) {
         logger.info('Demo', JSON.stringify(response));
     }
+
+    on_query_orders_response(response) {
+        let orders = response.metadata.metadata.orders.filter((e) => e.client_order_id.startsWith("SRE"));
+
+        for (let order of orders) {
+            this.cancel_order({
+                exchange: EXCHANGE.BINANCEU,
+                symbol: order.symbol,
+                contract_type: CONTRACT_TYPE.PERP,
+                // order_id: "627254420702912542",
+                account_id: "th_binance_cny_sub01",
+                client_order_id: order.client_order_id
+            })
+        }
+    }
 }
 
 

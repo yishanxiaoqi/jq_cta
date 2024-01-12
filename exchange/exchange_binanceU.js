@@ -1,9 +1,11 @@
 require("../config/typedef.js");
 require("../config/stratdef.js");
 const WS = require("ws");
+const moment = require("moment");
 const randomID = require("random-id");
 const rp = require("request-promise-native");
 const querystring = require("querystring");
+
 
 const utils = require("../utils/util_func");
 const ExchangeBase = require("./exchange_base.js");
@@ -17,6 +19,7 @@ class ExchangeBinanceU extends ExchangeBase {
         super(name, intercom);
         
         this.account_ids = Object.keys(token).filter(x => x.split("_")[1] === "binance");
+        this.subscription_list = SUBSCRIPTION_LIST.filter(x => x.split("|")[0] === this.name);
         this.ws_connections = {};
         this.listenKeys = {};
     }
@@ -40,30 +43,19 @@ class ExchangeBinanceU extends ExchangeBase {
             this.ws_connections[account_id]["connected"] = true;
             this.ws_connections[account_id]["ws_connected_ts"] = Date.now();
 
-            if (this.ws_connections[account_id]["ws_keep_alive_interval"]) {
-                clearInterval(this.ws_connections[account_id]["ws_keep_alive_interval"]);
-                this.ws_connections[account_id]["ws_keep_alive_interval"] = undefined;
-            }
-            this.ws_connections[account_id]["ws_keep_alive_interval"] = setInterval(() => {
-                try {
-                    this.ws_connections[account_id]["ws"].ping(() => { });
-                    this.ws_connections[account_id]["ws"].pong(() => { });
-                } catch (ex) {
-                    logger.error(`${account_id}|${ex}`);
-                }
-
-                if (Date.now() - this.ws_connections[account_id]["ws_connected_ts"] > 23 * 60 * 60 * 1000) {
-                    logger.warn(`${this.name}|${account_id}: reconnect this WS...`)
-                    this._reconnect_ws(account_id);
-                }
-            }, 30000);
-
+            // 每隔50分钟延长一次listenKey
             setInterval(() => {
                 this.extend_listenKey(account_id);
             }, 1000 * 60 * 50);
 
             // 100毫秒后订阅频道
-            if(account_id === "th_binance_cny_sub03") {
+            if (account_id === "th_binance_cny_sub03") {
+                // 订阅频道的时间戳预设值
+                this.sub_streams_upd_ts = {};
+                for (let subscription of this.subscription_list) {
+                    this.sub_streams_upd_ts[subscription] = moment.now();
+                }
+
                 // 用th_binance_cny_sub03账号来订阅market_data，th_binance_cny_sub03目前没有任何资金
                 setTimeout(() => {
                     const sub_id = +randomID(6, '0');
@@ -71,6 +63,49 @@ class ExchangeBinanceU extends ExchangeBase {
                     this._send_ws_message(this.ws_connections[account_id]["ws"], { method: "SUBSCRIBE", params: sub_streams, id: sub_id });
                 }, 100);
             }
+
+            if (this.ws_connections[account_id]["ws_keep_alive_interval"]) {
+                clearInterval(this.ws_connections[account_id]["ws_keep_alive_interval"]);
+                this.ws_connections[account_id]["ws_keep_alive_interval"] = undefined;
+            }
+
+            this.ws_connections[account_id]["ws_keep_alive_interval"] = setInterval(() => {
+                // https://dev.binance.vision/t/how-to-send-ping-pong-to-binance-websocket-server/43
+                // client可以向server发送ping，server会回复pong
+                try {
+                    this.ws_connections[account_id]["ws"].ping(() => { });
+                    this.ws_connections[account_id]["ws"].pong(() => { });
+                } catch (ex) {
+                    logger.error(`${account_id}|${ex}`);
+                }
+
+                if (Date.now() - this.ws_connections[account_id]["heartbeat"] > 3.1 * 60 * 1000) {
+                    // 如果超过3.1分钟没有收到ping，说明ws可能已经断了，需要重连
+                    logger.warn(`${this.name}|${account_id}: not receving heartbeat over 3.1 min, reconnect this WS...`)
+                    this._reconnect_ws(account_id);
+                    return;
+                }
+
+                if (Date.now() - this.ws_connections[account_id]["ws_connected_ts"] > 23 * 60 * 60 * 1000) {
+                    logger.warn(`${this.name}|${account_id}: over 23 hours, reconnect this WS...`)
+                    this._reconnect_ws(account_id);
+                    return;
+                }
+
+                if (account_id === "th_binance_cny_sub03") {
+                    let obj = this.sub_streams_upd_ts;
+                    let most_lag_subscription = Object.keys(obj).reduce(function(a, b) { return obj[a] < obj[b] ? a : b });
+                    let max_time_lag = moment.now() - this.sub_streams_upd_ts[most_lag_subscription];
+
+                    if (max_time_lag > 5 * 60 * 1000) {
+                        // 超过5分钟没有接收到某订阅频道的市场数据，重启该市场订阅WS
+                        logger.warn(`${this.name}|${account_id}: not receving ${most_lag_subscription} data over 5 min, reconnect the WS...`)
+                        this._reconnect_ws(account_id);
+                        return;
+                    }
+                }
+
+            }, 30000);
         });
 
         this.ws_connections[account_id]["ws"].on("close", (code, reason) => {
@@ -106,6 +141,12 @@ class ExchangeBinanceU extends ExchangeBase {
                 // trade价格更新
                 let market_data = this._format_market_data(jdata);
                 this.intercom.emit("MARKET_DATA", market_data, INTERCOM_SCOPE.FEED);
+
+                let data_type = (jdata["e"] === "aggTrade") ? "trade" : "bestquote";
+                let subscription = `${market_data.exchange}|${market_data.symbol}|${market_data.contract_type}|${data_type}`;
+
+                this.sub_streams_upd_ts[subscription] = moment.now();
+
             } else if (jdata["e"] === "ACCOUNT_UPDATE") {
                 let account_update = jdata;
                 this.intercom.emit("ACCOUNT_UPDATE", account_update, INTERCOM_SCOPE.FEED);
@@ -117,8 +158,11 @@ class ExchangeBinanceU extends ExchangeBase {
         });
 
         this.ws_connections[account_id]["ws"].on("ping", (evt) => {
+            // 官方文档：BinanceU每隔3分钟会发送一次ping
+            // client发送ping的时候，server会回复pong
             logger.info(`${this.name}|${account_id}: websocket on ping, response with pong.`);
             this.ws_connections[account_id]["ws"].pong();
+            this.ws_connections[account_id]["heartbeat"] = new Date();
         });
     }
 

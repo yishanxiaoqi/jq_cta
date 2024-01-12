@@ -77,6 +77,9 @@ class RevTrendStrategy extends StrategyBase {
             // 计算enter
             // let status = that.status_map[idf]["status"];
             // let enter = (status === "LONG") ? that.status_map[idf]["long_enter"] : ((status === "SHORT") ? that.status_map[idf]["short_enter"] : "");
+
+            // 计算time_gap
+            let gap = (that.prices[idf])? Math.round((moment.now() - utils._util_convert_timestamp_to_date(that.prices[idf]["upd_ts"])) / 1000) : "";
             
             item[`${index + 1}|idf`] = idf;
             item[`${index + 1}|status`] = that.status_map[idf]["status"];
@@ -84,7 +87,7 @@ class RevTrendStrategy extends StrategyBase {
             item[`${index + 1}|pos`] = that.status_map[idf]["pos"];
             item[`${index + 1}|fee`] = that.status_map[idf]["fee"];
             item[`${index + 1}|np`] = that.status_map[idf]["net_profit"];
-            item[`${index + 1}|price`] = (that.prices[idf])? that.prices[idf]["price"]: "";
+            item[`${index + 1}|price`] = (that.prices[idf])? `${that.prices[idf]["price"]}|${gap}`: "";
             item[`${index + 1}|sp`] = that.status_map[idf]["stoploss_price"];
             item[`${index + 1}|up`] = that.status_map[idf]["up"];
             item[`${index + 1}|dn`] = that.status_map[idf]["dn"];
@@ -997,7 +1000,7 @@ class RevTrendStrategy extends StrategyBase {
             } else if (error_code_msg === "Price less than min price.") {
                 // 价格低于最低发单价，通常是DN单，那就不设置DN单
                 if (label === "DN") {
-                    that.status_map[idf]["DN"] = undefined;
+                    delete that.order_map[idf]["DN"];
                 } else {
                     logger.info(`${that.alias}::${order_idf}::price less than min, but not a DN order, check!`);
                 }

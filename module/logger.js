@@ -88,7 +88,7 @@ logger = new (winston.Logger)({
             datePattern: 'YYYY-MM-DD',
             zippedArchive: false,
             maxSize: '1g',
-            maxFiles: '5d',
+            maxFiles: '10d',
             level: "error",
             name: "error-file",
             timestamp: log_timestamp

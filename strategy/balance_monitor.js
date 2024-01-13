@@ -77,7 +77,6 @@ class BalanceMonitor extends StrategyBase {
             // 设置为5秒后发送账户总结
             setTimeout(() => {
                 this.update_account_summary_to_slack();
-                this.update_subscription_ts_to_slack();
             }, 1000 * 5);
         }, 1000 * 60 * 5);
 
@@ -138,18 +137,6 @@ class BalanceMonitor extends StrategyBase {
                 text += "\n";
             }
         }
-
-        this.slack_publish({
-            "type": "info",
-            "msg": text
-        });
-    }
-
-    update_subscription_ts_to_slack() {
-        let obj = this.sub_streams_upd_ts;
-        let most_lag_subscription = Object.keys(obj).reduce(function(a, b) { return obj[a] < obj[b] ? a : b });
-        let max_time_lag = round((moment.now() - this.sub_streams_upd_ts[most_lag_subscription]) / 1000);
-        let text = `[===IMPORTANT===] Haven't received ${most_lag_subscription} data for ${max_time_lag} s!`
 
         this.slack_publish({
             "type": "info",
@@ -310,7 +297,10 @@ class BalanceMonitor extends StrategyBase {
             txt += `====${account}====\npnl\t\tret\t\tleverage\n${pnl}\t\t${ret_per}\t\t${leverage}\n`;
         }
 
-        console.log(txt);
+        let obj = this.sub_streams_upd_ts;
+        let most_lag_subscription = Object.keys(obj).reduce(function(a, b) { return obj[a] < obj[b] ? a : b });
+        let max_time_lag = Math.round((moment.now() - this.sub_streams_upd_ts[most_lag_subscription]) / 1000);
+        txt += `[===IMPORTANT===] Haven't received ${most_lag_subscription} data for ${max_time_lag} s!`
 
         this.slack_publish({
             "type": "info",

@@ -58,6 +58,7 @@ class ExchangeBinanceU extends ExchangeBase {
 
                 // 用th_binance_cny_sub03账号来订阅market_data，th_binance_cny_sub03目前没有任何资金
                 setTimeout(() => {
+                    logger.info(`${this.name}|${account_id}: Sending subscribe requests ...`)
                     const sub_id = +randomID(6, '0');
                     const sub_streams = this._format_subscription_list();
                     this._send_ws_message(this.ws_connections[account_id]["ws"], { method: "SUBSCRIBE", params: sub_streams, id: sub_id });
@@ -69,12 +70,15 @@ class ExchangeBinanceU extends ExchangeBase {
                 this.ws_connections[account_id]["ws_keep_alive_interval"] = undefined;
             }
 
+            // 每隔半分钟
             this.ws_connections[account_id]["ws_keep_alive_interval"] = setInterval(() => {
                 // https://dev.binance.vision/t/how-to-send-ping-pong-to-binance-websocket-server/43
                 // client可以向server发送ping，server会回复pong
                 try {
-                    this.ws_connections[account_id]["ws"].ping(() => { });
-                    this.ws_connections[account_id]["ws"].pong(() => { });
+                    if (this.ws_connections[account_id]["ws"].readyState === WS.OPEN) {
+                        this.ws_connections[account_id]["ws"].ping(() => { });
+                        // this.ws_connections[account_id]["ws"].pong(() => { });
+                    }
                 } catch (ex) {
                     logger.error(`${account_id}|${ex}`);
                 }

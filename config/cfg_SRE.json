@@ -1,6 +1,6 @@
 {
     "alias": "SRE",
-    "clear_existing_status": true,
+    "clear_existing_status": false,
     "ini_usdt": 100,
     "act_ids": [
         "th_binance_cny_sub02"

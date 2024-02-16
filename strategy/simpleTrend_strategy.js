@@ -209,6 +209,7 @@ class SimpleTrendStrategy extends StrategyBase{
         let symbol = order_update["symbol"];
         let contract_type = order_update["contract_type"];
 
+        let order_type = order_update["order_info"]["order_type"];
         let order_status = order_update["order_info"]["status"];
         let direction = order_update["metadata"]["direction"];
         let client_order_id = order_update["metadata"]["client_order_id"];
@@ -235,20 +236,21 @@ class SimpleTrendStrategy extends StrategyBase{
         if (order_status === ORDER_STATUS.SUBMITTED) {
 
             let original_amount = order_update["order_info"]["original_amount"];
-            logger.info(`${that.alias}::on_order_update|${order_idf} order ${original_amount} placed after ${update_type}!`);
+            logger.info(`${that.alias}::on_order_update|${order_idf} ${order_type} order ${original_amount} placed after ${update_type}!`);
 
         } else if (order_status === ORDER_STATUS.CANCELLED) {
 
             logger.warn(`${this.alias}: this strategy is supposed to be no cancel_order action!`);
 
         } else if ((order_status === ORDER_STATUS.FILLED) || (order_status === ORDER_STATUS.PARTIALLY_FILLED)) {
+
             let original_amount = order_update["order_info"]["original_amount"];
             let filled = order_update["order_info"]["filled"];
             let new_filled = order_update["order_info"]["new_filled"];
             let avg_executed_price = order_update["order_info"]["avg_executed_price"];
             let fee = order_update["metadata"]["fee"];
 
-            logger.info(`${that.alias}::on_order_update|${order_idf} order ${filled}/${original_amount} filled!`);
+            logger.info(`${that.alias}::on_order_update|${order_idf} ${order_type} order ${filled}/${original_amount} filled!`);
 
             // 更新position
             that.status_map[entry]["pos"] += (direction === DIRECTION.BUY) ? new_filled : - new_filled;

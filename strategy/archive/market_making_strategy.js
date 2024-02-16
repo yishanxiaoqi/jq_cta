@@ -1,14 +1,14 @@
 // 暂时entry和idf是一样的
-require("../config/typedef.js");
+require("../../config/typedef.js");
 const fs = require("fs");
 const moment = require("moment");
 const randomID = require("random-id");
 
-const Intercom = require("../module/intercom.js");
-const logger = require("../module/logger.js");
-const utils = require("../utils/util_func.js");
-const stratutils = require("../utils/strat_util.js");
-const StrategyBase = require("./strategy_base.js");
+const Intercom = require("../../module/intercom.js");
+const logger = require("../../module/logger.js");
+const utils = require("../../utils/util_func.js");
+const stratutils = require("../../utils/strat_util.js");
+const StrategyBase = require("../strategy_base.js");
 
 class MarketMakingStrategy extends StrategyBase {
     constructor(name, alias, intercom) {

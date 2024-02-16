@@ -1,16 +1,16 @@
-require("../config/typedef.js");
+require("../../config/typedef.js");
 const fs = require("fs");
 const moment = require("moment");
 const assert = require("assert");
 const randomID = require("random-id");
 
-const Intercom = require("../module/intercom");
-const logger = require("../module/logger.js");
-const request = require('../module/request.js');
-const utils = require("../utils/util_func");
-const stratutils = require("../utils/strat_util.js");
-const StrategyBase = require("./strategy_base.js");
-const ExchangeBase = require("../exchange/exchange_base.js");
+const Intercom = require("../../module/intercom.js");
+const logger = require("../../module/logger.js");
+const request = require('../../module/request.js');
+const utils = require("../../utils/util_func.js");
+const stratutils = require("../../utils/strat_util.js");
+const StrategyBase = require("../strategy_base.js");
+const ExchangeBase = require("../../exchange/exchange_base.js");
 
 class SpreadArbitrageStrategy extends StrategyBase {
     constructor(name, alias, intercom) {

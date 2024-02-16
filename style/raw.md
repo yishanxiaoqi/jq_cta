@@ -703,7 +703,7 @@
         "s": "BTCUSDT",
         "c": "12345678911xxx",
         "S": "SELL",
-        "o": "LIMIT",
+        "o": "LIMIT",           // order type
         "f": "GTC",
         "q": "0.010",
         "p": "27800",

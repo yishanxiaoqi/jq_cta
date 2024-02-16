@@ -1,17 +1,17 @@
 // 通过span发更多的单来增加成交概率
 // 通过cover order和stop market order来减小大趋势下的损失
-require("../config/typedef.js");
+require("../../config/typedef.js");
 const fs = require("fs");
 const moment = require("moment");
 const assert = require("assert");
 const randomID = require("random-id");
 
-const Intercom = require("../module/intercom.js");
-const logger = require("../module/logger.js");
-const request = require('../module/request.js');
-const utils = require("../utils/util_func.js");
-const stratutils = require("../utils/strat_util.js");
-const StrategyBase = require("./strategy_base.js");
+const Intercom = require("../../module/intercom.js");
+const logger = require("../../module/logger.js");
+const request = require('../../module/request.js');
+const utils = require("../../utils/util_func.js");
+const stratutils = require("../../utils/strat_util.js");
+const StrategyBase = require("../strategy_base.js");
 
 class RevTrendXESStrategy extends StrategyBase {
     constructor(name, alias, intercom) {

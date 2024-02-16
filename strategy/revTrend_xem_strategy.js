@@ -223,6 +223,7 @@ class RevTrendXEMStrategy extends StrategyBase {
         let symbol = order_update["symbol"];
         let contract_type = order_update["contract_type"];
 
+        let order_type = order_update["order_info"]["order_type"];
         let order_status = order_update["order_info"]["status"];
         let direction = order_update["metadata"]["direction"];
         let client_order_id = order_update["metadata"]["client_order_id"];
@@ -248,9 +249,10 @@ class RevTrendXEMStrategy extends StrategyBase {
         let order_idf = [act_id, entry, label, client_order_id].join("|");
 
         if (order_status === ORDER_STATUS.SUBMITTED) {
+
             let submit_price = order_update["order_info"]["submit_price"];
             let original_amount = order_update["order_info"]["original_amount"];
-            logger.info(`${that.alias}::on_order_update|${order_idf} order ${original_amount} placed @${submit_price} after ${update_type}!`);
+            logger.info(`${that.alias}::on_order_update|${order_idf} ${order_type} order ${original_amount} placed @${submit_price} after ${update_type}!`);
 
             // 对手单发送成功，5秒后允许修改对手单
             // 为了尽可能避免触发quantitative rules，这里设置为5秒
@@ -259,17 +261,20 @@ class RevTrendXEMStrategy extends StrategyBase {
             }
 
         } else if (order_status === ORDER_STATUS.CANCELLED) {
-            logger.info(`${that.alias}::on_order_update|${order_idf} order cancelled after ${update_type}!`);
+
+            logger.info(`${that.alias}::on_order_update|${order_idf} ${order_type} order cancelled after ${update_type}!`);
             if (update_type === "cancelled") {
                 // 订单已经撤销，100毫秒后从order_map中删除该订单（1分钟之后的原因是防止on_response还要用）
-                logger.info(`${that.alias}::on_order_update|${order_idf} order cancelled, will be removed from order_map in 200ms!`);
+                logger.info(`${that.alias}::on_order_update|${order_idf} ${order_type} order cancelled, will be removed from order_map in 200ms!`);
                 setTimeout(() => delete that.order_map[entry][client_order_id], 100);
             } else if (update_type === "expired") {
                 // Just expired (usually the stop order triggered), Do nothing here!
             } else {
                 logger.info(`${that.alias}::Unhandled update type: ${update_type}`);
             }
+            
         } else if ((order_status === ORDER_STATUS.FILLED) || (order_status === ORDER_STATUS.PARTIALLY_FILLED)) {
+
             let original_amount = order_update["order_info"]["original_amount"];
             let filled = order_update["order_info"]["filled"];
             let new_filled = order_update["order_info"]["new_filled"];
@@ -277,7 +282,7 @@ class RevTrendXEMStrategy extends StrategyBase {
             let avg_executed_price = order_update["order_info"]["avg_executed_price"];
             let fee = order_update["metadata"]["fee"];
 
-            logger.info(`${that.alias}::on_order_update|${order_idf} order ${filled}/${original_amount} filled @${avg_executed_price}/${submit_price}!`);
+            logger.info(`${that.alias}::on_order_update|${order_idf} ${order_type} order ${filled}/${original_amount} filled @${avg_executed_price}/${submit_price}!`);
 
             // 对于UP ORDER无论是完全成交还是部分成交，都撤销DN ORDER；DN ORDER同理
             // "DN"如果还在order_map里面，说明还没被撤销；如果不在了，说明已经撤销了，不需要再进行撤销
@@ -1176,9 +1181,9 @@ class RevTrendXEMStrategy extends StrategyBase {
                 if (that.order_map[entry][key]["ToBeDeleted"]) {
                     // 超过10秒才删除，避免order_update推送延迟，导致order_update的处理过程中order_map中信息缺失
                     if (moment.now() - value["ToBeDeletedTime"] > 1000 * 10) {
-                        alert_string += `${key}: ${JSON.stringify(that.order_map[idf][key])}\n`;
+                        alert_string += `${key}: ${JSON.stringify(that.order_map[entry][key])}\n`;
                         // 如果delete了，在deal_with_TBA里面又会报错？
-                        // delete that.order_map[idf][key];
+                        // delete that.order_map[entry][key];
                     }
                 } else {
                     that.order_map[entry][key]["ToBeDeleted"] = true;

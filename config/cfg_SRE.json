@@ -11,7 +11,6 @@
         "ALPHAUSDT",
         "ANTUSDT",
         "CTSIUSDT",
-        "XEMUSDT",
         "XMRUSDT",
         "STMXUSDT",
         "ARPAUSDT",
@@ -38,7 +37,6 @@
         "BinanceU.ONTUSDT.perp",
         "BinanceU.PEOPLEUSDT.perp",
         "BinanceU.STMXUSDT.perp",
-        "BinanceU.XEMUSDT.perp",
         "BinanceU.XMRUSDT.perp"
     ],
     "entries": [
@@ -46,7 +44,6 @@
         "BinanceU.ALICEUSDT.perp.1h",
         "BinanceU.ANTUSDT.perp.1h",
         "BinanceU.CTSIUSDT.perp.1h",
-        "BinanceU.XEMUSDT.perp.1h",
         "BinanceU.XMRUSDT.perp.1h",
         "BinanceU.STMXUSDT.perp.6h",
         "BinanceU.ARPAUSDT.perp.6h",
@@ -106,18 +103,6 @@
         "ini_usdt": 100,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0020"
-    },
-    "BinanceU.XEMUSDT.perp.1h": {
-        "splitAt": 0,
-        "track_ATR_n": 5,
-        "track_ATR_multiplier": 0.5,
-        "cutloss_rate": 0.2,
-        "ini_af": 0.02,
-        "delta_af": 0.02,
-        "bar_enter_limit": 1,
-        "ini_usdt": 100,
-        "act_id": "th_binance_cny_sub02",
-        "cfgID": "SRE0064"
     },
     "BinanceU.XMRUSDT.perp.1h": {
         "splitAt": 0,

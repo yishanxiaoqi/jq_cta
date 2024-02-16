@@ -24,13 +24,13 @@ class BalanceMonitor extends StrategyBase {
             "BinanceU.th_binance_cny_sub02.perp"
         ];
         this.init_equity = {
-            "BinanceU.th_binance_cny_master.perp": 71696.51,
+            "BinanceU.th_binance_cny_master.perp": 113834.51,
             "BinanceU.th_binance_cny_sub01.perp": 8223.74,
             "BinanceU.th_binance_cny_sub02.perp": 2469.25,
             "BinanceU.th_binance_cny_sub03.perp": 0
         };
         this.denominator = {
-            "BinanceU.th_binance_cny_master.perp": 64198.04,
+            "BinanceU.th_binance_cny_master.perp": 94419.28,
             "BinanceU.th_binance_cny_sub01.perp": 6832.04,
             "BinanceU.th_binance_cny_sub02.perp": 2365.25,
             "BinanceU.th_binance_cny_sub03.perp": 0

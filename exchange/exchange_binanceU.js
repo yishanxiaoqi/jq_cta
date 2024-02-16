@@ -262,6 +262,7 @@ class ExchangeBinanceU extends ExchangeBase {
             },
             timestamp: utils._util_get_human_readable_timestamp(),
             order_info: {
+                order_type: utils._util_get_key_by_value(apiconfig.BinanceU.orderTypeMap, jdata["o"]["o"]),
                 original_amount: parseFloat(jdata["o"]["q"]),
                 filled: parseFloat(jdata["o"]["z"]),
                 new_filled: parseFloat(jdata["o"]["l"]),

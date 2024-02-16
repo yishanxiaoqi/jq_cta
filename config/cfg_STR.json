@@ -26,7 +26,6 @@
         "BinanceU.ETHUSDT.perp",
         "BinanceU.FILUSDT.perp",
         "BinanceU.FTMUSDT.perp",
-        "BinanceU.GTCUSDT.perp",
         "BinanceU.KSMUSDT.perp",
         "BinanceU.LTCUSDT.perp",
         "BinanceU.MANAUSDT.perp",
@@ -47,7 +46,6 @@
         "BinanceU.AVAXUSDT.perp.6h",
         "BinanceU.BTCDOMUSDT.perp.6h",
         "BinanceU.ETCUSDT.perp.6h",
-        "BinanceU.GTCUSDT.perp.6h",
         "BinanceU.RUNEUSDT.perp.6h",
         "BinanceU.SXPUSDT.perp.6h",
         "BinanceU.VETUSDT.perp.6h",
@@ -141,18 +139,6 @@
         "bar_enter_limit": 1,
         "act_id": "th_binance_cny_master",
         "cfgID": "STR0005"
-    },
-    "BinanceU.GTCUSDT.perp.6h": {
-        "ini_usdt": 500,
-        "splitAt": 0,
-        "track_ATR_multiplier": 0.5,
-        "track_ATR_n": 20,
-        "cutloss_rate": 0.4,
-        "ini_af": 0.005,
-        "delta_af": 0.005,
-        "bar_enter_limit": 1,
-        "act_id": "th_binance_cny_master",
-        "cfgID": "STR0006"
     },
     "BinanceU.RUNEUSDT.perp.6h": {
         "ini_usdt": 500,

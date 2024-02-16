@@ -206,6 +206,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
         let symbol = order_update["symbol"];
         let contract_type = order_update["contract_type"];
 
+        let order_type = order_update["order_info"]["order_type"];
         let order_status = order_update["order_info"]["status"];
         let direction = order_update["metadata"]["direction"];
         let client_order_id = order_update["metadata"]["client_order_id"];
@@ -234,20 +235,23 @@ class SimpleRevTrendStrategy extends StrategyBase {
 
             let submit_price = order_update["order_info"]["submit_price"];
             let original_amount = order_update["order_info"]["original_amount"];
-            logger.info(`${that.alias}::on_order_update|${order_idf} order ${original_amount} placed @${submit_price} after ${update_type}!`);
+            logger.info(`${that.alias}::on_order_update|${order_idf} ${order_type} order ${original_amount} placed @${submit_price} after ${update_type}!`);
 
         } else if (order_status === ORDER_STATUS.CANCELLED) {
-            logger.info(`${that.alias}::on_order_update|${order_idf} order cancelled after ${update_type}!`);
+
+            logger.info(`${that.alias}::on_order_update|${order_idf} ${order_type} order cancelled after ${update_type}!`);
             if (update_type === "cancelled") {
                 // 订单已经撤销，100毫秒后从order_map中删除该订单（1分钟之后的原因是防止on_response还要用）
-                logger.info(`${that.alias}::on_order_update|${order_idf} order cancelled, will be removed from order_map in 200ms!`);
+                logger.info(`${that.alias}::on_order_update|${order_idf} ${order_type} order cancelled, will be removed from order_map in 200ms!`);
                 setTimeout(() => delete that.order_map[entry][client_order_id], 100);
             } else if (update_type === "expired") {
                 // Just expired (usually the stop order triggered), Do nothing here!
             } else {
                 logger.info(`${that.alias}::Unhandled update type: ${update_type}`);
             }
+
         } else if ((order_status === ORDER_STATUS.FILLED) || (order_status === ORDER_STATUS.PARTIALLY_FILLED)) {
+
             let original_amount = order_update["order_info"]["original_amount"];
             let filled = order_update["order_info"]["filled"];
             let new_filled = order_update["order_info"]["new_filled"];
@@ -255,7 +259,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
             let avg_executed_price = order_update["order_info"]["avg_executed_price"];
             let fee = order_update["metadata"]["fee"];
 
-            logger.info(`${that.alias}::on_order_update|${order_idf} order ${filled}/${original_amount} filled @${avg_executed_price}/${submit_price}!`);
+            logger.info(`${that.alias}::on_order_update|${order_idf} ${order_type} order ${filled}/${original_amount} filled @${avg_executed_price}/${submit_price}!`);
 
             // 对于UP ORDER无论是完全成交还是部分成交，都撤销DN ORDER；DN ORDER同理
             // "DN"如果还在order_map里面，说明还没被撤销；如果不在了，说明已经撤销了，不需要再进行撤销
@@ -354,6 +358,12 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 if (that.status_map[entry]["status"] === "EMPTY") {
                     // 订单完全成交，仓位变为空，这说明是平仓单
                     // 平仓之后不要继续开仓
+
+                    // target是EMPTY的订单有以下几种情况：
+                    // ANTI_L|STOPLOSS, ANTI_S|STOPLOSS，这种都是stop market order，一旦触发自动成交，因此不涉及deal_with_TBA的问题
+                    // ANTI_L|REVERSE, ANTI_S|REVERSE部分触发，仓位又没有发生反转，当达到newbar时，触发deal_with_TBA, 此时撤销原来的REVERSE订单，改发STOPLOSS订单，这种都是market order
+                    if (order_type === ORDER_TYPE.STOP_MARKET) that.status_map[entry]["bar_enter_n"] = 1;
+
                     for (let item of ["bar_n", "ep", "af", "sar", "enter"]) {
                         that.status_map[entry][item] = "";
                     }
@@ -491,18 +501,23 @@ class SimpleRevTrendStrategy extends StrategyBase {
         let orders_to_be_submitted = [];
 
         if (triggered === "UP") {
+
             // 开仓单开了一半，剩下的撤单，直接转为对应的status
             logger.info(`${that.alias}::${act_id}|${entry} deal with TBA: cancel the remaining UP order!`);
             let up_client_order_id = that.order_map[entry]["UP"]["client_order_id"];
             orders_to_be_cancelled.push(up_client_order_id);
             that.status_map[entry]["status"] = "SHORT";
+
         } else if (triggered === "DN") {
+
             // 开仓单开了一半，剩下的放弃，直接转为对应的status
             logger.info(`${that.alias}::${act_id}|${entry} deal with TBA: cancel the remaining DN order!`);
             let dn_client_order_id = that.order_map[entry]["DN"]["client_order_id"];
             orders_to_be_cancelled.push(dn_client_order_id);
             that.status_map[entry]["status"] = "LONG";
+
         } else if (triggered === "ANTI_L|REVERSE") {
+
             // 反手单未能成交，撤销该单，放弃反手，改为市价平仓
             let anti_client_order_id = that.order_map[entry]["ANTI_L|REVERSE"]["client_order_id"];
             orders_to_be_cancelled.push(anti_client_order_id);
@@ -524,7 +539,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
             }
             
         } else if (triggered === "ANTI_S|REVERSE") {
-            // 平仓单未能成交，撤销该单，改用市价单成交
+
             // 反手单未能成交，撤销该单，放弃反手，改为市价平仓
             let anti_client_order_id = that.order_map[entry]["ANTI_S|REVERSE"]["client_order_id"];
             orders_to_be_cancelled.push(anti_client_order_id);

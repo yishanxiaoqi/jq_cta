@@ -3,6 +3,9 @@
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
 
+    // Feed service
+    // pm2 start ./service/feed_app.js --name Feed
+
    
     // #### 对于pm2来说，on前面的--不能少
     // pm2 start ./strategy/revTrend_strategy.js --name R01 -- on -a R01 
@@ -11,12 +14,13 @@
     // pm2 start ./strategy/revTrend_strategy.js --name R24 -- on -a R24
     // pm2 start ./strategy/simpleTrend_strategy.js --name STR -- on -a STR 
     // pm2 start ./strategy/simpleRevTrend_strategy.js --name SRE -- on -a SRE
+    // pm2 start ./strategy/revTrend_xem_strategy.js --name XEM -- on -a XEM
 
     // pm2 start ./strategy/balance_monitor.js --name BAM
 
     // #### UI 部分
     // cd middleware: pm2 start ./bin/www.js
-    // pm2 start npm --name "UI_React" -- start
+    // 切换回~/jq_ui/，然后pm2 start npm --name "UI_React" -- start
 
     // node
     // node ./strategy/simpleRevTrend_strategy.js on -a SRE

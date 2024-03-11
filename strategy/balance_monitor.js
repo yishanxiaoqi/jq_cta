@@ -20,28 +20,28 @@ class BalanceMonitor extends StrategyBase {
         // ];
         this.accounts = [
             "BinanceU.th_binance_cny_master.perp",
-            "BinanceU.th_binance_cny_sub01.perp",
+            // "BinanceU.th_binance_cny_sub01.perp",
             "BinanceU.th_binance_cny_sub02.perp"
         ];
         this.init_equity = {
             "BinanceU.th_binance_cny_master.perp": 113834.51,
-            "BinanceU.th_binance_cny_sub01.perp": 8223.74,
-            "BinanceU.th_binance_cny_sub02.perp": 2469.25,
+            // "BinanceU.th_binance_cny_sub01.perp": 8223.74,
+            "BinanceU.th_binance_cny_sub02.perp": 6436.55,
             "BinanceU.th_binance_cny_sub03.perp": 0
         };
         this.denominator = {
             "BinanceU.th_binance_cny_master.perp": 94419.28,
-            "BinanceU.th_binance_cny_sub01.perp": 6832.04,
-            "BinanceU.th_binance_cny_sub02.perp": 2365.25,
+            // "BinanceU.th_binance_cny_sub01.perp": 6832.04,
+            "BinanceU.th_binance_cny_sub02.perp": 5734.82,
             "BinanceU.th_binance_cny_sub03.perp": 0
         };
         this.init_dates = {
             "BinanceU.th_binance_cny_master.perp": moment("2023-06-23"),
-            "BinanceU.th_binance_cny_sub01.perp": moment("2023-10-08"),
+            // "BinanceU.th_binance_cny_sub01.perp": moment("2023-10-08"),
             "BinanceU.th_binance_cny_sub02.perp": moment("2023-10-24"),
             "BinanceU.th_binance_cny_sub03.perp": moment("2023-10-27")
         };
-        this.aliases = ["R01", "R06", "R12", "R24", "STR", "SRE", "XEM"];
+        this.aliases = ["R01", "R06", "R12", "R24", "STR", "SRE"];
 
         // 初始化各个账户的结单
         this.account_summary = {};

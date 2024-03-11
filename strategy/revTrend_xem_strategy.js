@@ -1014,6 +1014,8 @@ class RevTrendXEMStrategy extends StrategyBase {
                     contract_type: CONTRACT_TYPE.PERP,
                     account_id: act_id
                 });
+            } else if (error_code_msg === "Server is currently overloaded with other requests. Please try again in a few minutes.") {
+                resend = true, timeout = 1000 * 5;
             } else {
                 logger.warn(`${that.alias}::on_response|${order_idf}::unknown error occured during ${action}: ${error_code}: ${error_code_msg}`);
                 return;

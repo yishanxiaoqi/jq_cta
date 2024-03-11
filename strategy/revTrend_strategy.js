@@ -506,7 +506,7 @@ class RevTrendStrategy extends StrategyBase {
             orders_to_be_cancelled.push(up_client_order_id);
             that.status_map[idf]["status"] = "SHORT";
 
-            delete that.order_map[entry]["UP"];
+            delete that.order_map[idf]["UP"];
         } else if (triggered === "DN") {
             // 开仓单开了一半，剩下的放弃，直接转为对应的status
             logger.info(`${that.alias}::${act_id}|${idf} deal with TBA: cancel the remaining DN order!`);
@@ -514,7 +514,7 @@ class RevTrendStrategy extends StrategyBase {
             orders_to_be_cancelled.push(dn_client_order_id);
             that.status_map[idf]["status"] = "LONG";
 
-            delete that.order_map[entry]["DN"];
+            delete that.order_map[idf]["DN"];
         } else if ((triggered === "ANTI_L|STOPLOSS") || (triggered === "ANTI_L|REVERSE")) {
             // 平仓单未能成交，撤销该单，改用市价单成交
             // 反手单未能成交，撤销该单，放弃反手，改为市价平仓

@@ -619,6 +619,8 @@ class SimpleTrendStrategy extends StrategyBase{
                 // STR::价格低于最低发单价，对于本策略来说不太可能
             } else if (error_code_msg === "Order would immediately trigger.") {
                 // The order would be triggered immediately, STOP order才会报这样的错，本策略都是LIMIT ORDER
+            } else if (error_code_msg === "Server is currently overloaded with other requests. Please try again in a few minutes.") {
+                resend = true, timeout = 1000 * 5;
             } else {
                 logger.warn(`${that.alias}::on_response|${order_idf}::unknown error occured during ${action}: ${error_code}: ${error_code_msg}`);
                 return;

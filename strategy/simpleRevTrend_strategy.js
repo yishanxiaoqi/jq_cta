@@ -1144,7 +1144,8 @@ class SimpleRevTrendStrategy extends StrategyBase {
             if (act_id !== that.cfg[entry]["act_id"]) continue;
 
             let symbol = entry.split(".")[1];
-            let corr_active_orders = active_orders.filter(item => (item.symbol === symbol));
+            let interval = entry.split(".")[3];
+            let corr_active_orders = active_orders.filter(item => (item.symbol === symbol) && (item.client_order_id.slice(3, 6) == interval.padStart(3, '0')));
             let corr_active_client_order_ids = corr_active_orders.map(item => item.client_order_id);
             let string = corr_active_client_order_ids.join(",");
 

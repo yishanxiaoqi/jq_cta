@@ -1,207 +1,29 @@
 {
-    "ref_id": "XEMNZCIhDLMibH2vgbjUQqlEp5jF50",
-    "action": "query_orders",
-    "strategy": "BinanceU",
-    "metadata": {
-        "exchange": "BinanceU",
-        "contract_type": "perp",
-        "event": "query_orders",
-        "metadata": {
-            "result": true,
-            "account_id": "th_binance_cny_sub01",
-            "orders": [
-                {
-                    "symbol": "1000SHIBUSDT",
-                    "order_id": 14961322209,
-                    "client_order_id": "XEM30m010SRVrXIHyW",
-                    "original_amount": 43372,
-                    "avg_executed_price": 0,
-                    "filled": 0,
-                    "status": "new",
-                    "direction": "buy",
-                    "price": 0.009197,
-                    "contract_type": "perp",
-                    "create_time": "20240122100000091",
-                    "last_updated_time": "20240122100000091"
+            "name": "RequestError",
+            "message": "Error: connect ETIMEDOUT 35.74.121.52:443",
+            "cause": {
+                "errno": "ETIMEDOUT",
+                "code": "ETIMEDOUT",
+                "syscall": "connect",
+                "address": "35.74.121.52",
+                "port": 443
+            },
+            "error": {
+                "errno": "ETIMEDOUT",
+                "code": "ETIMEDOUT",
+                "syscall": "connect",
+                "address": "35.74.121.52",
+                "port": 443
+            },
+            "options": {
+                "url": "https://fapi.binance.com/fapi/v1/listenKey?&signature=Error: Missing parameters",
+                "headers": {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-MBX-APIKEY": "2JJ2fmbZVxFhkr2WnBiumr4ozLeqwRrX6mtu4RS3unuybFKbKTXIUEAkF8ToG0RM"
                 },
-                {
-                    "symbol": "1000SHIBUSDT",
-                    "order_id": 14961322210,
-                    "client_order_id": "XEM01h020LRVy0FH7h",
-                    "original_amount": 42705,
-                    "avg_executed_price": 0,
-                    "filled": 0,
-                    "status": "new",
-                    "direction": "sell",
-                    "price": 0.009302,
-                    "contract_type": "perp",
-                    "create_time": "20240122100000091",
-                    "last_updated_time": "20240122100000091"
-                },
-                {
-                    "symbol": "1000SHIBUSDT",
-                    "order_id": 14961322214,
-                    "client_order_id": "XEM30m020LRkN6urv7",
-                    "original_amount": 43101,
-                    "avg_executed_price": 0,
-                    "filled": 0,
-                    "status": "new",
-                    "direction": "sell",
-                    "price": 0.009281,
-                    "contract_type": "perp",
-                    "create_time": "20240122100000110",
-                    "last_updated_time": "20240122100000110"
-                },
-                {
-                    "symbol": "1000SHIBUSDT",
-                    "order_id": 14961322217,
-                    "client_order_id": "XEM01h010LRJL3OBEg",
-                    "original_amount": 43087,
-                    "avg_executed_price": 0,
-                    "filled": 0,
-                    "status": "new",
-                    "direction": "sell",
-                    "price": 0.009264,
-                    "contract_type": "perp",
-                    "create_time": "20240122100000121",
-                    "last_updated_time": "20240122100000121"
-                },
-                {
-                    "symbol": "HBARUSDT",
-                    "order_id": 4336195206,
-                    "client_order_id": "XEM01h015LRmlsLoLR",
-                    "original_amount": 2664,
-                    "avg_executed_price": 0,
-                    "filled": 0,
-                    "status": "new",
-                    "direction": "sell",
-                    "price": 0.07508,
-                    "contract_type": "perp",
-                    "create_time": "20240122100001719",
-                    "last_updated_time": "20240122100001719"
-                },
-                {
-                    "symbol": "FLOWUSDT",
-                    "order_id": 3643701231,
-                    "client_order_id": "XEM30m020SRu89uyJZ",
-                    "original_amount": 245.7,
-                    "avg_executed_price": 0,
-                    "filled": 0,
-                    "status": "new",
-                    "direction": "buy",
-                    "price": 0.807,
-                    "contract_type": "perp",
-                    "create_time": "20240122100001283",
-                    "last_updated_time": "20240122100001283"
-                },
-                {
-                    "symbol": "FLOWUSDT",
-                    "order_id": 3643737112,
-                    "client_order_id": "XEM01h010SRqsln6WL",
-                    "original_amount": 490.8,
-                    "avg_executed_price": 0,
-                    "filled": 0,
-                    "status": "new",
-                    "direction": "buy",
-                    "price": 0.811,
-                    "contract_type": "perp",
-                    "create_time": "20240122100600572",
-                    "last_updated_time": "20240122100600594"
-                },
-                {
-                    "symbol": "CELOUSDT",
-                    "order_id": 7295200795,
-                    "client_order_id": "XEM01h020LRrpXIS4t",
-                    "original_amount": 293.2,
-                    "avg_executed_price": 0,
-                    "filled": 0,
-                    "status": "new",
-                    "direction": "sell",
-                    "price": 0.683,
-                    "contract_type": "perp",
-                    "create_time": "20240122100002101",
-                    "last_updated_time": "20240122100002101"
-                },
-                {
-                    "symbol": "CELOUSDT",
-                    "order_id": 7295212636,
-                    "client_order_id": "XEM30m010SRANuESjq",
-                    "original_amount": 295.9,
-                    "avg_executed_price": 0,
-                    "filled": 0,
-                    "status": "new",
-                    "direction": "buy",
-                    "price": 0.673,
-                    "contract_type": "perp",
-                    "create_time": "20240122100250592",
-                    "last_updated_time": "20240122100250592"
-                },
-                {
-                    "symbol": "CELOUSDT",
-                    "order_id": 7295044032,
-                    "client_order_id": "XEM30m020LRpViCQFK",
-                    "original_amount": 586.6,
-                    "avg_executed_price": 0,
-                    "filled": 0,
-                    "status": "new",
-                    "direction": "sell",
-                    "price": 0.682,
-                    "contract_type": "perp",
-                    "create_time": "20240122093003570",
-                    "last_updated_time": "20240122093003570"
-                },
-                {
-                    "symbol": "CELOUSDT",
-                    "order_id": 7295264040,
-                    "client_order_id": "XEM01h010SRiNa9w8H",
-                    "original_amount": 295.9,
-                    "avg_executed_price": 0,
-                    "filled": 0,
-                    "status": "new",
-                    "direction": "buy",
-                    "price": 0.672,
-                    "contract_type": "perp",
-                    "create_time": "20240122101812823",
-                    "last_updated_time": "20240122101812823"
-                },
-                {
-                    "symbol": "HOTUSDT",
-                    "order_id": 3914181599,
-                    "client_order_id": "XEM01h015LRXfv2i3a",
-                    "original_amount": 103359,
-                    "avg_executed_price": 0,
-                    "filled": 0,
-                    "status": "new",
-                    "direction": "sell",
-                    "price": 0.001934,
-                    "contract_type": "perp",
-                    "create_time": "20240122100002518",
-                    "last_updated_time": "20240122100002518"
-                },
-                {
-                    "symbol": "HOTUSDT",
-                    "order_id": 3914181600,
-                    "client_order_id": "XEM30m020SRG4jMDrH",
-                    "original_amount": 104340,
-                    "avg_executed_price": 0,
-                    "filled": 0,
-                    "status": "new",
-                    "direction": "buy",
-                    "price": 0.001898,
-                    "contract_type": "perp",
-                    "create_time": "20240122100002520",
-                    "last_updated_time": "20240122100002520"
-                }
-            ],
-            "timestamp": "20240122101930522"
-        },
-        "timestamp": "20240122101930522"
-    },
-    "request": {
-        "exchange": "BinanceU",
-        "contract_type": "perp",
-        "account_id": "th_binance_cny_sub01",
-        "ref_id": "XEMNZCIhDLMibH2vgbjUQqlEp5jF50",
-        "send_time": "20240122101930496"
-    }
-}
+                "method": "PUT",
+                "simple": true,
+                "resolveWithFullResponse": false,
+                "transform2xxOnly": false
+            }
+        }

@@ -26,3 +26,5 @@ console.log("需要订阅，但是没有订阅的频道：", diff_1);
 // 不需要订阅，但是已经订阅的idf
 let diff_2 = sub_idfs.filter(e => !live_idfs.includes(e));
 console.log("不需要订阅，但是已经订阅的频道：", diff_2);
+
+// TODO: 检查每个account_id交易的symbol个数

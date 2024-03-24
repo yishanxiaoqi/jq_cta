@@ -404,7 +404,8 @@ class SimpleRevTrendStrategy extends StrategyBase {
             // record the order filling details
             let ts = order_update["metadata"]["timestamp"];
             let filled_info = [act_id, exchange, symbol, contract_type, client_order_id, original_amount, filled, submit_price, avg_executed_price, fee].join(",");
-            let order_info = (that.order_map[entry][client_order_id] === undefined) ? "" : Object.entries(that.order_map[entry][client_order_id]).filter((element) => element[0] !== "ToBeDeleted").map((element) => element[1]).join(",");
+            // order_map中只提取label,target,quantity,time,filled等信息
+            let order_info = (that.order_map[entry][client_order_id] === undefined) ? "" : Object.entries(that.order_map[entry][client_order_id]).filter((element) => ["label", "target", "quantity", "time", "filled"].includes(element[0])).map((element) => element[1]).join(",");
             let output_string = [ts, filled_info, order_info].join(",");
             output_string += (order_status === ORDER_STATUS.FILLED) ? ",filled\n" : ",partially_filled\n";
             fs.writeFile(`./log/order_filling_${this.alias}.csv`, output_string, { flag: "a+" }, (err) => {
@@ -569,6 +570,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
             that.status_map[entry]["bar_n"] = 0;    // 这里赋值为0，之后main_execuation中会加一
             that.status_map[entry]["af"] = that.cfg[entry]["ini_af"];
             that.status_map[entry]["sar"] = (current_status === "SHORT") ? up_price * (1 + cutloss_rate) : dn_price * (1 - cutloss_rate);
+            that.status_map[entry]["sar"] = stratutils.transform_with_tick_size(that.status_map[entry]["sar"], PRICE_TICK_SIZE[idf]);
             that.status_map[entry]["enter"] = (current_status === "SHORT") ? up_price : dn_price;
         }
 

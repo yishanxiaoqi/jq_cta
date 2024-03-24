@@ -1,29 +1,34 @@
 {
-            "name": "RequestError",
-            "message": "Error: connect ETIMEDOUT 35.74.121.52:443",
-            "cause": {
-                "errno": "ETIMEDOUT",
-                "code": "ETIMEDOUT",
-                "syscall": "connect",
-                "address": "35.74.121.52",
-                "port": 443
-            },
-            "error": {
-                "errno": "ETIMEDOUT",
-                "code": "ETIMEDOUT",
-                "syscall": "connect",
-                "address": "35.74.121.52",
-                "port": 443
-            },
-            "options": {
-                "url": "https://fapi.binance.com/fapi/v1/listenKey?&signature=Error: Missing parameters",
-                "headers": {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "X-MBX-APIKEY": "2JJ2fmbZVxFhkr2WnBiumr4ozLeqwRrX6mtu4RS3unuybFKbKTXIUEAkF8ToG0RM"
-                },
-                "method": "PUT",
-                "simple": true,
-                "resolveWithFullResponse": false,
-                "transform2xxOnly": false
-            }
-        }
+    "ref_id": "SRE641XaR6rTcTwLwtIliwVsMFO0xU",
+    "action": "place_order",
+    "strategy": "BinanceU",
+    "metadata": {
+        "exchange": "BinanceU",
+        "symbol": "NKNUSDT",
+        "contract_type": "perp",
+        "event": "place_order",
+        "metadata": {
+            "account_id": "th_binance_cny_sub02",
+            "result": false,
+            "order_id": 0,
+            "error_code": -1111,
+            "error_code_msg": "Precision is over the maximum defined for this asset."
+        },
+        "timestamp": "20240320160006542"
+    },
+    "request": {
+        "label": "ANTI_S|STOPLOSS",
+        "target": "EMPTY",
+        "exchange": "BinanceU",
+        "symbol": "NKNUSDT",
+        "contract_type": "perp",
+        "stop_price": 0.18563999999999997,
+        "quantity": 4021,
+        "direction": "Buy",
+        "order_type": "stop_market",
+        "account_id": "th_binance_cny_sub02",
+        "client_order_id": "SRE01hSSoDwvd",
+        "ref_id": "SRE641XaR6rTcTwLwtIliwVsMFO0xU",
+        "send_time": "20240320160006485"
+    }
+}

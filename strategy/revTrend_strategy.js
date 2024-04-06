@@ -235,10 +235,10 @@ class RevTrendStrategy extends StrategyBase {
             let original_amount = order_update["order_info"]["original_amount"];
             logger.info(`${that.alias}::on_order_update|${order_idf} ${order_type} order ${original_amount} placed @${submit_price} after ${update_type}!`);
 
-            // 对手单发送成功，5秒后允许修改对手单
-            // 为了尽可能避免触发quantitative rules，这里设置为5秒
+            // 对手单发送成功，60秒后允许修改对手单
+            // 为了尽可能避免触发quantitative rules，这里设置为60秒
             if (label.slice(0, 4) === "ANTI") {
-                setTimeout(() => that.status_map[idf]["anti_order_sent"] = false, 1000 * 5);
+                setTimeout(() => that.status_map[idf]["anti_order_sent"] = false, 1000 * 60);
             }
 
         } else if (order_status === ORDER_STATUS.CANCELLED) {
@@ -1022,6 +1022,9 @@ class RevTrendStrategy extends StrategyBase {
                 });
             } else if (error_code_msg === "Server is currently overloaded with other requests. Please try again in a few minutes.") {
                 resend = true, timeout = 1000 * 10;
+            } else if (error_code_msg === "Futures Trading Quantitative Rules violated, only reduceOnly order is allowed, please try again later.") { 
+                // 尝试10分钟后重发，那么在这10分钟内会不断报order not active, but still in the order map
+                resend = true, timeout = 1000 * 60 * 10;
             } else {
                 logger.warn(`${that.alias}::on_response|${order_idf}::unknown error occured during ${action}: ${error_code}: ${error_code_msg}`);
                 return;

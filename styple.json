@@ -1,34 +1,34 @@
 {
-    "ref_id": "SRE641XaR6rTcTwLwtIliwVsMFO0xU",
-    "action": "place_order",
+    "ref_id": "R24iL9F0Wp2oRHDXbwg3ceYc2IjK2k",
+    "action": "query_quantitative_rules",
     "strategy": "BinanceU",
     "metadata": {
         "exchange": "BinanceU",
-        "symbol": "NKNUSDT",
         "contract_type": "perp",
-        "event": "place_order",
+        "event": "query_quantitative_rules",
         "metadata": {
-            "account_id": "th_binance_cny_sub02",
-            "result": false,
-            "order_id": 0,
-            "error_code": -1111,
-            "error_code_msg": "Precision is over the maximum defined for this asset."
+            "result": true,
+            "account_id": "th_binance_cny_master",
+            "indicators": {
+                "MKRUSDT": [
+                    {
+                        "indicator": "UFR",
+                        "value": 1,
+                        "triggerValue": 0.99,
+                        "plannedRecoverTime": 1711661414000,
+                        "isLocked": true
+                    }
+                ]
+            },
+            "timestamp": "20240329053000496"
         },
-        "timestamp": "20240320160006542"
+        "timestamp": "20240329053000500"
     },
     "request": {
-        "label": "ANTI_S|STOPLOSS",
-        "target": "EMPTY",
         "exchange": "BinanceU",
-        "symbol": "NKNUSDT",
         "contract_type": "perp",
-        "stop_price": 0.18563999999999997,
-        "quantity": 4021,
-        "direction": "Buy",
-        "order_type": "stop_market",
-        "account_id": "th_binance_cny_sub02",
-        "client_order_id": "SRE01hSSoDwvd",
-        "ref_id": "SRE641XaR6rTcTwLwtIliwVsMFO0xU",
-        "send_time": "20240320160006485"
+        "account_id": "th_binance_cny_master",
+        "ref_id": "R24iL9F0Wp2oRHDXbwg3ceYc2IjK2k",
+        "send_time": "20240329053000463"
     }
 }

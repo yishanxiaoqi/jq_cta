@@ -1,9 +1,11 @@
 require("../config/typedef.js");
 const fs = require('fs');
 const moment = require("moment");
+const csv = require('csv-parser');
 
 const StrategyBase = require("./strategy_base.js");
 const Intercom = require("../module/intercom");
+const utils = require("../utils/util_func");
 const stratutils = require("../utils/strat_util.js");
 const schedule = require('node-schedule');
 
@@ -212,6 +214,30 @@ class BalanceMonitor extends StrategyBase {
         this.account_summary[account]["short_lev"] = stratutils.round(this.account_summary[account]["total_short_position_initial_margin_in_USDT"] / this.account_summary[account]["equity"], 2); 
         this.account_summary[account]["leverage"] = stratutils.round(this.account_summary[account]["total_position_initial_margin_in_USDT"] / this.account_summary[account]["equity"], 2); 
 
+        logger.info(JSON.stringify(response));
+
+        // TODO: query from some api things
+        let usdt_to_cny = 7.2;
+        let that = this;
+        fs.createReadStream("/root/jq_cta/log/account_summary.csv")
+            .pipe(csv())
+            .on('data', function (data) {
+                try {
+                    let now = utils._util_get_human_readable_timestamp();
+                    let month_start = now.slice(0, 6) + "01000000";
+                    let account_str = [exchange, data.account_id, contract_type].join(".");
+                    if ((account_str === account) && (data.ts.slice(0, 14) === month_start)) {
+                        that.account_summary[account]["month_init_equity"] = +data.equity;
+                    }
+                } catch (err) {
+                    logger.info("err", err);
+                }
+            })
+            .on("end", function () { 
+            });
+
+        let current_equity = this.account_summary[account]["equity"];
+        let month_init_equity = this.account_summary[account]["month_init_equity"];
         let sendData = {
             "tableName": account_id,
             "tabName": "Summary",
@@ -233,6 +259,12 @@ class BalanceMonitor extends StrategyBase {
                     "ret": this.account_summary[account]["ret"] * 100,                   // 百分比
                     "annual_ret": this.account_summary[account]["annual_ret"] * 100,     // 百分比
                     "leverage": this.account_summary[account]["leverage"]
+                },
+                {
+                    "usdt_to_cny": usdt_to_cny,
+                    "equity_in_cny": this.account_summary[account]["equity"] * usdt_to_cny / 10000,    // 单位：万
+                    "pnl_in_cny": this.account_summary[account]["pnl"] * usdt_to_cny / 10000,          // 单位：万
+                    "month_to_date_pnl": (current_equity - month_init_equity) / month_init_equity * 100    // 百分比
                 }
             ]
         }

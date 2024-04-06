@@ -9,7 +9,6 @@
         "ALGOUSDT",
         "ALPHAUSDT",
         "ATOMUSDT",
-        "CTKUSDT",
         "DYDXUSDT",
         "EGLDUSDT",
         "GRTUSDT",
@@ -26,7 +25,6 @@
         "BinanceU.ALGOUSDT.perp",
         "BinanceU.ALPHAUSDT.perp",
         "BinanceU.ATOMUSDT.perp",
-        "BinanceU.CTKUSDT.perp",
         "BinanceU.DYDXUSDT.perp",
         "BinanceU.EGLDUSDT.perp",
         "BinanceU.GRTUSDT.perp",
@@ -89,19 +87,6 @@
         "ini_usdt": 8000,
         "act_id": "th_binance_cny_master",
         "cfgID": "R120008"
-    },
-    "BinanceU.CTKUSDT.perp": {
-        "splitAt": 2,
-        "track_ATR_n": 10,
-        "track_ATR_multiplier": 0.6,
-        "stoploss_rate": 0.05,
-        "cutloss_rate": 0.05,
-        "ini_af": 0.02,
-        "delta_af": 0.02,
-        "bar_enter_limit": 1,
-        "ini_usdt": 4000,
-        "act_id": "th_binance_cny_master",
-        "cfgID": "R120021"
     },
     "BinanceU.DYDXUSDT.perp": {
         "splitAt": 0,

@@ -13,7 +13,6 @@
         "C98USDT",
         "CELRUSDT",
         "CRVUSDT",
-        "CTKUSDT",
         "CTSIUSDT",
         "DOTUSDT",
         "IOTAUSDT",
@@ -41,7 +40,6 @@
         "BinanceU.C98USDT.perp",
         "BinanceU.CELRUSDT.perp",
         "BinanceU.CRVUSDT.perp",
-        "BinanceU.CTKUSDT.perp",
         "BinanceU.CTSIUSDT.perp",
         "BinanceU.DOTUSDT.perp",
         "BinanceU.IOTAUSDT.perp",
@@ -163,19 +161,6 @@
         "ini_usdt": 12000,
         "act_id": "th_binance_cny_master",
         "cfgID": "R240069"
-    },
-    "BinanceU.CTKUSDT.perp": {
-        "splitAt": 6,
-        "track_ATR_n": 5,
-        "track_ATR_multiplier": 0.5,
-        "stoploss_rate": 0.05,
-        "cutloss_rate": 0.04,
-        "ini_af": 0.02,
-        "delta_af": 0.02,
-        "bar_enter_limit": 1,
-        "ini_usdt": 4000,
-        "act_id": "th_binance_cny_master",
-        "cfgID": "R240070"
     },
     "BinanceU.CTSIUSDT.perp": {
         "splitAt": 20,

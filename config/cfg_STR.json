@@ -14,14 +14,12 @@
     "idfs": [
         "BinanceU.ADAUSDT.perp",
         "BinanceU.AVAXUSDT.perp",
-        "BinanceU.BNBUSDT.perp",
         "BinanceU.BTCDOMUSDT.perp",
         "BinanceU.BTCUSDT.perp",
         "BinanceU.ETCUSDT.perp",
         "BinanceU.ETHUSDT.perp",
         "BinanceU.OCEANUSDT.perp",
         "BinanceU.RUNEUSDT.perp",
-        "BinanceU.SKLUSDT.perp",
         "BinanceU.VETUSDT.perp"
     ],
     "entries": [
@@ -31,7 +29,6 @@
         "BinanceU.ETCUSDT.perp.6h",
         "BinanceU.VETUSDT.perp.6h",
         "BinanceU.ADAUSDT.perp.12h",
-        "BinanceU.BNBUSDT.perp.12h",
         "BinanceU.BTCDOMUSDT.perp.12h",
         "BinanceU.BTCUSDT.perp.12h",
         "BinanceU.ETCUSDT.perp.12h",
@@ -42,7 +39,6 @@
         "BinanceU.ETHUSDT.perp.1d",
         "BinanceU.OCEANUSDT.perp.1d",
         "BinanceU.RUNEUSDT.perp.1d",
-        "BinanceU.SKLUSDT.perp.1d",
         "BinanceU.VETUSDT.perp.1d"
     ],
     "BinanceU.RUNEUSDT.perp.1h": {
@@ -116,18 +112,6 @@
         "bar_enter_limit": 1,
         "act_id": "th_binance_cny_master",
         "cfgID": "STR0045"
-    },
-    "BinanceU.BNBUSDT.perp.12h": {
-        "ini_usdt": 200,
-        "splitAt": 0,
-        "track_ATR_multiplier": 0.5,
-        "track_ATR_n": 40,
-        "cutloss_rate": 0.1,
-        "ini_af": 0.02,
-        "delta_af": 0.02,
-        "bar_enter_limit": 1,
-        "act_id": "th_binance_cny_master",
-        "cfgID": "STR0013"
     },
     "BinanceU.BTCDOMUSDT.perp.12h": {
         "ini_usdt": 300,
@@ -248,18 +232,6 @@
         "bar_enter_limit": 1,
         "act_id": "th_binance_cny_master",
         "cfgID": "STR0033"
-    },
-    "BinanceU.SKLUSDT.perp.1d": {
-        "ini_usdt": 300,
-        "splitAt": 0,
-        "track_ATR_multiplier": 0.9,
-        "track_ATR_n": 10,
-        "cutloss_rate": 0.38,
-        "ini_af": 0.005,
-        "delta_af": 0.005,
-        "bar_enter_limit": 1,
-        "act_id": "th_binance_cny_master",
-        "cfgID": "STR0035"
     },
     "BinanceU.VETUSDT.perp.1d": {
         "ini_usdt": 300,

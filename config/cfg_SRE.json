@@ -1,7 +1,7 @@
 {
     "alias": "SRE",
     "clear_existing_status": false,
-    "ini_usdt": 675,
+    "ini_usdt": 220,
     "act_ids": [
         "th_binance_cny_sub02"
     ],
@@ -96,7 +96,7 @@
         "ini_af": 0.08,
         "delta_af": 0.08,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0001"
     },
@@ -108,7 +108,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0006"
     },
@@ -120,7 +120,7 @@
         "ini_af": 0.1,
         "delta_af": 0.1,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0013"
     },
@@ -132,7 +132,7 @@
         "ini_af": 0.04,
         "delta_af": 0.04,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0014"
     },
@@ -144,7 +144,7 @@
         "ini_af": 0.04,
         "delta_af": 0.04,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0020"
     },
@@ -156,7 +156,7 @@
         "ini_af": 0.01,
         "delta_af": 0.01,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0023"
     },
@@ -168,7 +168,7 @@
         "ini_af": 0.01,
         "delta_af": 0.01,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0028"
     },
@@ -180,7 +180,7 @@
         "ini_af": 0.01,
         "delta_af": 0.01,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0029"
     },
@@ -192,7 +192,7 @@
         "ini_af": 0.1,
         "delta_af": 0.1,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0033"
     },
@@ -204,7 +204,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0035"
     },
@@ -216,7 +216,7 @@
         "ini_af": 0.08,
         "delta_af": 0.08,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0045"
     },
@@ -228,7 +228,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0048"
     },
@@ -240,7 +240,7 @@
         "ini_af": 0.01,
         "delta_af": 0.01,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0065"
     },
@@ -252,7 +252,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0115"
     },
@@ -264,7 +264,7 @@
         "ini_af": 0.06,
         "delta_af": 0.06,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0089"
     },
@@ -276,7 +276,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0070"
     },
@@ -288,7 +288,7 @@
         "ini_af": 0.08,
         "delta_af": 0.08,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0076"
     },
@@ -300,7 +300,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0087"
     },
@@ -312,7 +312,7 @@
         "ini_af": 0.01,
         "delta_af": 0.01,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0095"
     },
@@ -324,7 +324,7 @@
         "ini_af": 0.1,
         "delta_af": 0.1,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0099"
     },
@@ -336,7 +336,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0106"
     },
@@ -348,7 +348,7 @@
         "ini_af": 0.1,
         "delta_af": 0.1,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0110"
     },
@@ -360,7 +360,7 @@
         "ini_af": 0.01,
         "delta_af": 0.01,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0113"
     },
@@ -372,7 +372,7 @@
         "ini_af": 0.01,
         "delta_af": 0.01,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0130"
     },
@@ -384,7 +384,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0125"
     },
@@ -396,7 +396,7 @@
         "ini_af": 0.01,
         "delta_af": 0.01,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0128"
     },
@@ -408,7 +408,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0126"
     },
@@ -420,7 +420,7 @@
         "ini_af": 0.06,
         "delta_af": 0.06,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0168"
     },
@@ -432,7 +432,7 @@
         "ini_af": 0.06,
         "delta_af": 0.06,
         "bar_enter_limit": 1,
-        "ini_usdt": 675,
+        "ini_usdt": 220,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0176"
     }

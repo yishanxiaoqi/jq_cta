@@ -227,7 +227,7 @@ class BalanceMonitor extends StrategyBase {
                     let month_start = now.slice(0, 6) + "01000000";
                     let account_str = [exchange, data.account_id, contract_type].join(".");
                     if ((account_str === account) && (data.ts.slice(0, 14) === month_start)) {
-                        that.account_summary[account]["month_init_equity"] = +data.equity;
+                        that.account_summary[account]["month_init_nv"] = +data.nv;
                     }
                 } catch (err) {
                     logger.info("err", err);
@@ -236,8 +236,12 @@ class BalanceMonitor extends StrategyBase {
             .on("end", function () { 
             });
 
-        let current_equity = this.account_summary[account]["equity"];
-        let month_init_equity = this.account_summary[account]["month_init_equity"];
+        let current_nv = this.account_summary[account]["nv"];
+        let month_init_nv = this.account_summary[account]["month_init_nv"];
+
+        this.account_summary[account]["equity_in_cny"] = (this.account_summary[account]["equity"] * usdt_to_cny / 10000).toFixed(2);     // 单位：万
+        this.account_summary[account]["pnl_in_cny"] = (this.account_summary[account]["pnl"] * usdt_to_cny / 10000).toFixed(2);          // 单位：万
+        this.account_summary[account]["month_to_date_pnl"] = ((current_nv - month_init_nv) / month_init_nv * 100).toFixed(2);    // 百分比
         let sendData = {
             "tableName": account_id,
             "tabName": "Summary",
@@ -262,9 +266,9 @@ class BalanceMonitor extends StrategyBase {
                 },
                 {
                     "usdt_to_cny": usdt_to_cny,
-                    "equity_in_cny": this.account_summary[account]["equity"] * usdt_to_cny / 10000,    // 单位：万
-                    "pnl_in_cny": this.account_summary[account]["pnl"] * usdt_to_cny / 10000,          // 单位：万
-                    "month_to_date_pnl": (current_equity - month_init_equity) / month_init_equity * 100    // 百分比
+                    "equity_in_cny": this.account_summary[account]["equity_in_cny"],
+                    "pnl_in_cny": this.account_summary[account]["pnl_in_cny"],
+                    "month_to_date_pnl": this.account_summary[account]["month_to_date_pnl"]
                 }
             ]
         }
@@ -324,10 +328,10 @@ class BalanceMonitor extends StrategyBase {
         let txt = "";
 
         for (let account of that.accounts) {
-            let {pnl, ret, leverage} = that.account_summary[account];
+            let {pnl, ret, leverage, equity_in_cny, pnl_in_cny, month_to_date_pnl} = that.account_summary[account];
             let ret_per = `${parseFloat(ret * 100).toFixed(2)}%`;
             
-            txt += `====${account}====\npnl\t\tret\t\tleverage\n${pnl}\t\t${ret_per}\t\t${leverage}\n`;
+            txt += `====${account}====\npnl\t\tret\t\tleverage\n${pnl}\t\t${ret_per}\t\t${leverage}\nequity_in_cny\tpnl_in_cny\tmonth_to_date_pnl\n${equity_in_cny}\t\t${pnl_in_cny}\t\t${month_to_date_pnl}\n`;
         }
 
         let obj = this.sub_streams_upd_ts;

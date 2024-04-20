@@ -1062,15 +1062,25 @@ class ExchangeBinanceU extends ExchangeBase {
             body = JSON.parse(body);
 
             let assets_USDT = body["assets"].filter((asset) => asset.asset === "USDT")[0];
+            let assets_BNB = body["assets"].filter((asset) => asset.asset === "BNB")[0];
             let balance = {
                 "wallet_balance_in_USD": +body["totalWalletBalance"],
                 "unrealized_pnl_in_USD": +body["totalUnrealizedProfit"],
                 "equity_in_USD": +body["totalMarginBalance"],
-                "wallet_balance_in_USDT": +assets_USDT["walletBalance"],
-                "unrealized_pnl_in_USDT": +assets_USDT["unrealizedProfit"],
-                "equity_in_USDT": +assets_USDT["marginBalance"],
-                "position_initial_margin_in_USDT": +assets_USDT["positionInitialMargin"],
-                "open_order_initial_margin_in_USDT": +assets_USDT["openOrderInitialMargin"],
+                "USDT": {
+                    "wallet_balance": +assets_USDT["walletBalance"],
+                    "unrealized_pnl": +assets_USDT["unrealizedProfit"],
+                    "equity": +assets_USDT["marginBalance"],
+                    "position_initial_margin": +assets_USDT["positionInitialMargin"],
+                    "open_order_initial_margin": +assets_USDT["openOrderInitialMargin"]
+                },
+                "BNB": {
+                    "wallet_balance": +assets_BNB["walletBalance"],
+                    "unrealized_pnl": +assets_BNB["unrealizedProfit"],
+                    "equity": +assets_BNB["marginBalance"],
+                    "position_initial_margin": +assets_BNB["positionInitialMargin"],
+                    "open_order_initial_margin": +assets_BNB["openOrderInitialMargin"]
+                }
             }
 
             let active_positions = body["positions"].filter((position) => parseFloat(position.positionAmt) !== 0);
@@ -1201,5 +1211,5 @@ module.exports = ExchangeBinanceU;
 //     INTERCOM_CONFIG[`LOCALHOST_FEED`],
 //     INTERCOM_CONFIG[`LOCALHOST_STRATEGY`]
 // ];
-// let bn = new ExchangeBinanceU("BinanceU", new Intercom(intercom_config));
-// bn.start();
+// let bnu = new ExchangeBinanceU("BinanceU", new Intercom(intercom_config));
+// bnu.start();

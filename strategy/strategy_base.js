@@ -4,6 +4,7 @@ const rp = require("request-promise-native");
 
 const utils = require("../utils/util_func.js");
 const logger = require("../module/logger.js");
+const Binance = require("../exchange/exchange_binance.js");
 const BinanceU = require("../exchange/exchange_binanceU.js");
 const OKX = require("../exchange/exchange_okx.js");
 const ExchangeBase = require("../exchange/exchange_base.js");
@@ -20,6 +21,7 @@ class StrategyBase {
         this.on_account_update_handler = this.on_account_update.bind(this);
 
         this.exchanges = {};
+        this.exchanges["Binance"] = new Binance("Binance", intercom);
         this.exchanges["BinanceU"] = new BinanceU("BinanceU", intercom);
         this.exchanges["OKX"] = new OKX("OKX", intercom);
     }

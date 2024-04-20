@@ -1,5 +1,6 @@
 /** const values */
 EXCHANGE = {
+    BINANCE: "Binance",
     BINANCEU: "BinanceU",
     OKX: "OKX"
 }

@@ -798,6 +798,62 @@ OKX：改单成功
 }
 ```
 
+```json
+{
+    "ref_id": "DMOkXcndF41CHFcDO2LFaWkD7JADhl",
+    "action": "query_account",
+    "strategy": "BinanceU",
+    "metadata": {
+        "exchange": "BinanceU",
+        "contract_type": "perp",
+        "event": "query_account",
+        "metadata": {
+            "result": true,
+            "account_id": "th_binance_cny_master",
+            "balance": {
+                "wallet_balance_in_USD": 237462.79938014,
+                "unrealized_pnl_in_USD": 35.50069787,
+                "equity_in_USD": 237498.30007801,
+                "USDT": {
+                    "wallet_balance": 231996.70847179,
+                    "unrealized_pnl": 35.49050606,
+                    "equity": 232032.19897785,
+                    "position_initial_margin": 674.27876092,
+                    "open_order_initial_margin": 93673.18415773
+                },
+                "BNB": {
+                    "wallet_balance": 10.138913,
+                    "unrealized_pnl": 0,
+                    "equity": 10.138913,
+                    "position_initial_margin": 0,
+                    "open_order_initial_margin": 0
+                }
+            },
+            "positions": [
+                {
+                    "symbol": "BNBUSDC",
+                    "position": -10.13,
+                    "entryPrice": 560.6,
+                    "unRealizedProfit": 2.48505097,
+                    "positionInitialMargin": 1135.2785898,
+                    "leverage": 5,
+                    "last_updated_time": "20240420145534572"
+                }
+            ],
+            "timestamp": "20240420152036226"
+        },
+        "timestamp": "20240420152036226"
+    },
+    "request": {
+        "exchange": "BinanceU",
+        "contract_type": "perp",
+        "account_id": "th_binance_cny_master",
+        "ref_id": "DMOkXcndF41CHFcDO2LFaWkD7JADhl",
+        "send_time": "20240420152036131"
+    }
+}
+```
+
 # 2. ORDER UPDATE (websocket)
 
 ## 2.1 place order

@@ -21,6 +21,7 @@ class BalanceMonitor extends StrategyBase {
         //     "BinanceU.th_binance_cny_sub03.perp"
         // ];
         this.accounts = [
+            "Binance.th_binance_cny_master.spot",
             "BinanceU.th_binance_cny_master.perp",
             // "BinanceU.th_binance_cny_sub01.perp",
             "BinanceU.th_binance_cny_sub02.perp"
@@ -54,6 +55,7 @@ class BalanceMonitor extends StrategyBase {
 
         // 初始化各个订阅频道的更新时间
         this.subscription_list = SUBSCRIPTION_LIST;
+        this.latest_prices = {};
         this.sub_streams_upd_ts = {};
         for (let subscription of this.subscription_list) {
             this.sub_streams_upd_ts[subscription] = moment.now();
@@ -188,24 +190,49 @@ class BalanceMonitor extends StrategyBase {
         let exchange = response.metadata.exchange;
         let contract_type = response.metadata.contract_type;
         let account_id = response.metadata.metadata.account_id;
-        let real_positions = response.metadata.metadata.positions;
         let balance = response.metadata.metadata.balance;
+        let account = [exchange, account_id, contract_type].join(".");
+
+        // 针对Binance.th_binance_cny_master.spot账户单独订制
+        if (account === "Binance.th_binance_cny_master.spot") {
+            this.account_summary[account]["BNB_equity"] = balance["BNB"]["equity"];
+            this.account_summary[account]["USDT_equity"] = balance["USDT"]["equity"];
+            return
+        }
+
+        let real_positions = response.metadata.metadata.positions;
         let cal_positions = {};
 
-        let account = [exchange, account_id, contract_type].join(".");
+        // BNB头寸管理，专门用BNBUSDC来对冲BNB
+        let spot_account = `Binance.${account_id}.spot`;
+        let bnb_spot_equity = this.account_summary[spot_account] ? this.account_summary[spot_account]["BNB_equity"] : 0;
+        let bnb_equity = stratutils.round(balance["BNB"]["equity"], 2);
+        let bnbusdc = (real_positions.length > 0) ? (real_positions.filter(e => e.symbol === "BNBUSDC").length > 0 ? real_positions.filter(e => e.symbol === "BNBUSDC")[0]["position"] : 0) : 0;
+        this.account_summary[account]["BNB_spot_equity"] = bnb_spot_equity;
+        this.account_summary[account]["BNB_equity"] = bnb_equity;
+        this.account_summary[account]["BNBUSDC_position"] = bnbusdc;
+        this.account_summary[account]["BNB_beta"] = stratutils.round(bnb_spot_equity + bnb_equity + bnbusdc, 2);
 
         // pnl计算
         let today = moment.now();
         let n_days = - this.init_dates[account].diff(today, "days");
 
-        this.account_summary[account]["wb"] =  stratutils.round(balance["wallet_balance_in_USDT"], 2);
-        this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USDT"], 2);
+        this.account_summary[account]["wb"] =  stratutils.round(balance["wallet_balance_in_USD"], 2);
+        this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"], 2);
+        
+        // 如果现货账户中BNB不为零，需要加上对应的BNB价值（折算成USDT）
+        if ((bnb_spot_equity > 0) && (this.latest_prices["BinanceU|BNBUSDT|perp|trade"])) {
+            this.account_summary[account]["equity"] += bnb_spot_equity * this.latest_prices["BinanceU|BNBUSDT|perp|trade"];
+            this.account_summary[account]["equity"] = stratutils.round(this.account_summary[account]["equity"], 2);
+        }
+
         this.account_summary[account]["nv"] = stratutils.round(this.account_summary[account]["equity"] / this.denominator[account], 4); 
         this.account_summary[account]["pnl"] = stratutils.round(this.account_summary[account]["equity"] - this.init_equity[account], 2);
-        this.account_summary[account]["unrealized_pnl"] = stratutils.round(balance["unrealized_pnl_in_USDT"], 2);
+        this.account_summary[account]["unrealized_pnl"] = stratutils.round(balance["unrealized_pnl_in_USD"], 2);
         this.account_summary[account]["ret"] = stratutils.round(this.account_summary[account]["nv"] - 1, 4); 
         this.account_summary[account]["annual_ret"] = stratutils.round(this.account_summary[account]["ret"] / n_days * 365, 4); 
 
+        // 真的是in_USDT吗？
         this.account_summary[account]["total_position_initial_margin_in_USDT"] = (real_positions.length > 0) ? stratutils.round(real_positions.map(e => e.positionInitialMargin * e.leverage).reduce((a, b) => a + b), 2) : 0; 
         this.account_summary[account]["total_long_position_initial_margin_in_USDT"] = (real_positions.length > 0) ? stratutils.round(real_positions.filter(e => e.position > 0).map(e => e.positionInitialMargin * e.leverage).reduce((a, b) => a + b, 0), 2) : 0; 
         this.account_summary[account]["total_short_position_initial_margin_in_USDT"] = (real_positions.length > 0) ? stratutils.round(real_positions.filter(e => e.position < 0).map(e => e.positionInitialMargin * e.leverage).reduce((a, b) => a + b, 0), 2) : 0; 
@@ -213,8 +240,6 @@ class BalanceMonitor extends StrategyBase {
         this.account_summary[account]["long_lev"] = stratutils.round(this.account_summary[account]["total_long_position_initial_margin_in_USDT"] / this.account_summary[account]["equity"], 2); 
         this.account_summary[account]["short_lev"] = stratutils.round(this.account_summary[account]["total_short_position_initial_margin_in_USDT"] / this.account_summary[account]["equity"], 2); 
         this.account_summary[account]["leverage"] = stratutils.round(this.account_summary[account]["total_position_initial_margin_in_USDT"] / this.account_summary[account]["equity"], 2); 
-
-        logger.info(JSON.stringify(response));
 
         // TODO: query from some api things
         let usdt_to_cny = 7.2;
@@ -242,10 +267,17 @@ class BalanceMonitor extends StrategyBase {
         this.account_summary[account]["equity_in_cny"] = (this.account_summary[account]["equity"] * usdt_to_cny / 10000).toFixed(2);     // 单位：万
         this.account_summary[account]["pnl_in_cny"] = (this.account_summary[account]["pnl"] * usdt_to_cny / 10000).toFixed(2);          // 单位：万
         this.account_summary[account]["month_to_date_pnl"] = ((current_nv - month_init_nv) / month_init_nv * 100).toFixed(2);    // 百分比
+
         let sendData = {
             "tableName": account_id,
             "tabName": "Summary",
             "data": [
+                {
+                    "BNB_spot_equity": this.account_summary[account]["BNB_spot_equity"],
+                    "BNB_equity": this.account_summary[account]["BNB_equity"],
+                    "BNBUSDC_position": this.account_summary[account]["BNBUSDC_position"],
+                    "BNB_beta": this.account_summary[account]["BNB_beta"]
+                },
                 {
                     "init_equity": this.init_equity[account],
                     "wallet_balance": this.account_summary[account]["wb"],
@@ -299,6 +331,8 @@ class BalanceMonitor extends StrategyBase {
             }
         }
 
+        // logger.info("BAM", JSON.stringify(cal_positions), JSON.stringify(real_positions));
+
         let warning_msg = "";
         let wierd_symbols = Object.keys(cal_positions).filter((symbol) => ! (real_positions.map((e) => e["symbol"]).includes(symbol)));
 
@@ -310,8 +344,11 @@ class BalanceMonitor extends StrategyBase {
             let symbol = item["symbol"];
             let position = item["position"];
 
+            // BNBUSDC专门拿来对冲，在UI上会单独显示，因此不需要对比！
+            if (symbol === "BNBUSDC") continue;
+
             let idf = [EXCHANGE.BINANCEU, symbol, CONTRACT_TYPE.PERP].join(".");
-            let calculated_position = stratutils.transform_with_tick_size(cal_positions[symbol], QUANTITY_TICK_SIZE[idf]);
+            let calculated_position = (symbol in cal_positions) ? stratutils.transform_with_tick_size(cal_positions[symbol], QUANTITY_TICK_SIZE[idf]) : 0;
             if (position !== calculated_position) warning_msg += `${account_id}|inconsistent position of ${symbol}:: cal: ${calculated_position}, real: ${position} \n`
         }
 
@@ -354,6 +391,7 @@ class BalanceMonitor extends StrategyBase {
     _on_market_data_trade_ready(trade) {
         let subscription = [trade.exchange, trade.symbol, trade.contract_type, "trade"].join("|");
         this.sub_streams_upd_ts[subscription] = moment.now();
+        this.latest_prices[subscription] = trade["metadata"][0][2];
     }
 }
 

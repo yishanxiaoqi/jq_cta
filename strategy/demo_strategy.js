@@ -17,9 +17,9 @@ class DemoStrategy extends StrategyBase {
             // this._test_send_order();
             // this._test_cancel_order();
             // this._test_inspect_order();
-            this._test_query_orders();
+            // this._test_query_orders();
             // this._test_modify_order();
-            // this._test_query_account();
+            this._test_query_account();
         }, 1000);
     }
 
@@ -71,9 +71,9 @@ class DemoStrategy extends StrategyBase {
 
     _test_query_account() {
         this.query_account({
-            exchange: EXCHANGE.BINANCEU,
-            contract_type: CONTRACT_TYPE.PERP,
-            account_id: "th_binance_cny_sub03"
+            exchange: EXCHANGE.BINANCE,
+            contract_type: CONTRACT_TYPE.SPOT,
+            account_id: "th_binance_cny_master"
         });
     }
 

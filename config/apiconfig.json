@@ -1,4 +1,8 @@
 {
+    "Binance": {
+        "restUrl": "https://api.binance.com",
+        "restUrlQueryAccount": "/api/v3/account"
+    },
     "BinanceU": {
         "websocketUrl": "wss://fstream.binance.com/stream?streams=",
         "privateWebsocketUrl": "wss://fstream.binance.com/ws/",

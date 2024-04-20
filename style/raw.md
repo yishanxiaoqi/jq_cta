@@ -253,6 +253,44 @@
 
 # Query Account
 
+## Binnance
+
+```json
+{
+    "makerCommission": 10,
+    "takerCommission": 10,
+    "buyerCommission": 0,
+    "sellerCommission": 0,
+    "commissionRates": {
+        "maker": "0.00100000",
+        "taker": "0.00100000",
+        "buyer": "0.00000000",
+        "seller": "0.00000000"
+    },
+    "canTrade": true,
+    "canWithdraw": true,
+    "canDeposit": true,
+    "brokered": false,
+    "requireSelfTradePrevention": false,
+    "preventSor": false,
+    "updateTime": 1713596260248,
+    "accountType": "SPOT",
+    "balances": [
+        // 仅保留一个
+        {
+            "asset": "BTC",
+            "free": "0.00000000",
+            "locked": "0.00000000"
+        }
+    ],
+    "permissions": [
+        "SPOT"
+    ],
+    "uid": 741371809
+}
+```
+
+## BinanceU
 ```json
 {
     "feeTier": 0,
@@ -329,6 +367,87 @@
             "updateTime": 1689994833385,
             "bidNotional": "99.99640000",
             "askNotional": "100.00760000"
+        }
+    ]
+}
+```
+
+```json
+{
+    "feeTier": 0,
+    "canTrade": true,
+    "canDeposit": true,
+    "canWithdraw": true,
+    "tradeGroupId": -1,
+    "updateTime": 0,
+    "multiAssetsMargin": true,
+    "totalInitialMargin": "94394.85153362",
+    "totalMaintMargin": "28.91336277",
+    "totalWalletBalance": "237465.30997796",
+    "totalUnrealizedProfit": "32.85042294",
+    "totalMarginBalance": "237498.16040090",
+    "totalPositionInitialMargin": "675.18393172",
+    "totalOpenOrderInitialMargin": "93719.66760190",
+    "totalCrossWalletBalance": "237465.30997796",
+    "totalCrossUnPnl": "32.85042294",
+    "availableBalance": "143103.27145683",
+    "maxWithdrawAmount": "143103.27145683",
+    "assets": [
+        {
+            "asset": "BNB",
+            "walletBalance": "10.13891300",
+            "unrealizedProfit": "0.00000000",
+            "marginBalance": "10.13891300",
+            "maintMargin": "0.00000000",
+            "initialMargin": "0.00000000",
+            "positionInitialMargin": "0.00000000",
+            "openOrderInitialMargin": "0.00000000",
+            "maxWithdrawAmount": "10.13891300",
+            "crossWalletBalance": "10.13891300",
+            "crossUnPnl": "0.00000000",
+            "availableBalance": "243.10276307",
+            "marginAvailable": true,
+            "updateTime": 1713596245852
+        },
+        {
+            "asset": "USDT",
+            "walletBalance": "231996.70847179",
+            "unrealizedProfit": "32.84069717",
+            "marginBalance": "232029.54916896",
+            "maintMargin": "28.89902221",
+            "initialMargin": "94348.03320911",
+            "positionInitialMargin": "674.84905138",
+            "openOrderInitialMargin": "93673.18415773",
+            "maxWithdrawAmount": "143032.29454130",
+            "crossWalletBalance": "231996.70847179",
+            "crossUnPnl": "32.84069717",
+            "availableBalance": "143032.29454130",
+            "marginAvailable": true,
+            "updateTime": 1713596260274
+        }
+    ],
+    "positions": [
+        // 这里所有的symbol都会返回，即便positionAmt为零
+        // 以下内容有所删减，仅保留一个
+        {
+            "symbol": "SNTUSDT",
+            "initialMargin": "0",
+            "maintMargin": "0",
+            "unrealizedProfit": "0.00000000",
+            "positionInitialMargin": "0",
+            "openOrderInitialMargin": "0",
+            "leverage": "5",
+            "isolated": false,
+            "entryPrice": "0.0",
+            "breakEvenPrice": "0.0",
+            "maxNotional": "200000",
+            "positionSide": "BOTH",
+            "positionAmt": "0",
+            "notional": "0",
+            "isolatedWallet": "0",
+            "updateTime": 0,
+            "bidNotional": "0",
+            "askNotional": "0"
         }
     ]
 }

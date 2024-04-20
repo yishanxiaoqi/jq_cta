@@ -70,6 +70,8 @@ SUBSCRIPTION_LIST = [
     'BinanceU|YFIUSDT|perp|trade',
     'BinanceU|ZECUSDT|perp|trade',
 
+    // 'BinanceU|1000SHIBUSDC|perp|trade',
+
     // XES
     // 'BinanceU|XEMUSDT|perp|bestquote',
     // 'BinanceU|CELOUSDT|perp|bestquote',
@@ -1550,6 +1552,8 @@ QUANTITY_TICK_SIZE = {
     "BinanceU.QNTUSDT.perp": 0.1,
     "BinanceU.STGUSDT.perp": 1,
 
+    // "BinanceU.1000SHIBUSDC.perp": 1,
+
     'Binance.BTCUSDT.spot': 0.00001,
     'Binance.ETHUSDT.spot': 0.0001,
     'Binance.BNBUSDT.spot': 0.001,
@@ -1984,6 +1988,8 @@ PRICE_TICK_SIZE = {
     "BinanceU.DOTBUSD.perp": 0.001,
     "BinanceU.QNTUSDT.perp": 0.01,
     "BinanceU.STGUSDT.perp": 0.0001,
+
+    // "BinanceU.1000SHIBUSDC.perp": 0.000001,
 
     'Binance.BTCUSDT.spot': 0.01,
     'Binance.ETHUSDT.spot': 0.01,

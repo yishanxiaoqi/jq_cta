@@ -258,6 +258,7 @@ class ExchangeBinanceU extends ExchangeBase {
                 direction: (jdata["o"]["S"] === "SELL") ? DIRECTION.SELL : DIRECTION.BUY,
                 timestamp: utils.get_human_readable_timestamp(jdata["o"]["T"]),
                 fee: jdata["o"]["n"] ? parseFloat(jdata["o"]["n"]) : undefined,
+                fee_asset: jdata["o"]["N"] ? jdata["o"]["N"] : undefined,
                 update_type: this._convert_to_standard_order_update_type(jdata["o"]["x"])
             },
             timestamp: utils._util_get_human_readable_timestamp(),

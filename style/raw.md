@@ -727,6 +727,51 @@
 
 ## Place Order
 
+```json
+// BinanceU: place limit order
+{
+    "e": "ORDER_TRADE_UPDATE",
+    "T": 1713667415298,
+    "E": 1713667415298,
+    "o": {
+        "s": "BNBUSDT",
+        "c": "web_3c5dm4etfEvSlDpirssF",
+        "S": "SELL",
+        "o": "LIMIT",
+        "f": "GTC",
+        "q": "0.01",
+        "p": "574.420",
+        "ap": "0",
+        "sp": "0",
+        "x": "NEW",
+        "X": "NEW",
+        "i": 55370877878,
+        "l": "0",
+        "z": "0",
+        "L": "0",
+        "n": "0",       // fee，似乎默认是0
+        "N": "USDT",    // fee asset，似乎默认是USDT
+        "T": 1713667415298,
+        "t": 0,
+        "b": "11999.76600",
+        "a": "12006.54820",
+        "m": false,
+        "R": false,
+        "wt": "CONTRACT_PRICE",
+        "ot": "LIMIT",
+        "ps": "BOTH",
+        "cp": false,
+        "rp": "0",
+        "pP": false,
+        "si": 0,
+        "ss": 0,
+        "V": "NONE",
+        "pm": "NONE",
+        "gtd": 0
+    }
+}
+```
+
 ## Cancel Order
 
 ```json

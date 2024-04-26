@@ -20,6 +20,7 @@ class BalanceMonitor extends StrategyBase {
         //     "BinanceU.th_binance_cny_sub02.perp",
         //     "BinanceU.th_binance_cny_sub03.perp"
         // ];
+        this.bnb_launchpool_equity = 60.0691;
         this.accounts = [
             "Binance.th_binance_cny_master.spot",
             "BinanceU.th_binance_cny_master.perp",
@@ -87,7 +88,7 @@ class BalanceMonitor extends StrategyBase {
 
         // 记录净值
         schedule.scheduleJob('0 0/30 * * * *', function() {
-            for (let account of that.accounts) {
+            for (let account of that.accounts.slice(1)) {
                 let [exchange, account_id, contract_type] = account.split(".");
                 if (that.account_summary[account]["equity"] === undefined) return;
                 let ts = moment().format('YYYYMMDDHHmmssSSS');
@@ -195,7 +196,7 @@ class BalanceMonitor extends StrategyBase {
 
         // 针对Binance.th_binance_cny_master.spot账户单独订制
         if (account === "Binance.th_binance_cny_master.spot") {
-            this.account_summary[account]["BNB_equity"] = balance["BNB"]["equity"];
+            this.account_summary[account]["BNB_equity"] = balance["BNB"]["equity"] + this.bnb_launchpool_equity;
             this.account_summary[account]["USDT_equity"] = balance["USDT"]["equity"];
             return
         }
@@ -364,7 +365,7 @@ class BalanceMonitor extends StrategyBase {
         let that = this;
         let txt = "";
 
-        for (let account of that.accounts) {
+        for (let account of that.accounts.slice(1)) {
             let {pnl, ret, leverage, equity_in_cny, pnl_in_cny, month_to_date_pnl} = that.account_summary[account];
             let ret_per = `${parseFloat(ret * 100).toFixed(2)}%`;
             

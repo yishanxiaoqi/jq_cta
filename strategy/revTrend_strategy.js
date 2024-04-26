@@ -30,6 +30,7 @@ class RevTrendStrategy extends StrategyBase {
         // set-up
         this.interval = this.cfg["interval"];
         this.contract_type = CONTRACT_TYPE.PERP;
+        this.bnb_price = undefined;
     }
 
     start() {
@@ -261,6 +262,9 @@ class RevTrendStrategy extends StrategyBase {
             let submit_price = order_update["order_info"]["submit_price"];
             let avg_executed_price = order_update["order_info"]["avg_executed_price"];
             let fee = order_update["metadata"]["fee"];
+            let fee_asset = order_update["metadata"]["fee_asset"];
+            // 用BNB合约价格，把BNB手续费折算成USDT
+            if (fee_asset === "BNB") fee = this.bnb_price? fee * this.bnb_price : fee * 570;
 
             logger.info(`${that.alias}::on_order_update|${order_idf} ${order_type} order ${filled}/${original_amount} filled @${avg_executed_price}/${submit_price}!`);
 
@@ -436,7 +440,7 @@ class RevTrendStrategy extends StrategyBase {
         let ts = trade["metadata"][0][1];
 
         let idf = [exchange, symbol, contract_type].join(".");
-
+        if (idf === "BinanceU.BNBUSDT.perp") this.bnb_price = price;
 
         if (!that.cfg["idfs"].includes(idf)) return;
         if (!that.klines[idf]["ready"]) return;

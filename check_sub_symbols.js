@@ -2,8 +2,10 @@ require("./config/stratdef");
 const fs = require("fs");
 
 
-let aliases = ["R01", "R06", "R12", "R24", "STR", "SRE", "XEM"];
+let aliases = ALIASES;
 let live_idfs = [];
+
+console.log(aliases);
 
 for (let alias of aliases) {
     let cfg = JSON.parse(fs.readFileSync(`./config/cfg_${alias}.json`, 'utf8'));

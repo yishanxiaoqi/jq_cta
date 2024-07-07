@@ -12,6 +12,7 @@
     // pm2 start ./strategy/revTrend_strategy.js --name R06 -- on -a R06 
     // pm2 start ./strategy/revTrend_strategy.js --name R12 -- on -a R12
     // pm2 start ./strategy/revTrend_strategy.js --name R24 -- on -a R24
+    // pm2 start ./strategy/revTrend_strategy.js --name R48 -- on -a R48
     // pm2 start ./strategy/simpleTrend_strategy.js --name STR -- on -a STR 
     // pm2 start ./strategy/simpleRevTrend_strategy.js --name SRE -- on -a SRE
     // pm2 start ./strategy/revTrend_xem_strategy.js --name XEM -- on -a XEM

@@ -1062,6 +1062,8 @@ class ExchangeBinanceU extends ExchangeBase {
             let body = await rp.get(options);
             body = JSON.parse(body);
 
+            console.log(JSON.stringify(body));
+
             let assets_USDT = body["assets"].filter((asset) => asset.asset === "USDT")[0];
             let assets_BNB = body["assets"].filter((asset) => asset.asset === "BNB")[0];
             let balance = {

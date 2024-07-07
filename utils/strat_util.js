@@ -160,16 +160,28 @@ function cal_bar_otime(ts, interval, splitAt = 8) {
 
         new_min = (new_min < 10)? `0${new_min}`: `${new_min}`;
         bar_otime = `${new_date_hour}${new_min}00000`;
-    } else if (["1d", "12h", "8h", "6h", "4h", "3h", "2h", "1h"].includes(interval)) {
-        let num = (interval === "1d")? 24: parseInt(interval.split("h")[0]);
-        let hour = parseInt(ts.slice(8, 10));
+    } else if (["2d", "1d", "12h", "8h", "6h", "4h", "3h", "2h", "1h"].includes(interval)) {
+        //--- 完全可以统一成以下计算，但是时间的加减相比之下稍慢一点（仅慢5ms左右）
+        // let num = (interval.endsWith("d")) ? parseInt(interval.split("d")[0]) * 24 : parseInt(interval.split("h")[0]);
+        // let hour = moment(ts, format = "YYYYMMDDHHmmssSSS").diff(moment("20000101000000000", format = "YYYYMMDDHHmmssSSS"), 'hours');
+        // let new_hour = (Math.floor((hour - splitAt) / num) * num + splitAt);
+        // bar_otime = moment("20000101000000000", format = "YYYYMMDDHHmmssSSS", 'Asia/Shanghai').add(new_hour, 'h').format("YYYYMMDDHHmmssSSS");
+        // return bar_otime;
+
+        let num = (interval.endsWith("d")) ? parseInt(interval.split("d")[0]) * 24 : parseInt(interval.split("h")[0]);
+        let hour = (interval == "2d") ? moment(ts, format = "YYYYMMDDHHmmssSSS").diff(moment("20000101000000000", format = "YYYYMMDDHHmmssSSS"), 'hours') : parseInt(ts.slice(8, 10));
         let new_hour = (Math.floor((hour - splitAt) / num) * num + splitAt);
         let new_date = ts.slice(0, 8);
+
+        if (interval == "2d") {
+            bar_otime = moment("20000101000000000", format = "YYYYMMDDHHmmssSSS", 'Asia/Shanghai').add(new_hour, 'h').format("YYYYMMDDHHmmssSSS");
+            return bar_otime;
+        }
     
         if (new_hour < 0) {
             new_hour = parseInt(new_hour + 24);
             new_date = moment(ts.slice(0, 10), 'YYYYMMDDHH', 'Asia/Shanghai').subtract(1, 'd').format("YYYYMMDDHHmmssSSS").slice(0, 8);
-        } 
+        }
     
         new_hour = (new_hour < 10)? `0${new_hour}`: `${new_hour}`;
         bar_otime = `${new_date}${new_hour}0000000`;

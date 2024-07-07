@@ -171,8 +171,8 @@ class RevTrendStrategy extends StrategyBase {
         let that = this;
 
         let interval = that.cfg["interval"];
-        let num = (interval === "1d") ? 24 : parseInt(interval.split("h")[0]);
-        assert(["1d", "12h", "8h", "6h", "4h", "3h", "2h", "1h"].includes(interval));
+        let num = (interval.endsWith("d")) ? parseInt(interval.split("d")[0]) * 24 : parseInt(interval.split("h")[0]);
+        assert(["2d", "1d", "12h", "8h", "6h", "4h", "3h", "2h", "1h"].includes(interval));
 
         that.cfg["idfs"].forEach((idf) => {
             that.klines[idf] = { "ts": [], "open": [], "high": [], "low": [], "ready": false };
@@ -185,7 +185,8 @@ class RevTrendStrategy extends StrategyBase {
                 let high = Number.NEGATIVE_INFINITY, low = Number.POSITIVE_INFINITY;
                 for (let i = body.length - 1; i >= 0; i--) {
                     let ts = utils.get_human_readable_timestamp(body[i][0]);
-                    let hour = parseInt(ts.slice(8, 10));
+                    // 如果是2d-interval，那么从2000-01-01的零点开始算splitAt
+                    let hour = (interval == "2d") ? moment(ts, "YYYYMMDDHHmmssSSS").diff(moment("20000101000000000", "YYYYMMDDHHmmssSSS"), 'hours') : parseInt(ts.slice(8, 10));
                     high = Math.max(high, parseFloat(body[i][2]));
                     low = Math.min(low, parseFloat(body[i][3]));
                     if ((interval === "1h") || (hour % num === that.cfg[idf]["splitAt"])) {

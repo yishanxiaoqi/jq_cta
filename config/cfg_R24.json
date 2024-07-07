@@ -20,7 +20,6 @@
         "MKRUSDT",
         "NEARUSDT",
         "NKNUSDT",
-        "OCEANUSDT",
         "RSRUSDT",
         "RVNUSDT",
         "SANDUSDT",
@@ -47,7 +46,6 @@
         "BinanceU.MKRUSDT.perp",
         "BinanceU.NEARUSDT.perp",
         "BinanceU.NKNUSDT.perp",
-        "BinanceU.OCEANUSDT.perp",
         "BinanceU.RSRUSDT.perp",
         "BinanceU.RVNUSDT.perp",
         "BinanceU.SANDUSDT.perp",
@@ -252,19 +250,6 @@
         "ini_usdt": 12000,
         "act_id": "th_binance_cny_master",
         "cfgID": "R240036"
-    },
-    "BinanceU.OCEANUSDT.perp": {
-        "splitAt": 4,
-        "track_ATR_n": 10,
-        "track_ATR_multiplier": 0.7,
-        "stoploss_rate": 0.01,
-        "cutloss_rate": 0.05,
-        "ini_af": 0.02,
-        "delta_af": 0.02,
-        "bar_enter_limit": 1,
-        "ini_usdt": 12000,
-        "act_id": "th_binance_cny_master",
-        "cfgID": "R240037"
     },
     "BinanceU.RSRUSDT.perp": {
         "splitAt": 1,

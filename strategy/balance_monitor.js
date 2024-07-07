@@ -20,7 +20,7 @@ class BalanceMonitor extends StrategyBase {
         //     "BinanceU.th_binance_cny_sub02.perp",
         //     "BinanceU.th_binance_cny_sub03.perp"
         // ];
-        this.bnb_launchpool_equity = 60.0691;
+        this.bnb_launchpool_equity = 0;
         this.accounts = [
             "Binance.th_binance_cny_master.spot",
             "BinanceU.th_binance_cny_master.perp",
@@ -46,7 +46,7 @@ class BalanceMonitor extends StrategyBase {
             "BinanceU.th_binance_cny_sub02.perp": moment("2024-01-13"),
             "BinanceU.th_binance_cny_sub03.perp": moment("2023-10-27")
         };
-        this.aliases = ["R01", "R06", "R12", "R24", "STR", "SRE"];
+        this.aliases = ["R01", "R06", "R12", "R24", "R48", "STR", "SRE"];
 
         // 初始化各个账户的结单
         this.account_summary = {};
@@ -219,7 +219,12 @@ class BalanceMonitor extends StrategyBase {
         let n_days = - this.init_dates[account].diff(today, "days");
 
         this.account_summary[account]["wb"] =  stratutils.round(balance["wallet_balance_in_USD"], 2);
-        this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"], 2);
+        if (account === "BinanceU.th_binance_cny_master.perp") {
+            this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"], 2);
+        } else {
+            this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"], 2);
+        }
+        
         
         // 如果现货账户中BNB不为零，需要加上对应的BNB价值（折算成USDT）
         if ((bnb_spot_equity > 0) && (this.latest_prices["BinanceU|BNBUSDT|perp|trade"])) {

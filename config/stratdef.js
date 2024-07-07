@@ -8,7 +8,7 @@
  * jq_binance_cny_master: 545756054@qq.com，大陆身份证认证，没有开启2FA
  */
 
-ALIASES = ["R01", "R06", "R12", "R24", "STR", "SRE"];
+ALIASES = ["R01", "R06", "R12", "R24", "R48", "STR", "SRE"];
 
 SUBSCRIPTION_LIST = [
     // CTA 
@@ -29,8 +29,8 @@ SUBSCRIPTION_LIST = [
     'BinanceU|BTCDOMUSDT|perp|trade',
     'BinanceU|BTCUSDT|perp|trade',
     'BinanceU|C98USDT|perp|trade',
-    'BinanceU|CELOUSDT|perp|trade',
     'BinanceU|CELRUSDT|perp|trade',
+    'BinanceU|CHRUSDT|perp|trade',
     'BinanceU|CTSIUSDT|perp|trade',
     'BinanceU|CRVUSDT|perp|trade',
     'BinanceU|DENTUSDT|perp|trade',
@@ -41,7 +41,6 @@ SUBSCRIPTION_LIST = [
     'BinanceU|ENSUSDT|perp|trade',
     'BinanceU|ETCUSDT|perp|trade',
     'BinanceU|ETHUSDT|perp|trade',
-    'BinanceU|FLOWUSDT|perp|trade',
     'BinanceU|GRTUSDT|perp|trade',
     'BinanceU|HBARUSDT|perp|trade',
     'BinanceU|HOTUSDT|perp|trade',
@@ -52,7 +51,6 @@ SUBSCRIPTION_LIST = [
     'BinanceU|MTLUSDT|perp|trade',
     'BinanceU|NEARUSDT|perp|trade',
     'BinanceU|NKNUSDT|perp|trade',
-    'BinanceU|OCEANUSDT|perp|trade',
     'BinanceU|ONTUSDT|perp|trade',
     'BinanceU|PEOPLEUSDT|perp|trade',
     'BinanceU|QTUMUSDT|perp|trade',
@@ -69,6 +67,7 @@ SUBSCRIPTION_LIST = [
     'BinanceU|XTZUSDT|perp|trade',
     'BinanceU|YFIUSDT|perp|trade',
     'BinanceU|ZECUSDT|perp|trade',
+    'BinanceU|ZILUSDT|perp|trade',
 
     // 'BinanceU|1000SHIBUSDC|perp|trade',
 
@@ -1880,7 +1879,7 @@ PRICE_TICK_SIZE = {
     "BinanceU.AVAXUSDT.perp": 0.01,
     "BinanceU.FTMUSDT.perp": 0.0001,
     "BinanceU.HNTUSDT.perp": 0.001,
-    "BinanceU.ENJUSDT.perp": 0.0001,
+    "BinanceU.ENJUSDT.perp": 0.00001,
     "BinanceU.FLMUSDT.perp": 0.0001,
     "BinanceU.TOMOUSDT.perp": 0.0001,
     "BinanceU.RENUSDT.perp": 0.0001,
@@ -1889,7 +1888,7 @@ PRICE_TICK_SIZE = {
     "BinanceU.AAVEUSDT.perp": 0.01,
     "BinanceU.FILUSDT.perp": 0.001,
     "BinanceU.RSRUSDT.perp": 0.000001,
-    "BinanceU.LRCUSDT.perp": 0.0001,
+    "BinanceU.LRCUSDT.perp": 0.00001,
     "BinanceU.MATICUSDT.perp": 0.0001,
     "BinanceU.MATICBUSD.perp": 0.0001,
     "BinanceU.OCEANUSDT.perp": 0.0001,
@@ -1967,7 +1966,7 @@ PRICE_TICK_SIZE = {
     "BinanceU.FLOWUSDT.perp": 0.001,
     "BinanceU.IMXUSDT.perp": 0.0001,
     "BinanceU.API3USDT.perp": 0.001,
-    "BinanceU.GMTUSDT.perp": 0.0001,
+    "BinanceU.GMTUSDT.perp": 0.00001,
     "BinanceU.APEUSDT.perp": 0.001,
     "BinanceU.BNXUSDT.perp": 0.01,
     "BinanceU.WOOUSDT.perp": 0.00001,
@@ -1988,6 +1987,8 @@ PRICE_TICK_SIZE = {
     "BinanceU.DOTBUSD.perp": 0.001,
     "BinanceU.QNTUSDT.perp": 0.01,
     "BinanceU.STGUSDT.perp": 0.0001,
+    "BinanceU.REZUSDT.perp": 0.00001,
+    "BinanceU.DYMUSDT.perp": 0.0001,
 
     // "BinanceU.1000SHIBUSDC.perp": 0.000001,
 
@@ -2054,7 +2055,7 @@ PRICE_TICK_SIZE = {
     "Binance.DOTUSDT.spot": 0.01,
     "Binance.EGLDBTC.spot": 0.000001,
     "Binance.EGLDBUSD.spot": 0.01,
-    "Binance.EGLDUSDT.spot": 0.01,
+    "Binance.EGLDUSDT.spot": 0.001,
     "Binance.UNIBTC.spot": 1e-7,
     "Binance.UNIBUSD.spot": 0.01,
     "Binance.UNIUSDT.spot": 0.01,

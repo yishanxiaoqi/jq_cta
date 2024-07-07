@@ -71,8 +71,8 @@ class DemoStrategy extends StrategyBase {
 
     _test_query_account() {
         this.query_account({
-            exchange: EXCHANGE.BINANCE,
-            contract_type: CONTRACT_TYPE.SPOT,
+            exchange: EXCHANGE.BINANCEU,
+            contract_type: CONTRACT_TYPE.PERP,
             account_id: "th_binance_cny_master"
         });
     }

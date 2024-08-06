@@ -20,28 +20,27 @@ class BalanceMonitor extends StrategyBase {
         //     "BinanceU.th_binance_cny_sub02.perp",
         //     "BinanceU.th_binance_cny_sub03.perp"
         // ];
-        this.bnb_launchpool_equity = 0;
         this.accounts = [
-            "Binance.th_binance_cny_master.spot",
+            // "Binance.th_binance_cny_master.spot",
             "BinanceU.th_binance_cny_master.perp",
-            // "BinanceU.th_binance_cny_sub01.perp",
+            "BinanceU.th_binance_cny_sub01.perp",
             "BinanceU.th_binance_cny_sub02.perp"
         ];
         this.init_equity = {
             "BinanceU.th_binance_cny_master.perp": 181926.51,
-            // "BinanceU.th_binance_cny_sub01.perp": 8223.74,
-            "BinanceU.th_binance_cny_sub02.perp": 6436.55,
+            "BinanceU.th_binance_cny_sub01.perp": 2000.57,
+            "BinanceU.th_binance_cny_sub02.perp": 4436.55,
             "BinanceU.th_binance_cny_sub03.perp": 0
         };
         this.denominator = {
             "BinanceU.th_binance_cny_master.perp": 130172.08, 
-            // "BinanceU.th_binance_cny_sub01.perp": 6832.04,
-            "BinanceU.th_binance_cny_sub02.perp": 5734.82,
+            "BinanceU.th_binance_cny_sub01.perp": 2000.57,
+            "BinanceU.th_binance_cny_sub02.perp": 3657.59,
             "BinanceU.th_binance_cny_sub03.perp": 0
         };
         this.init_dates = {
             "BinanceU.th_binance_cny_master.perp": moment("2023-06-23"),
-            // "BinanceU.th_binance_cny_sub01.perp": moment("2023-10-08"),
+            "BinanceU.th_binance_cny_sub01.perp": moment("2024-08-06"),
             // "BinanceU.th_binance_cny_sub02.perp": moment("2023-10-24"),
             "BinanceU.th_binance_cny_sub02.perp": moment("2024-01-13"),
             "BinanceU.th_binance_cny_sub03.perp": moment("2023-10-27")
@@ -88,7 +87,7 @@ class BalanceMonitor extends StrategyBase {
 
         // 记录净值
         schedule.scheduleJob('0 0/30 * * * *', function() {
-            for (let account of that.accounts.slice(1)) {
+            for (let account of that.accounts) {
                 let [exchange, account_id, contract_type] = account.split(".");
                 if (that.account_summary[account]["equity"] === undefined) return;
                 let ts = moment().format('YYYYMMDDHHmmssSSS');
@@ -194,43 +193,16 @@ class BalanceMonitor extends StrategyBase {
         let balance = response.metadata.metadata.balance;
         let account = [exchange, account_id, contract_type].join(".");
 
-        // 针对Binance.th_binance_cny_master.spot账户单独订制
-        if (account === "Binance.th_binance_cny_master.spot") {
-            this.account_summary[account]["BNB_equity"] = balance["BNB"]["equity"] + this.bnb_launchpool_equity;
-            this.account_summary[account]["USDT_equity"] = balance["USDT"]["equity"];
-            return
-        }
-
         let real_positions = response.metadata.metadata.positions;
         let cal_positions = {};
 
-        // BNB头寸管理，专门用BNBUSDC来对冲BNB
-        let spot_account = `Binance.${account_id}.spot`;
-        let bnb_spot_equity = this.account_summary[spot_account] ? this.account_summary[spot_account]["BNB_equity"] : 0;
-        let bnb_equity = stratutils.round(balance["BNB"]["equity"], 2);
-        let bnbusdc = (real_positions.length > 0) ? (real_positions.filter(e => e.symbol === "BNBUSDC").length > 0 ? real_positions.filter(e => e.symbol === "BNBUSDC")[0]["position"] : 0) : 0;
-        this.account_summary[account]["BNB_spot_equity"] = bnb_spot_equity;
-        this.account_summary[account]["BNB_equity"] = bnb_equity;
-        this.account_summary[account]["BNBUSDC_position"] = bnbusdc;
-        this.account_summary[account]["BNB_beta"] = stratutils.round(bnb_spot_equity + bnb_equity + bnbusdc, 2);
-
         // pnl计算
         let today = moment.now();
-        let n_days = - this.init_dates[account].diff(today, "days");
+        // 天数最小是1，如果是0的话后面的计算会报错
+        let n_days = Math.max(1, - this.init_dates[account].diff(today, "days"));
 
         this.account_summary[account]["wb"] =  stratutils.round(balance["wallet_balance_in_USD"], 2);
-        if (account === "BinanceU.th_binance_cny_master.perp") {
-            this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"], 2);
-        } else {
-            this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"], 2);
-        }
-        
-        
-        // 如果现货账户中BNB不为零，需要加上对应的BNB价值（折算成USDT）
-        if ((bnb_spot_equity > 0) && (this.latest_prices["BinanceU|BNBUSDT|perp|trade"])) {
-            this.account_summary[account]["equity"] += bnb_spot_equity * this.latest_prices["BinanceU|BNBUSDT|perp|trade"];
-            this.account_summary[account]["equity"] = stratutils.round(this.account_summary[account]["equity"], 2);
-        }
+        this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"], 2);
 
         this.account_summary[account]["nv"] = stratutils.round(this.account_summary[account]["equity"] / this.denominator[account], 4); 
         this.account_summary[account]["pnl"] = stratutils.round(this.account_summary[account]["equity"] - this.init_equity[account], 2);
@@ -250,6 +222,7 @@ class BalanceMonitor extends StrategyBase {
         // TODO: query from some api things
         let usdt_to_cny = 7.2;
         let that = this;
+        // 从account_summary中读取月初的净值nv
         fs.createReadStream("/root/jq_cta/log/account_summary.csv")
             .pipe(csv())
             .on('data', function (data) {
@@ -265,6 +238,8 @@ class BalanceMonitor extends StrategyBase {
                 }
             })
             .on("end", function () { 
+                // 如果没有读取到，一般情况是账户刚启用，那么净值定义为1
+                if (that.account_summary[account]["month_init_nv"] === undefined) that.account_summary[account]["month_init_nv"] = 1;
             });
 
         let current_nv = this.account_summary[account]["nv"];
@@ -278,12 +253,6 @@ class BalanceMonitor extends StrategyBase {
             "tableName": account_id,
             "tabName": "Summary",
             "data": [
-                {
-                    "BNB_spot_equity": this.account_summary[account]["BNB_spot_equity"],
-                    "BNB_equity": this.account_summary[account]["BNB_equity"],
-                    "BNBUSDC_position": this.account_summary[account]["BNBUSDC_position"],
-                    "BNB_beta": this.account_summary[account]["BNB_beta"]
-                },
                 {
                     "init_equity": this.init_equity[account],
                     "wallet_balance": this.account_summary[account]["wb"],
@@ -350,9 +319,6 @@ class BalanceMonitor extends StrategyBase {
             let symbol = item["symbol"];
             let position = item["position"];
 
-            // BNBUSDC专门拿来对冲，在UI上会单独显示，因此不需要对比！
-            if (symbol === "BNBUSDC") continue;
-
             let idf = [EXCHANGE.BINANCEU, symbol, CONTRACT_TYPE.PERP].join(".");
             let calculated_position = (symbol in cal_positions) ? stratutils.transform_with_tick_size(cal_positions[symbol], QUANTITY_TICK_SIZE[idf]) : 0;
             if (position !== calculated_position) warning_msg += `${account_id}|inconsistent position of ${symbol}:: cal: ${calculated_position}, real: ${position} \n`
@@ -370,7 +336,7 @@ class BalanceMonitor extends StrategyBase {
         let that = this;
         let txt = "";
 
-        for (let account of that.accounts.slice(1)) {
+        for (let account of that.accounts) {
             let {pnl, ret, leverage, equity_in_cny, pnl_in_cny, month_to_date_pnl} = that.account_summary[account];
             let ret_per = `${parseFloat(ret * 100).toFixed(2)}%`;
             

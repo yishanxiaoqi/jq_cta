@@ -1,53 +1,48 @@
 {
-    "BinanceU.CHRUSDT.perp": {
-        "ts": [
-            "20240707000000000",
-            "20240706000000000",
-            "20240705000000000",
-            "20240704000000000",
-            "20240703000000000",
-            "20240702000000000",
-            "20240701000000000",
-            "20240630000000000",
-            "20240629000000000",
-            "20240628000000000"
-        ],
-        "open": [
-            0.2654,
-            0.2607,
-            0.2249,
-            0.2301,
-            0.2436,
-            0.236,
-            0.2232,
-            0.2172,
-            0.2274,
-            0.2319
-        ],
-        "high": [
-            0.274,
-            0.2715,
-            0.2672,
-            0.2491,
-            0.261,
-            0.2675,
-            0.2393,
-            0.2241,
-            0.2284,
-            0.2417
-        ],
-        "low": [
-            0.2587,
-            0.2544,
-            0.2008,
-            0.2152,
-            0.2274,
-            0.2279,
-            0.2215,
-            0.2092,
-            0.2074,
-            0.2251
-        ],
-        "ready": false
+    "BinanceU.th_binance_cny_master.perp": {
+        "wb": 251516.97,
+        "equity": 251525.32,
+        "nv": 1.9323,
+        "pnl": 69598.81,
+        "unrealized_pnl": 8.35,
+        "ret": 0.9323,
+        "annual_ret": 0.83,
+        "total_position_initial_margin_in_USDT": 6205.32,
+        "total_long_position_initial_margin_in_USDT": 864.06,
+        "total_short_position_initial_margin_in_USDT": 5341.26,
+        "long_lev": 0,
+        "short_lev": 0.02,
+        "leverage": 0.02,
+        "equity_in_cny": "181.10",
+        "pnl_in_cny": "50.11",
+        "month_to_date_pnl": "NaN",
+        "month_init_nv": 1.9021
+    },
+    "BinanceU.th_binance_cny_sub01.perp": {
+        "wb": 2000.57,
+        "equity": 2000.57,
+        "nv": 1.0003,
+        "pnl": 0.57,
+        "unrealized_pnl": 0,
+        "ret": 0.0003
+    },
+    "BinanceU.th_binance_cny_sub02.perp": {
+        "wb": 3386.35,
+        "equity": 3519.44,
+        "nv": 0.9622,
+        "pnl": -917.11,
+        "unrealized_pnl": 133.09,
+        "ret": -0.0378,
+        "annual_ret": -0.067,
+        "total_position_initial_margin_in_USDT": 1735.78,
+        "total_long_position_initial_margin_in_USDT": 1459.94,
+        "total_short_position_initial_margin_in_USDT": 275.84,
+        "long_lev": 0.41,
+        "short_lev": 0.08,
+        "leverage": 0.49,
+        "equity_in_cny": "2.53",
+        "pnl_in_cny": "-0.66",
+        "month_to_date_pnl": "NaN",
+        "month_init_nv": 1.0046
     }
 }

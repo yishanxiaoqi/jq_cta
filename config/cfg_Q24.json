@@ -1,0 +1,26 @@
+{
+    "alias": "R24",
+    "clear_existing_status": false,
+    "interval": "1d",
+    "symbols": [
+        "RUNEUSDT"
+    ],
+    "idfs": [
+        "BinanceU.RUNEUSDT.perp"
+    ],
+    "entries": [
+        "BinanceU.RUNEUSDT.perp.1d"
+    ],
+    "BinanceU.RUNEUSDT.perp.1d": {
+        "splitAt": 0,
+        "track_ATR_n": 5,
+        "track_ATR_multiplier": 0.2,
+        "stop_rate": 0.12,
+        "stoploss_rate": 0.03,
+        "af": 0.01,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "Q240000"
+    }
+}

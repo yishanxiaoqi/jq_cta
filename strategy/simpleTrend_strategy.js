@@ -167,39 +167,88 @@ class SimpleTrendStrategy extends StrategyBase{
         that.summary["overall"]["short_num"] = short_num;
     }
 
+    // load_klines() {
+    //     logger.info("Loading the klines from https://fapi.binance.com/fapi/v1/klines/");
+    //     let that = this;
+
+    //     that.cfg["entries"].forEach((entry) => {
+    //         let [exchange, symbol, contract_type, interval] = entry.split(".");
+    //         let num = (interval === "1d") ? 24 : parseInt(interval.split("h")[0]);
+    //         assert(["1d", "12h", "8h", "6h", "4h", "3h", "2h", "1h"].includes(interval));
+    //         that.klines[entry] = { "ts": [], "open": [], "high": [], "low": [], "ready": false };
+
+    //         let n_klines = (that.cfg[entry]["track_ATR_n"] + 1) * num;
+    //         let url = "https://fapi.binance.com/fapi/v1/klines/?symbol=" + symbol + "&contractType=PERPETUAL&interval=1h&limit=" + n_klines;
+    //         request.get({
+    //             url: url, json: true
+    //         }, function (error, res, body) {
+    //             let high = Number.NEGATIVE_INFINITY, low = Number.POSITIVE_INFINITY;
+    //             for (let i = body.length - 1; i >= 0; i--) {
+    //                 let ts = utils.get_human_readable_timestamp(body[i][0]);
+    //                 let hour = parseInt(ts.slice(8, 10));
+    //                 high = Math.max(high, parseFloat(body[i][2]));
+    //                 low = Math.min(low, parseFloat(body[i][3]));
+    //                 if ((interval === "1h") || (hour % num === that.cfg[entry]["splitAt"])) {
+    //                     that.klines[entry]["ts"].push(ts);
+    //                     that.klines[entry]["open"].push(parseFloat(body[i][1]));
+    //                     that.klines[entry]["high"].push(high);
+    //                     that.klines[entry]["low"].push(low);
+    //                     high = Number.NEGATIVE_INFINITY;
+    //                     low = Number.POSITIVE_INFINITY;
+    //                 }
+    //             }
+    //         });
+    //         setTimeout(() => that.klines[entry]["ready"] = true, 2000);
+    //     });
+    // }
+
     load_klines() {
-        logger.info("Loading the klines from https://fapi.binance.com/fapi/v1/klines/");
+        let that = this;
+        that.cfg["entries"].forEach((entry) => {
+            that.load_entry_klines(entry);
+        });
+    }
+
+    load_entry_klines(entry) {
         let that = this;
 
-        that.cfg["entries"].forEach((entry) => {
-            let [exchange, symbol, contract_type, interval] = entry.split(".");
-            let num = (interval === "1d") ? 24 : parseInt(interval.split("h")[0]);
-            assert(["1d", "12h", "8h", "6h", "4h", "3h", "2h", "1h"].includes(interval));
-            that.klines[entry] = { "ts": [], "open": [], "high": [], "low": [], "ready": false };
+        let [exchange, symbol, contract_type, interval] = entry.split(".");
+        let num = (interval === "1d") ? 24 : parseInt(interval.split("h")[0]);
+        assert(["1d", "12h", "8h", "6h", "4h", "3h", "2h", "1h"].includes(interval));
+        that.klines[entry] = { "ts": [], "open": [], "high": [], "low": [], "ready": false };
 
-            let n_klines = (that.cfg[entry]["track_ATR_n"] + 1) * num;
-            let url = "https://fapi.binance.com/fapi/v1/klines/?symbol=" + symbol + "&contractType=PERPETUAL&interval=1h&limit=" + n_klines;
-            request.get({
-                url: url, json: true
-            }, function (error, res, body) {
-                let high = Number.NEGATIVE_INFINITY, low = Number.POSITIVE_INFINITY;
-                for (let i = body.length - 1; i >= 0; i--) {
-                    let ts = utils.get_human_readable_timestamp(body[i][0]);
-                    let hour = parseInt(ts.slice(8, 10));
-                    high = Math.max(high, parseFloat(body[i][2]));
-                    low = Math.min(low, parseFloat(body[i][3]));
-                    if ((interval === "1h") || (hour % num === that.cfg[entry]["splitAt"])) {
-                        that.klines[entry]["ts"].push(ts);
-                        that.klines[entry]["open"].push(parseFloat(body[i][1]));
-                        that.klines[entry]["high"].push(high);
-                        that.klines[entry]["low"].push(low);
-                        high = Number.NEGATIVE_INFINITY;
-                        low = Number.POSITIVE_INFINITY;
-                    }
+        let n_klines = (that.cfg[entry]["track_ATR_n"] + 1) * num;
+        let url = "https://fapi.binance.com/fapi/v1/klines?symbol=" + symbol + "&contractType=PERPETUAL&interval=1h&limit=" + n_klines;
+        logger.info(`Loading the klines from ${url}`);
+        request.get({
+            url: url, json: true
+        }, function (error, res, body) {
+            let high = Number.NEGATIVE_INFINITY, low = Number.POSITIVE_INFINITY;
+            for (let i = body.length - 1; i >= 0; i--) {
+                let ts = utils.get_human_readable_timestamp(body[i][0]);
+                let hour = parseInt(ts.slice(8, 10));
+                high = Math.max(high, parseFloat(body[i][2]));
+                low = Math.min(low, parseFloat(body[i][3]));
+                if ((interval === "1h") || (hour % num === that.cfg[entry]["splitAt"])) {
+                    that.klines[entry]["ts"].push(ts);
+                    that.klines[entry]["open"].push(parseFloat(body[i][1]));
+                    that.klines[entry]["high"].push(high);
+                    that.klines[entry]["low"].push(low);
+                    high = Number.NEGATIVE_INFINITY;
+                    low = Number.POSITIVE_INFINITY;
                 }
-            });
-            setTimeout(() => that.klines[entry]["ready"] = true, 2000);
+            }
         });
+
+        setTimeout(() => {
+            logger.info(`${entry}:${JSON.stringify(that.klines[entry])}`);
+            if ((that.klines[entry]["ts"].length === 0) || (isNaN(that.klines[entry]['open'][0]))) {
+                logger.info(`Reloading ${entry} klines ...`);
+                that.load_entry_klines(entry);
+            } else {
+                that.klines[entry]["ready"] = true;
+            }
+        }, 10000);
     }
 
     on_order_update(order_update) {

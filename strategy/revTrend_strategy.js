@@ -166,41 +166,91 @@ class RevTrendStrategy extends StrategyBase {
         that.summary["overall"]["short_num"] = short_num;
     }
 
+    // load_klines() {
+    //     let that = this;
+
+    //     let interval = that.cfg["interval"];
+    //     let num = (interval.endsWith("d")) ? parseInt(interval.split("d")[0]) * 24 : parseInt(interval.split("h")[0]);
+    //     assert(["2d", "1d", "12h", "8h", "6h", "4h", "3h", "2h", "1h"].includes(interval));
+
+    //     that.cfg["idfs"].forEach((idf) => {
+    //         that.klines[idf] = { "ts": [], "open": [], "high": [], "low": [], "ready": false };
+    //         let symbol = idf.split(".")[1];
+    //         let n_klines = (that.cfg[idf]["track_ATR_n"] + 1) * num;
+    //         let url = "https://fapi.binance.com/fapi/v1/klines/?symbol=" + symbol + "&contractType=PERPETUAL&interval=1h&limit=" + n_klines;
+    //         logger.info(`Loading the klines from ${url}`);
+    //         request.get({
+    //             url: url, json: true
+    //         }, function (error, res, body) {
+    //             let high = Number.NEGATIVE_INFINITY, low = Number.POSITIVE_INFINITY;
+    //             for (let i = body.length - 1; i >= 0; i--) {
+    //                 let ts = utils.get_human_readable_timestamp(body[i][0]);
+    //                 // 如果是2d-interval，那么从2000-01-01的零点开始算splitAt
+    //                 let hour = (interval == "2d") ? moment(ts, "YYYYMMDDHHmmssSSS").diff(moment("20000101000000000", "YYYYMMDDHHmmssSSS"), 'hours') : parseInt(ts.slice(8, 10));
+    //                 high = Math.max(high, parseFloat(body[i][2]));
+    //                 low = Math.min(low, parseFloat(body[i][3]));
+    //                 if ((interval === "1h") || (hour % num === that.cfg[idf]["splitAt"])) {
+    //                     that.klines[idf]["ts"].push(ts);
+    //                     that.klines[idf]["open"].push(parseFloat(body[i][1]));
+    //                     that.klines[idf]["high"].push(high);
+    //                     that.klines[idf]["low"].push(low);
+    //                     high = Number.NEGATIVE_INFINITY;
+    //                     low = Number.POSITIVE_INFINITY;
+    //                 }
+    //             }
+    //         });
+    //         setTimeout(() => that.klines[idf]["ready"] = true, 5000);
+    //     });
+    // }
+
     load_klines() {
-        logger.info("Loading the klines from https://fapi.binance.com/fapi/v1/klines/");
+        let that = this;
+        that.cfg["idfs"].forEach((idf) => {
+            that.load_idf_klines(idf);
+        });
+    }
+
+    load_idf_klines(idf) {
         let that = this;
 
         let interval = that.cfg["interval"];
         let num = (interval.endsWith("d")) ? parseInt(interval.split("d")[0]) * 24 : parseInt(interval.split("h")[0]);
         assert(["2d", "1d", "12h", "8h", "6h", "4h", "3h", "2h", "1h"].includes(interval));
 
-        that.cfg["idfs"].forEach((idf) => {
-            that.klines[idf] = { "ts": [], "open": [], "high": [], "low": [], "ready": false };
-            let symbol = idf.split(".")[1];
-            let n_klines = (that.cfg[idf]["track_ATR_n"] + 1) * num;
-            let url = "https://fapi.binance.com/fapi/v1/klines/?symbol=" + symbol + "&contractType=PERPETUAL&interval=1h&limit=" + n_klines;
-            request.get({
-                url: url, json: true
-            }, function (error, res, body) {
-                let high = Number.NEGATIVE_INFINITY, low = Number.POSITIVE_INFINITY;
-                for (let i = body.length - 1; i >= 0; i--) {
-                    let ts = utils.get_human_readable_timestamp(body[i][0]);
-                    // 如果是2d-interval，那么从2000-01-01的零点开始算splitAt
-                    let hour = (interval == "2d") ? moment(ts, "YYYYMMDDHHmmssSSS").diff(moment("20000101000000000", "YYYYMMDDHHmmssSSS"), 'hours') : parseInt(ts.slice(8, 10));
-                    high = Math.max(high, parseFloat(body[i][2]));
-                    low = Math.min(low, parseFloat(body[i][3]));
-                    if ((interval === "1h") || (hour % num === that.cfg[idf]["splitAt"])) {
-                        that.klines[idf]["ts"].push(ts);
-                        that.klines[idf]["open"].push(parseFloat(body[i][1]));
-                        that.klines[idf]["high"].push(high);
-                        that.klines[idf]["low"].push(low);
-                        high = Number.NEGATIVE_INFINITY;
-                        low = Number.POSITIVE_INFINITY;
-                    }
+        that.klines[idf] = { "ts": [], "open": [], "high": [], "low": [], "ready": false };
+        let symbol = idf.split(".")[1];
+        let n_klines = (that.cfg[idf]["track_ATR_n"] + 1) * num;
+        let url = "https://fapi.binance.com/fapi/v1/klines?symbol=" + symbol + "&contractType=PERPETUAL&interval=1h&limit=" + n_klines;
+        logger.info(`Loading the klines from ${url}`);
+        request.get({
+            url: url, json: true
+        }, function (error, res, body) {
+            let high = Number.NEGATIVE_INFINITY, low = Number.POSITIVE_INFINITY;
+            for (let i = body.length - 1; i >= 0; i--) {
+                let ts = utils.get_human_readable_timestamp(body[i][0]);
+                // 如果是2d-interval，那么从2000-01-01的零点开始算splitAt
+                let hour = (interval == "2d") ? moment(ts, "YYYYMMDDHHmmssSSS").diff(moment("20000101000000000", "YYYYMMDDHHmmssSSS"), 'hours') : parseInt(ts.slice(8, 10));
+                high = Math.max(high, parseFloat(body[i][2]));
+                low = Math.min(low, parseFloat(body[i][3]));
+                if ((interval === "1h") || (hour % num === that.cfg[idf]["splitAt"])) {
+                    that.klines[idf]["ts"].push(ts);
+                    that.klines[idf]["open"].push(parseFloat(body[i][1]));
+                    that.klines[idf]["high"].push(high);
+                    that.klines[idf]["low"].push(low);
+                    high = Number.NEGATIVE_INFINITY;
+                    low = Number.POSITIVE_INFINITY;
                 }
-            });
-            setTimeout(() => that.klines[idf]["ready"] = true, 5000);
+            }
         });
+
+        setTimeout(() => {
+            logger.info(`${idf}:${JSON.stringify(that.klines[idf])}`);
+            if ((that.klines[idf]["ts"].length === 0) || (isNaN(that.klines[idf]['open'][0]))) {
+                that.load_idf_klines(idf);
+            } else {
+                that.klines[idf]["ready"] = true;
+            }
+        }, 10000);
     }
 
     on_order_update(order_update) {

@@ -202,7 +202,13 @@ class BalanceMonitor extends StrategyBase {
         let n_days = Math.max(1, - this.init_dates[account].diff(today, "days"));
 
         this.account_summary[account]["wb"] =  stratutils.round(balance["wallet_balance_in_USD"], 2);
-        this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"], 2);
+
+        // FUSD for launchpool
+        if (account === "BinanceU.th_binance_cny_master.perp") {
+            this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"] + 49950, 2);
+        } else {
+            this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"], 2);
+        }
 
         this.account_summary[account]["nv"] = stratutils.round(this.account_summary[account]["equity"] / this.denominator[account], 4); 
         this.account_summary[account]["pnl"] = stratutils.round(this.account_summary[account]["equity"] - this.init_equity[account], 2);

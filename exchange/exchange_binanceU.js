@@ -246,6 +246,11 @@ class ExchangeBinanceU extends ExchangeBase {
     }
 
     _format_order_update(jdata, account_id) {
+        /**
+         * submit_price: 如果是stop_market order就是stop_price，如果是其他则是price
+         */
+        let order_type = utils._util_get_key_by_value(apiconfig.BinanceU.orderTypeMap, jdata["o"]["o"]);
+        let submit_price = (order_type == ORDER_TYPE.STOP_MARKET) ? parseFloat(jdata["o"]["sp"]) : parseFloat(jdata["o"]["p"]);
         let order_update = {
             exchange: EXCHANGE.BINANCEU,
             symbol: jdata["o"]["s"],
@@ -263,12 +268,12 @@ class ExchangeBinanceU extends ExchangeBase {
             },
             timestamp: utils._util_get_human_readable_timestamp(),
             order_info: {
-                order_type: utils._util_get_key_by_value(apiconfig.BinanceU.orderTypeMap, jdata["o"]["o"]),
+                order_type: order_type,
                 original_amount: parseFloat(jdata["o"]["q"]),
                 filled: parseFloat(jdata["o"]["z"]),
                 new_filled: parseFloat(jdata["o"]["l"]),
                 avg_executed_price: parseFloat(jdata["o"]["ap"]),
-                submit_price: parseFloat(jdata["o"]["p"]),
+                submit_price: submit_price,
                 status: this._convert_to_standard_order_status(jdata["o"]["X"])
             }
         };

@@ -250,7 +250,7 @@ class RevTrendStrategy extends StrategyBase {
             } else {
                 that.klines[idf]["ready"] = true;
             }
-        }, 10000);
+        }, 5000);
     }
 
     on_order_update(order_update) {

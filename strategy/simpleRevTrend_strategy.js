@@ -213,7 +213,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
         assert(["1d", "12h", "8h", "6h", "4h", "3h", "2h", "1h"].includes(interval));
 
         let n_klines = (that.cfg[entry]["track_ATR_n"] + 1) * num;
-        let url = "https://fapi.binance.com/fapi/v1/klines/?symbol=" + symbol + "&contractType=PERPETUAL&interval=1h&limit=" + n_klines;
+        let url = "https://fapi.binance.com/fapi/v1/klines?symbol=" + symbol + "&contractType=PERPETUAL&interval=1h&limit=" + n_klines;
         logger.info(`Loading the klines from ${url}`);
         request.get({
             url: url, json: true
@@ -238,12 +238,12 @@ class SimpleRevTrendStrategy extends StrategyBase {
         setTimeout(() => {
             logger.info(`${entry}:${JSON.stringify(that.klines[entry])}`);
             if ((that.klines[entry]["ts"].length === 0) || (isNaN(that.klines[entry]['open'][0]))) {
-                logger.info(`Reloading ${entry} klines ...`);
+                logger.info(`Something is wrong with klines loading, reloading ${entry} klines ...`);
                 that.load_entry_klines(entry);
             } else {
                 that.klines[entry]["ready"] = true;
             }
-        }, 10000);
+        }, 5000);
     }
 
     on_order_update(order_update) {
@@ -407,7 +407,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 that.status_map[entry]["triggered"] = "";
                 if (that.status_map[entry]["status"] === "EMPTY") {
                     // 订单完全成交，仓位变为空，这说明是平仓单
-                    // 平仓之后不要继续开仓
+                    // 平仓之后不要继续开仓，因此stop_market order成交后bar_enter_n设置为1
 
                     // target是EMPTY的订单有以下几种情况：
                     // ANTI_L|STOPLOSS, ANTI_S|STOPLOSS，这种都是stop market order，一旦触发自动成交，因此不涉及deal_with_TBA的问题

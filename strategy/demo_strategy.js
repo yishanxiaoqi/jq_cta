@@ -14,12 +14,12 @@ class DemoStrategy extends StrategyBase {
 
         setTimeout(() => {
             // this._test_send_post_only_order();
-            // this._test_send_order();
+            this._test_send_order();
             // this._test_cancel_order();
             // this._test_inspect_order();
             // this._test_query_orders();
             // this._test_modify_order();
-            this._test_query_account();
+            // this._test_query_account();
         }, 1000);
     }
 
@@ -82,11 +82,11 @@ class DemoStrategy extends StrategyBase {
             exchange: EXCHANGE.BINANCEU,
             symbol: "BTCUSDT",
             contract_type: CONTRACT_TYPE.PERP,
-            price: 35000,
+            stop_price: 57000,
             quantity: 0.01,
-            direction: DIRECTION.SELL,
-            order_type: ORDER_TYPE.LIMIT,
-            account_id: "th_binance_cny_sub03",
+            direction: DIRECTION.BUY,
+            order_type: ORDER_TYPE.STOP_MARKET,
+            account_id: "th_binance_cny_sub01",
             client_order_id: "12345678911xxx"
         });
     };

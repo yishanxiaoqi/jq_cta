@@ -1,0 +1,30 @@
+{
+    "alias": "Q01",
+    "clear_existing_status": true,
+    "interval": "1h",
+    "ini_usdt": 100,
+    "act_ids": [
+        "th_binance_cny_sub01"
+    ],
+    "symbols": [
+        "RUNEUSDT"
+    ],
+    "idfs": [
+        "BinanceU.RUNEUSDT.perp"
+    ],
+    "entries": [
+        "BinanceU.RUNEUSDT.perp.1h"
+    ],
+    "BinanceU.RUNEUSDT.perp.1h": {
+        "splitAt": 0,
+        "track_ATR_n": 20,
+        "track_ATR_multiplier": 0.1,
+        "stop_rate": 0.15,
+        "stoploss_rate": 0.01,
+        "af": 0.01,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "Q010000"
+    }
+}

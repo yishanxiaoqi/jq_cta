@@ -103,7 +103,11 @@ LABELMAP = {
     "ANTI_L|STOPLOSS": "LS",
     "ANTI_L|REVERSE": "LR",
     "ANTI_S|STOPLOSS": "SS",
-    "ANTI_S|REVERSE": "SR"
+    "ANTI_S|REVERSE": "SR",
+
+    // QuickTrend策略
+    "UC": "UC",
+    "DC": "DC",
 }
 
 
@@ -1748,6 +1752,7 @@ MIN_ORDER_SIZE = {
     'BinanceU.ETHUSDT.perp': 0.001,
     'BinanceU.ETHUSDT.quarter': 0.001,
     'BinanceU.ETHUSDT.next_quarter': 0.001,
+    
     'BinanceU.BNBUSDT.perp': 0.001,
     'BinanceU.XRPUSDT.perp': 0.001,
     'BinanceU.FTTUSDT.perp': 0.001,

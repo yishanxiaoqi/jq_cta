@@ -45,7 +45,7 @@ class BalanceMonitor extends StrategyBase {
             "BinanceU.th_binance_cny_sub02.perp": moment("2024-01-13"),
             "BinanceU.th_binance_cny_sub03.perp": moment("2023-10-27")
         };
-        this.aliases = ["R01", "R06", "R12", "R24", "R48", "STR", "SRE"];
+        this.aliases = ["R01", "R06", "R12", "R24", "R48", "Q01", "STR", "SRE"];
 
         // 初始化各个账户的结单
         this.account_summary = {};
@@ -116,7 +116,7 @@ class BalanceMonitor extends StrategyBase {
                 loop_entries = cfg["entries"];
                 add_items = ["status", "triggered", "net_profit"]; 
                 text += `========${alias}========\nentry\tstatus\tfee\tnp\n`;
-            } else if (alias === "STR") {
+            } else if (["STR", "Q01"].includes(alias)) {
                 loop_entries = cfg["entries"];
                 add_items = ["status", "net_profit"]; 
                 text += `========${alias}========\nentry\tstatus\tnp\n`;
@@ -205,7 +205,7 @@ class BalanceMonitor extends StrategyBase {
 
         // FUSD for launchpool
         if (account === "BinanceU.th_binance_cny_master.perp") {
-            this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"] + 49950, 2);
+            this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"], 2);
         } else {
             this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"], 2);
         }
@@ -294,7 +294,7 @@ class BalanceMonitor extends StrategyBase {
             let cfg = JSON.parse(fs.readFileSync(`./config/cfg_${alias}.json`, 'utf8'));
             let status_map = JSON.parse(fs.readFileSync(`./config/status_map_${alias}.json`, 'utf8'));
             // 不在cfg里面的不需要进行统计
-            let loop_items = (["STR", "SRE", "XEM", "XES"].includes(alias))? cfg["entries"]: cfg["idfs"];
+            let loop_items = (alias.startsWith("R"))? cfg["idfs"] : cfg["entries"];
 
             for (let item of loop_items) {
                 if (cfg[item].act_id !== account_id) continue;
@@ -385,19 +385,19 @@ let intercom_config = [
 strategy = new BalanceMonitor("BalanceMonitor", "BAM", new Intercom(intercom_config));
 strategy.start();
 
-// process.on('SIGINT', async () => {
-//     logger.info(`${strategy.alias}::SIGINT`);
-//     setTimeout(() => process.exit(), 3000)
-// });
+process.on('SIGINT', async () => {
+    logger.info(`${strategy.alias}::SIGINT`);
+    setTimeout(() => process.exit(), 3000)
+});
 
-// process.on('exit', async () => {
-//     logger.info(`${strategy.alias}:: exit`);
-// });
+process.on('exit', async () => {
+    logger.info(`${strategy.alias}:: exit`);
+});
 
-// process.on('uncaughtException', (err) => {
-//     logger.error(`uncaughtException: ${JSON.stringify(err.stack)}`);
-// });
+process.on('uncaughtException', (err) => {
+    logger.error(`uncaughtException: ${JSON.stringify(err.stack)}`);
+});
 
-// process.on('unhandledRejection', (reason, p) => {
-//     logger.error(`unhandledRejection: ${p}, reason: ${reason}`);
-// });
+process.on('unhandledRejection', (reason, p) => {
+    logger.error(`unhandledRejection: ${p}, reason: ${reason}`);
+});

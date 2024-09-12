@@ -45,7 +45,8 @@ ORDER_STATUS = {
     CANCELLED: "cancelled",
     FILLED: "filled",
     PARTIALLY_FILLED: "partially_filled",
-    MODIFIED: "modified"
+    MODIFIED: "modified",
+    EXPIRED: "expired"
 }
 
 MARKET_DATA = {

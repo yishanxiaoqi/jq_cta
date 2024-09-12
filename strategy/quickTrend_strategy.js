@@ -272,12 +272,12 @@ class QuickTrendStrategy extends StrategyBase {
                         client_order_id: that.order_map[entry]["DN"]["client_order_id"],
                         account_id: act_id,
                     });
-                    // 这里删除以label为key的item，在on_order_update里面删除以client_order_id为key的item
+                    // 这里删除以label为key的item，在撤单成功的on_order_update里面删除以client_order_id为key的item
                     delete that.order_map[entry]["DN"];
                 }
 
                 if ("DC" in that.order_map[entry]) {
-                    // The UP ORDER got filled, cancel the DN order
+                    // The UP ORDER got filled, cancel the DC order
                     that.cancel_order({
                         exchange: exchange,
                         symbol: symbol,
@@ -305,7 +305,7 @@ class QuickTrendStrategy extends StrategyBase {
                 }
 
                 if ("UC" in that.order_map[entry]) {
-                    // The DN ORDER got filled, cancel the UP order
+                    // The DN ORDER got filled, cancel the UC order
                     that.cancel_order({
                         exchange: exchange,
                         symbol: symbol,
@@ -315,6 +315,38 @@ class QuickTrendStrategy extends StrategyBase {
                     });
                     // 这里删除label，在on_order_update里面删除client_order_id
                     delete that.order_map[entry]["UC"];
+                }
+
+            } else if (label === "ANTI_L|STOPLOSS") {
+                // 多仓下触发止损，撤掉对应的UC单
+
+                if ("UC" in that.order_map[entry]) {
+                    // The DN ORDER got filled, cancel the UC order
+                    that.cancel_order({
+                        exchange: exchange,
+                        symbol: symbol,
+                        contract_type: contract_type,
+                        client_order_id: that.order_map[entry]["UC"]["client_order_id"],
+                        account_id: act_id,
+                    });
+                    // 这里删除label，在on_order_update里面删除client_order_id
+                    delete that.order_map[entry]["UC"];
+                }
+
+            } else if (label === "ANTI_S|STOPLOSS") {
+                // 空仓下触发止损，撤销对应的DC单
+
+                if ("DC" in that.order_map[entry]) {
+                    // The UP ORDER got filled, cancel the DC order
+                    that.cancel_order({
+                        exchange: exchange,
+                        symbol: symbol,
+                        contract_type: contract_type,
+                        client_order_id: that.order_map[entry]["DC"]["client_order_id"],
+                        account_id: act_id,
+                    });
+                    // 这里删除以label为key的item，在on_order_update里面删除以client_order_id为key的item
+                    delete that.order_map[entry]["DC"];
                 }
 
             }
@@ -346,18 +378,21 @@ class QuickTrendStrategy extends StrategyBase {
                     // 订单完全成交，仓位变为空，这说明是平仓单
                     // 平仓之后不要继续开仓
 
-                    // 如果是stop market order完全成交，说明是开仓，bar_enter_n设置为1，防止继续发单开仓
-                    if (order_type === ORDER_TYPE.STOP_MARKET) that.status_map[entry]["bar_enter_n"] = 1;
+                    // 订单成交后status是EMPTY，bar_enter_n设置为1，防止继续发单开仓
+                    that.status_map[entry]["bar_enter_n"] = 1;
 
-                    for (let item of ["bar_n", "enter"]) {
+                    for (let item of ["bar_n", "enter", "stop_price", "stoploss_rate"]) {
                         that.status_map[entry][item] = "";
                     }
                 } else {
+                    let stoploss_rate = that.cfg[entry]["stoploss_rate"];
+                    let stop_rate = that.cfg[entry]["stop_rate"];
                     // 开仓之后，bar_enter_n设置为1，本策略（QuickTrend）在每个interval内只允许开仓一次
                     that.status_map[entry]["bar_n"] = 0;
                     that.status_map[entry]["bar_enter_n"] += 1;
                     that.status_map[entry]["enter"] = avg_executed_price;
-                    that.status_map[entry]["stoploss_price"] = (that.status_map[entry]["status"] === "LONG") ? submit_price * (1 - stoploss_rate) : submit_price * (1 + stoploss_rate);
+                    that.status_map[entry]["stoploss_price"] = (that.status_map[entry]["status"] === "LONG") ? that.status_map[entry]["up"] * (1 - stoploss_rate) : that.status_map[entry]["dn"] * (1 + stoploss_rate);
+                    that.status_map[entry]["stop_price"] = (that.status_map[entry]["status"] === "LONG") ? that.status_map[entry]["up"] * (1 + stop_rate) : that.status_map[entry]["dn"] * (1 - stop_rate);
                 }
 
                 // 订单完全成交，在order_map中删去该订单（注意：完全成交才删除，且当场删除！）
@@ -365,6 +400,10 @@ class QuickTrendStrategy extends StrategyBase {
 
                 // 订单完全成交，remove the client_order_id from order_map 100ms later, as the on_response may need to use it!
                 setTimeout(() => delete that.order_map[entry][client_order_id], 100);
+
+                // 检查一下status_map和order_map变化
+                logger.info(`${that.alias}|${entry}::${JSON.stringify(that.status_map[entry])}`);
+                logger.info(`${that.alias}|${entry}::${JSON.stringify(that.order_map[entry])}`);
 
             } else {
                 // 订单部分成交，处于触发状态
@@ -374,7 +413,7 @@ class QuickTrendStrategy extends StrategyBase {
 
             // record the order filling details
             let ts = order_update["metadata"]["timestamp"];
-            let filled_info = [act_id, exchange, symbol, contract_type, client_order_id, original_amount, filled, submit_price, avg_executed_price, fee].join(",");
+            let filled_info = [act_id, exchange, symbol, contract_type, client_order_id, order_type, original_amount, filled, submit_price, avg_executed_price, fee].join(",");
             // order_map中只提取label,target,quantity,time,filled等信息
             let order_info = (that.order_map[entry][client_order_id] === undefined) ? "" : Object.entries(that.order_map[entry][client_order_id]).filter((element) => ["label", "target", "quantity", "time", "filled"].includes(element[0])).map((element) => element[1]).join(",");
             let output_string = [ts, filled_info, order_info].join(",");
@@ -422,7 +461,9 @@ class QuickTrendStrategy extends StrategyBase {
                 // 如果一些订单已经触发但是迟迟不能成交，必须进行处理
                 // TODO: 如果在new_bar的一瞬间正在部分成交（虽然是小概率事件），怎么办？
                 that.status_map[entry]["bar_enter_n"] = 0;
-                if (that.status_map[entry]["status"] === "TBA") that.deal_with_TBA(entry);
+
+                // 没有deal_with_TBA函数
+                // if (that.status_map[entry]["status"] === "TBA") that.deal_with_TBA(entry);
             }
 
             if (that.cur_bar_otime[entry] > that.klines[entry]["ts"][0]) {
@@ -489,8 +530,8 @@ class QuickTrendStrategy extends StrategyBase {
 
         if (isNaN(up_price) || (isNaN(dn_price))) return;
 
-        // 只在new_bar或者new_start的时候才对发单进行调整
-        if (!new_bar && !new_start) return; 
+        // 只在new_bar或者new_start的时候才对发单进行调整??? 要注释掉，QTR策略并不是只在new_bar或者new_start的时候对发单进行调整！
+        // if (!new_bar && !new_start) return; 
 
         let orders_to_be_cancelled = [];    // client_order_id only
         let orders_to_be_submitted = [];    // {label: "", target: "", tgt_qty: "", price: "", direction: ""}
@@ -552,7 +593,7 @@ class QuickTrendStrategy extends StrategyBase {
                     if ((current_uc_price !== stop_price) || (current_uc_qty !== uc_tgt_qty)) {
                         // 若已存的止盈单和现行不一致，则撤销重新发
                         orders_to_be_cancelled.push(current_uc_client_order_id);
-                        orders_to_be_submitted.push({ label: "UC", target: "SHORT", quantity: up_tgt_qty, price: up_price, direction: DIRECTION.SELL, order_type: ORDER_TYPE.LIMIT });
+                        orders_to_be_submitted.push({ label: "UC", target: "EMPTY", quantity: uc_tgt_qty, price: stop_price, direction: DIRECTION.SELL, order_type: ORDER_TYPE.LIMIT });
                     }
                 }
             }

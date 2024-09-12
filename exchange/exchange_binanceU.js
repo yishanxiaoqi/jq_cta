@@ -361,6 +361,8 @@ class ExchangeBinanceU extends ExchangeBase {
                 return ORDER_STATUS.PARTIALLY_FILLED;
             case "modified":
                 return ORDER_STATUS.MODIFIED; 
+            case "EXPIRED":
+                return ORDER_STATUS.EXPIRED;
             default:
                 logger.warn(`No predefined order status conversion rule in ${this.name} for ${status}`);
                 return "unknown";
@@ -683,7 +685,7 @@ class ExchangeBinanceU extends ExchangeBase {
             let body = await rp.put(options);
             //body, e.g:{ symbol: 'BNBBTC',origClientOrderId: 'Q6KYAotfs3rC4Sh99vBVAv',orderId: 55949780,clientOrderId: 'TNJyVOwfgjJCglNldbogbG' }
             body = JSON.parse(body);
-            console.log(JSON.stringify(body));
+            // console.log(JSON.stringify(body));
             if (typeof body !== "undefined" && body["orderId"]) {
                 body["result"] = true;
                 // BinanceU里面返回的status是NEW
@@ -898,7 +900,7 @@ class ExchangeBinanceU extends ExchangeBase {
             let body = await rp.get(options);
             body = JSON.parse(body);
 
-            console.log(JSON.stringify(body));
+            // console.log(JSON.stringify(body));
 
             // BinanceU中订单只有5中状态：NEW, PARTIALLY_FILLED, FILLED, CANCELLED, EXPIRED
             let active_orders = body.filter((order) => (["NEW", "PARTIALLY_FILLED"].includes(order.status)));
@@ -1067,7 +1069,7 @@ class ExchangeBinanceU extends ExchangeBase {
             let body = await rp.get(options);
             body = JSON.parse(body);
 
-            console.log(JSON.stringify(body));
+            // console.log(JSON.stringify(body));
 
             let assets_USDT = body["assets"].filter((asset) => asset.asset === "USDT")[0];
             let assets_BNB = body["assets"].filter((asset) => asset.asset === "BNB")[0];

@@ -17,6 +17,7 @@
         "MKRUSDT",
         "NEARUSDT",
         "QTUMUSDT",
+        "RSRUSDT",
         "SANDUSDT",
         "VETUSDT"
     ],
@@ -33,6 +34,7 @@
         "BinanceU.MKRUSDT.perp",
         "BinanceU.NEARUSDT.perp",
         "BinanceU.QTUMUSDT.perp",
+        "BinanceU.RSRUSDT.perp",
         "BinanceU.SANDUSDT.perp",
         "BinanceU.VETUSDT.perp"
     ],
@@ -191,6 +193,19 @@
         "ini_usdt": 8000,
         "act_id": "th_binance_cny_master",
         "cfgID": "R120041"
+    },
+    "BinanceU.RSRUSDT.perp": {
+        "splitAt": 2,
+        "track_ATR_n": 10,
+        "track_ATR_multiplier": 0.7,
+        "stoploss_rate": 0.04,
+        "cutloss_rate": 0.04,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "ini_usdt": 2000,
+        "act_id": "th_binance_cny_master",
+        "cfgID": "R120044"
     },
     "BinanceU.SANDUSDT.perp": {
         "splitAt": 2,

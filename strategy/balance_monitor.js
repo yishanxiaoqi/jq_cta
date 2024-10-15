@@ -2,6 +2,7 @@ require("../config/typedef.js");
 const fs = require('fs');
 const moment = require("moment");
 const csv = require('csv-parser');
+const disk = require('diskusage');
 
 const StrategyBase = require("./strategy_base.js");
 const Intercom = require("../module/intercom");
@@ -349,10 +350,20 @@ class BalanceMonitor extends StrategyBase {
             txt += `====${account}====\npnl\t\tret\t\tleverage\n${pnl}\t\t${ret_per}\t\t${leverage}\nequity_in_cny\tpnl_in_cny\tmonth_to_date_pnl\n${equity_in_cny}\t\t${pnl_in_cny}\t\t${month_to_date_pnl}\n`;
         }
 
-        let obj = this.sub_streams_upd_ts;
-        let most_lag_subscription = Object.keys(obj).reduce(function(a, b) { return obj[a] < obj[b] ? a : b });
-        let max_time_lag = Math.round((moment.now() - this.sub_streams_upd_ts[most_lag_subscription]) / 1000);
-        txt += `[===IMPORTANT===] Haven't received ${most_lag_subscription} data for ${max_time_lag} s!`
+        txt += `[===IMPORTANT===]\n`
+        let top3_lag_subscription = Object.entries(this.sub_streams_upd_ts).sort(([, a], [, b]) => a - b).slice(0, 3).map(([n]) => n);
+        for (let subscription of top3_lag_subscription) {
+            let time_lag = Math.round((moment.now() - this.sub_streams_upd_ts[subscription]) / 1000);
+            txt += `${subscription} lag for ${time_lag} s!\n`
+        }
+
+        let mem = process.memoryUsage();    // 2024-09-21：这里为什么是实际内存值的三倍？不懂 {"rss":157360128,"heapTotal":23584768,"heapUsed":17692624,"external":15990849,"arrayBuffers":14454056}
+        let mem_usage = (mem.heapUsed / mem.heapTotal * 100).toFixed(1);
+        txt += `Memory usage: ${mem_usage} %\n`;
+
+        let disk_info = disk.checkSync('/');
+        let disk_usage = ((1 - disk_info.available / disk_info.total) * 100).toFixed(1);
+        txt += `Disk usage: ${disk_usage} %\n`;
 
         this.slack_publish({
             "type": "info",

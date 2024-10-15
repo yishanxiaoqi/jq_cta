@@ -581,6 +581,9 @@ class QuickTrendStrategy extends StrategyBase {
                 let sp_tgt_qty = stratutils.transform_with_tick_size(that.status_map[entry]["pos"], QUANTITY_TICK_SIZE[idf]);
                 orders_to_be_submitted.push({ label: "ANTI_L|STOPLOSS", target: "EMPTY", quantity: sp_tgt_qty, price: stoploss_price, direction: DIRECTION.SELL, order_type: ORDER_TYPE.MARKET });
             } else {
+                // 止盈单只在new_start或者new_bar的时候修改
+                if (!new_bar && !new_start) return; 
+
                 // 第二个单：止盈单（limit）
                 let uc_tgt_qty = stratutils.transform_with_tick_size(that.status_map[entry]["pos"], QUANTITY_TICK_SIZE[idf]);
                 if (that.order_map[entry]["UC"] === undefined) {
@@ -614,6 +617,9 @@ class QuickTrendStrategy extends StrategyBase {
                 let sp_tgt_qty = stratutils.transform_with_tick_size(- that.status_map[entry]["pos"], QUANTITY_TICK_SIZE[idf]);
                 orders_to_be_submitted.push({ label: "ANTI_S|STOPLOSS", target: "EMPTY", quantity: sp_tgt_qty, price: stoploss_price, direction: DIRECTION.BUY, order_type: ORDER_TYPE.MARKET });
             } else {
+                // 止盈单只在new_start或者new_bar的时候修改
+                if (!new_bar && !new_start) return; 
+
                 // 第二个单：止盈单（limit）
                 let dc_tgt_qty = stratutils.transform_with_tick_size(- that.status_map[entry]["pos"], QUANTITY_TICK_SIZE[idf]);
                 if (that.order_map[entry]["DC"] === undefined) {

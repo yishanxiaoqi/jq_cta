@@ -1192,6 +1192,8 @@ class SimpleRevTrendStrategy extends StrategyBase {
             "data": []
         }
 
+        let alert_string = "";
+
         for (let entry of that.cfg["entries"]) {
             if (act_id !== that.cfg[entry]["act_id"]) continue;
 
@@ -1220,10 +1222,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 if (that.order_map[entry][key]["ToBeDeleted"]) {
                     // 超过10秒才删除，避免order_update推送延迟，导致order_update的处理过程中order_map中信息缺失
                     if (moment.now() - value["ToBeDeletedTime"] > 1000 * 10) {
-                        that.slack_publish({
-                            "type": "alert",
-                            "msg": `${that.alias}:: order not active, but still in the order map! ${key}: ${JSON.stringify(that.order_map[entry][key])}`
-                        });
+                        alert_string += `${entry}: ${key}: ${JSON.stringify(that.order_map[entry][key])}\n`;
                         // 如果delete了，在deal_with_TBA里面又会报错？
                         // delete that.order_map[entry][key];
                     }
@@ -1235,6 +1234,14 @@ class SimpleRevTrendStrategy extends StrategyBase {
         }
 
         this.intercom.emit("UI_update", sendData, INTERCOM_SCOPE.UI);
+
+        if (alert_string !== "") {
+            logger.info(`${that.alias}:: order not active, but still in the order map as follows, \n${alert_string}`);
+            that.slack_publish({
+                "type": "alert",
+                "msg": `${that.alias}:: order not active, but still in the order mapas follows, \n${alert_string}`
+            });
+        }
     }
 }
 

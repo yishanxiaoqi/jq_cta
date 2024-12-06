@@ -30,8 +30,7 @@
         "BinanceU.AVAXUSDT.perp.1d",
         "BinanceU.BTCDOMUSDT.perp.1d",
         "BinanceU.BTCUSDT.perp.1d",
-        "BinanceU.ETHUSDT.perp.1d",
-        "BinanceU.RUNEUSDT.perp.1d"
+        "BinanceU.ETHUSDT.perp.1d"
     ],
     "BinanceU.RUNEUSDT.perp.1h": {
         "ini_usdt": 200,
@@ -164,17 +163,5 @@
         "bar_enter_limit": 1,
         "act_id": "th_binance_cny_master",
         "cfgID": "STR0026"
-    },
-    "BinanceU.RUNEUSDT.perp.1d": {
-        "ini_usdt": 500,
-        "splitAt": 0,
-        "track_ATR_multiplier": 1.1,
-        "track_ATR_n": 10,
-        "cutloss_rate": 0.24,
-        "ini_af": 0.005,
-        "delta_af": 0.005,
-        "bar_enter_limit": 1,
-        "act_id": "th_binance_cny_master",
-        "cfgID": "STR0033"
     }
 }

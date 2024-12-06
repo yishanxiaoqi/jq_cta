@@ -12,14 +12,11 @@ ALIASES = ["R01", "R06", "R12", "R24", "R48", "STR", "SRE", "Q01"];
 
 SUBSCRIPTION_LIST = [
     // CTA 
-    'BinanceU|1000SHIBUSDT|perp|trade',
     'BinanceU|1000XECUSDT|perp|trade',
     'BinanceU|ADAUSDT|perp|trade',
-    'BinanceU|ALICEUSDT|perp|trade',
     'BinanceU|ALGOUSDT|perp|trade',
     'BinanceU|ALPHAUSDT|perp|trade',
     'BinanceU|ANKRUSDT|perp|trade',
-    'BinanceU|ARPAUSDT|perp|trade',
     'BinanceU|ATOMUSDT|perp|trade',
     'BinanceU|AVAXUSDT|perp|trade',
     'BinanceU|AXSUSDT|perp|trade',
@@ -43,11 +40,12 @@ SUBSCRIPTION_LIST = [
     'BinanceU|ETHUSDT|perp|trade',
     'BinanceU|FILUSDT|perp|trade',
     'BinanceU|GRTUSDT|perp|trade',
-    'BinanceU|HBARUSDT|perp|trade',
     'BinanceU|HOTUSDT|perp|trade',
     'BinanceU|IOTAUSDT|perp|trade',
     'BinanceU|ICXUSDT|perp|trade',
     'BinanceU|KSMUSDT|perp|trade',
+    'BinanceU|KAVAUSDT|perp|trade',
+    'BinanceU|LTCUSDT|perp|trade',
     'BinanceU|MKRUSDT|perp|trade',
     'BinanceU|MTLUSDT|perp|trade',
     'BinanceU|NEARUSDT|perp|trade',
@@ -60,15 +58,16 @@ SUBSCRIPTION_LIST = [
     'BinanceU|RUNEUSDT|perp|trade',
     'BinanceU|SANDUSDT|perp|trade',
     'BinanceU|SKLUSDT|perp|trade',
+    'BinanceU|SNXUSDT|perp|trade',
     'BinanceU|SOLUSDT|perp|trade',
     'BinanceU|STMXUSDT|perp|trade',
     'BinanceU|THETAUSDT|perp|trade',
     'BinanceU|VETUSDT|perp|trade',
+    'BinanceU|XEMUSDT|perp|trade',
     'BinanceU|XMRUSDT|perp|trade',
     'BinanceU|XTZUSDT|perp|trade',
     'BinanceU|YFIUSDT|perp|trade',
-    'BinanceU|ZECUSDT|perp|trade',
-    'BinanceU|ZILUSDT|perp|trade',
+    'BinanceU|ZECUSDT|perp|trade'
 
     // 'BinanceU|1000SHIBUSDC|perp|trade',
 

@@ -1245,7 +1245,7 @@ class RevTrendStrategy extends StrategyBase {
                 if (that.order_map[idf][key]["ToBeDeleted"]) {
                     // 超过10秒才删除，避免order_update推送延迟，导致order_update的处理过程中order_map中信息缺失
                     if (moment.now() - value["ToBeDeletedTime"] > 1000 * 10) {
-                        alert_string += `${key}: ${JSON.stringify(that.order_map[idf][key])}\n`;
+                        alert_string += `${idf}: ${key}: ${JSON.stringify(that.order_map[idf][key])}\n`;
                         // 如果delete了，在deal_with_TBA里面又会报错？
                         // delete that.order_map[idf][key];
                     }
@@ -1259,7 +1259,6 @@ class RevTrendStrategy extends StrategyBase {
         that.intercom.emit("UI_update", sendData, INTERCOM_SCOPE.UI);
 
         if (alert_string !== "") {
-            // ToBeDeleted in the future
             logger.info(`${that.alias}:: order not active, but still in the order map as follows, \n${alert_string}`);
             that.slack_publish({
                 "type": "alert",

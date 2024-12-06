@@ -14,7 +14,7 @@ class DemoStrategy extends StrategyBase {
 
         setTimeout(() => {
             // this._test_send_post_only_order();
-            this._test_send_order();
+            // this._test_send_order();
             // this._test_cancel_order();
             // this._test_inspect_order();
             // this._test_query_orders();
@@ -137,7 +137,9 @@ class DemoStrategy extends StrategyBase {
     };
 
     _on_market_data_trade_ready(trade) {
-        // console.log(JSON.stringify(trade));
+        if (trade["symbol"] === "XMRUSDT") {
+            console.log(JSON.stringify(trade));
+        }
     }
 
     _on_market_data_bestquote_ready(bestquote) {

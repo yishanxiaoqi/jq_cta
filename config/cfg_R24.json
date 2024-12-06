@@ -6,7 +6,6 @@
     "interval": "1d",
     "symbols": [
         "ADAUSDT",
-        "ALGOUSDT",
         "ALPHAUSDT",
         "AXSUSDT",
         "BALUSDT",
@@ -17,7 +16,6 @@
         "DOTUSDT",
         "IOTAUSDT",
         "KSMUSDT",
-        "MKRUSDT",
         "NEARUSDT",
         "NKNUSDT",
         "RSRUSDT",
@@ -32,7 +30,6 @@
     ],
     "idfs": [
         "BinanceU.ADAUSDT.perp",
-        "BinanceU.ALGOUSDT.perp",
         "BinanceU.ALPHAUSDT.perp",
         "BinanceU.AXSUSDT.perp",
         "BinanceU.BALUSDT.perp",
@@ -43,7 +40,6 @@
         "BinanceU.DOTUSDT.perp",
         "BinanceU.IOTAUSDT.perp",
         "BinanceU.KSMUSDT.perp",
-        "BinanceU.MKRUSDT.perp",
         "BinanceU.NEARUSDT.perp",
         "BinanceU.NKNUSDT.perp",
         "BinanceU.RSRUSDT.perp",
@@ -68,19 +64,6 @@
         "ini_usdt": 6000,
         "act_id": "th_binance_cny_master",
         "cfgID": "R240060"
-    },
-    "BinanceU.ALGOUSDT.perp": {
-        "splitAt": 18,
-        "track_ATR_n": 5,
-        "track_ATR_multiplier": 0.7,
-        "stoploss_rate": 0.05,
-        "cutloss_rate": 0.01,
-        "ini_af": 0.02,
-        "delta_af": 0.02,
-        "bar_enter_limit": 1,
-        "ini_usdt": 7000,
-        "act_id": "th_binance_cny_master",
-        "cfgID": "R240061"
     },
     "BinanceU.ALPHAUSDT.perp": {
         "splitAt": 10,
@@ -211,19 +194,6 @@
         "ini_usdt": 7000,
         "act_id": "th_binance_cny_master",
         "cfgID": "R240080"
-    },
-    "BinanceU.MKRUSDT.perp": {
-        "splitAt": 1,
-        "track_ATR_n": 5,
-        "track_ATR_multiplier": 0.8,
-        "stoploss_rate": 0.05,
-        "cutloss_rate": 0.01,
-        "ini_af": 0.02,
-        "delta_af": 0.02,
-        "bar_enter_limit": 1,
-        "ini_usdt": 4000,
-        "act_id": "th_binance_cny_master",
-        "cfgID": "R240082"
     },
     "BinanceU.NEARUSDT.perp": {
         "splitAt": 19,

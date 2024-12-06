@@ -46,7 +46,7 @@ class BalanceMonitor extends StrategyBase {
             "BinanceU.th_binance_cny_sub02.perp": moment("2024-01-13"),
             "BinanceU.th_binance_cny_sub03.perp": moment("2023-10-27")
         };
-        this.aliases = ["R01", "R06", "R12", "R24", "R48", "Q01", "STR", "SRE"];
+        this.aliases = ["R01", "R06", "R12", "R24", "R48", "STR", "SRE"];
 
         // 初始化各个账户的结单
         this.account_summary = {};
@@ -117,7 +117,7 @@ class BalanceMonitor extends StrategyBase {
                 loop_entries = cfg["entries"];
                 add_items = ["status", "triggered", "net_profit"]; 
                 text += `========${alias}========\nentry\tstatus\tfee\tnp\n`;
-            } else if (["STR", "Q01"].includes(alias)) {
+            } else if (["STR"].includes(alias)) {
                 loop_entries = cfg["entries"];
                 add_items = ["status", "net_profit"]; 
                 text += `========${alias}========\nentry\tstatus\tnp\n`;

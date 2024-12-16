@@ -16,34 +16,19 @@
         "BinanceU.BTCDOMUSDT.perp",
         "BinanceU.BTCUSDT.perp",
         "BinanceU.ETHUSDT.perp",
-        "BinanceU.RUNEUSDT.perp",
         "BinanceU.VETUSDT.perp"
     ],
     "entries": [
-        "BinanceU.RUNEUSDT.perp.1h",
         "BinanceU.AVAXUSDT.perp.6h",
         "BinanceU.BTCDOMUSDT.perp.6h",
         "BinanceU.VETUSDT.perp.6h",
         "BinanceU.BTCDOMUSDT.perp.12h",
         "BinanceU.BTCUSDT.perp.12h",
         "BinanceU.VETUSDT.perp.12h",
-        "BinanceU.AVAXUSDT.perp.1d",
         "BinanceU.BTCDOMUSDT.perp.1d",
         "BinanceU.BTCUSDT.perp.1d",
         "BinanceU.ETHUSDT.perp.1d"
     ],
-    "BinanceU.RUNEUSDT.perp.1h": {
-        "ini_usdt": 200,
-        "splitAt": 0,
-        "track_ATR_multiplier": 0.7,
-        "track_ATR_n": 10,
-        "cutloss_rate": 0.25,
-        "ini_af": 0.005,
-        "delta_af": 0.005,
-        "bar_enter_limit": 1,
-        "act_id": "th_binance_cny_master",
-        "cfgID": "STR0040"
-    },
     "BinanceU.AVAXUSDT.perp.6h": {
         "ini_usdt": 200,
         "splitAt": 0,
@@ -115,18 +100,6 @@
         "bar_enter_limit": 1,
         "act_id": "th_binance_cny_master",
         "cfgID": "STR0020"
-    },
-    "BinanceU.AVAXUSDT.perp.1d": {
-        "ini_usdt": 200,
-        "splitAt": 0,
-        "track_ATR_multiplier": 1.5,
-        "track_ATR_n": 5,
-        "cutloss_rate": 0.34,
-        "ini_af": 0.01,
-        "delta_af": 0.01,
-        "bar_enter_limit": 1,
-        "act_id": "th_binance_cny_master",
-        "cfgID": "STR0048"
     },
     "BinanceU.BTCDOMUSDT.perp.1d": {
         "ini_usdt": 500,

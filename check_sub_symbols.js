@@ -15,6 +15,7 @@ for (let alias of aliases) {
         let idf = entry.split(".").slice(0, 3).join(".");
         if (! live_idfs.includes(idf)) live_idfs.push(idf);
 
+        console.log(entry);
         let act_id = (alias.startsWith("R")) ? cfg[idf]["act_id"] : cfg[entry]["act_id"];
         if (act_id in live_idfs_d) {
             if (! live_idfs_d[act_id].includes(idf)) live_idfs_d[act_id].push(idf);

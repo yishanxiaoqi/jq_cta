@@ -18,8 +18,7 @@
         "MKRUSDT",
         "SKLUSDT",
         "SOLUSDT",
-        "THETAUSDT",
-        "XEMUSDT"
+        "THETAUSDT"
     ],
     "idfs": [
         "BinanceU.1000XECUSDT.perp",
@@ -35,8 +34,7 @@
         "BinanceU.MKRUSDT.perp",
         "BinanceU.SKLUSDT.perp",
         "BinanceU.SOLUSDT.perp",
-        "BinanceU.THETAUSDT.perp",
-        "BinanceU.XEMUSDT.perp"
+        "BinanceU.THETAUSDT.perp"
     ],
     "BinanceU.1000XECUSDT.perp": {
         "splitAt": 0,
@@ -219,18 +217,5 @@
         "ini_usdt": 4000,
         "act_id": "th_binance_cny_master",
         "cfgID": "R010051"
-    },
-    "BinanceU.XEMUSDT.perp": {
-        "splitAt": 0,
-        "track_ATR_n": 20,
-        "track_ATR_multiplier": 0.2,
-        "stoploss_rate": 0.05,
-        "cutloss_rate": 0.03,
-        "ini_af": 0.02,
-        "delta_af": 0.02,
-        "bar_enter_limit": 1,
-        "ini_usdt": 200,
-        "act_id": "th_binance_cny_master",
-        "cfgID": "R010056"
     }
 }

@@ -28,25 +28,26 @@ class BalanceMonitor extends StrategyBase {
             "BinanceU.th_binance_cny_sub02.perp"
         ];
         this.init_equity = {
-            "BinanceU.th_binance_cny_master.perp": 181926.51,
-            "BinanceU.th_binance_cny_sub01.perp": 2000.57,
+            "BinanceU.th_binance_cny_master.perp": 131926.51,
+            "BinanceU.th_binance_cny_sub01.perp": 51925.76,
             "BinanceU.th_binance_cny_sub02.perp": 4436.55,
             "BinanceU.th_binance_cny_sub03.perp": 0
         };
         this.denominator = {
-            "BinanceU.th_binance_cny_master.perp": 130172.08, 
-            "BinanceU.th_binance_cny_sub01.perp": 2000.57,
+            "BinanceU.th_binance_cny_master.perp": 106226.80,   
+            "BinanceU.th_binance_cny_sub01.perp": 51925.76,
             "BinanceU.th_binance_cny_sub02.perp": 3657.59,
             "BinanceU.th_binance_cny_sub03.perp": 0
         };
         this.init_dates = {
             "BinanceU.th_binance_cny_master.perp": moment("2023-06-23"),
-            "BinanceU.th_binance_cny_sub01.perp": moment("2024-08-06"),
+            "BinanceU.th_binance_cny_sub01.perp": moment("2024-12-27"),
             // "BinanceU.th_binance_cny_sub02.perp": moment("2023-10-24"),
             "BinanceU.th_binance_cny_sub02.perp": moment("2024-01-13"),
             "BinanceU.th_binance_cny_sub03.perp": moment("2023-10-27")
         };
-        this.aliases = ["R01", "R06", "R12", "R24", "R48", "STR", "SRE"];
+        this.aliases = ["R01", "R06", "R12", "R24", "S24", "R48", "STR", "SRE"];
+        this.rev_aliases = ["R01", "R06", "R12", "R24", "S24", "R48"];
 
         // 初始化各个账户的结单
         this.account_summary = {};
@@ -206,7 +207,7 @@ class BalanceMonitor extends StrategyBase {
 
         // FUSD for launchpool
         if (account === "BinanceU.th_binance_cny_master.perp") {
-            this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"], 2);
+            this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"] + 49951.8, 2);
         } else {
             this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"], 2);
         }
@@ -295,7 +296,7 @@ class BalanceMonitor extends StrategyBase {
             let cfg = JSON.parse(fs.readFileSync(`./config/cfg_${alias}.json`, 'utf8'));
             let status_map = JSON.parse(fs.readFileSync(`./config/status_map_${alias}.json`, 'utf8'));
             // 不在cfg里面的不需要进行统计
-            let loop_items = (alias.startsWith("R"))? cfg["idfs"] : cfg["entries"];
+            let loop_items = (this.rev_aliases.includes(alias))? cfg["idfs"] : cfg["entries"];
 
             for (let item of loop_items) {
                 if (cfg[item].act_id !== account_id) continue;

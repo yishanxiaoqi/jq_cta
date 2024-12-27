@@ -4,6 +4,7 @@
     "max_num": 100,
     "ini_usdt": 300,
     "interval": "2d",
+    "act_id": "th_binance_cny_master",
     "symbols": [
         "ALPHAUSDT",
         "CHRUSDT"

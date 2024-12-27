@@ -100,10 +100,11 @@ class RevTrendStrategy extends StrategyBase {
 
     query_active_orders() {
         let that = this;
+        let act_id = this.cfg["act_id"];
         that.query_orders({
             exchange: EXCHANGE.BINANCEU,
             contract_type: CONTRACT_TYPE.PERP,
-            account_id: "th_binance_cny_master",
+            account_id: act_id,
         });
     }
 

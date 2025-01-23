@@ -2,25 +2,89 @@
     "alias": "R24",
     "clear_existing_status": false,
     "interval": "1d",
+    "ini_usdt": 100,
+    "act_ids": [
+        "th_binance_cny_sub02"
+    ],
     "symbols": [
-        "RUNEUSDT"
+        "ALICEUSDT",
+        "CHZUSDT",
+        "DOTUSDT",
+        "ETHUSDT",
+        "OMGUSDT"
     ],
     "idfs": [
-        "BinanceU.RUNEUSDT.perp"
+        "BinanceU.ALICEUSDT.perp",
+        "BinanceU.CHZUSDT.perp",
+        "BinanceU.DOTUSDT.perp",
+        "BinanceU.ETHUSDT.perp",
+        "BinanceU.OMGUSDT.perp"
     ],
     "entries": [
-        "BinanceU.RUNEUSDT.perp.1d"
+        "BinanceU.ALICEUSDT.perp.1d",
+        "BinanceU.CHZUSDT.perp.1d",
+        "BinanceU.DOTUSDT.perp.1d",
+        "BinanceU.ETHUSDT.perp.1d",
+        "BinanceU.OMGUSDT.perp.1d"
     ],
-    "BinanceU.RUNEUSDT.perp.1d": {
+    "BinanceU.ALICEUSDT.perp.1d": {
+        "splitAt": 0,
+        "track_ATR_n": 30,
+        "track_ATR_multiplier": 0.2,
+        "stop_rate": 0.11,
+        "stoploss_rate": 0.05,
+        "af": 0.01,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
+        "cfgID": "Q240018"
+    },
+    "BinanceU.CHZUSDT.perp.1d": {
+        "splitAt": 0,
+        "track_ATR_n": 10,
+        "track_ATR_multiplier": 0.2,
+        "stop_rate": 0.13,
+        "stoploss_rate": 0.02,
+        "af": 0.01,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
+        "cfgID": "Q240058"
+    },
+    "BinanceU.DOTUSDT.perp.1d": {
         "splitAt": 0,
         "track_ATR_n": 5,
-        "track_ATR_multiplier": 0.2,
+        "track_ATR_multiplier": 0.6,
+        "stop_rate": 0.06,
+        "stoploss_rate": 0.05,
+        "af": 0.01,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
+        "cfgID": "Q240070"
+    },
+    "BinanceU.ETHUSDT.perp.1d": {
+        "splitAt": 0,
+        "track_ATR_n": 15,
+        "track_ATR_multiplier": 0.3,
         "stop_rate": 0.12,
         "stoploss_rate": 0.03,
         "af": 0.01,
         "bar_enter_limit": 1,
         "ini_usdt": 100,
-        "act_id": "th_binance_cny_sub01",
-        "cfgID": "Q240000"
+        "act_id": "th_binance_cny_sub02",
+        "cfgID": "Q240088"
+    },
+    "BinanceU.OMGUSDT.perp.1d": {
+        "splitAt": 0,
+        "track_ATR_n": 5,
+        "track_ATR_multiplier": 0.5,
+        "stop_rate": 0.08,
+        "stoploss_rate": 0.04,
+        "af": 0.01,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
+        "cfgID": "Q240152"
     }
 }

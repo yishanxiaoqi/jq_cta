@@ -17,6 +17,7 @@
     // pm2 start ./strategy/simpleRevTrend_strategy.js --name SRE -- on -a SRE
     // pm2 start ./strategy/revTrend_xem_strategy.js --name XEM -- on -a XEM
     // pm2 start ./strategy/quickTrend_strategy.js --name Q01 -- on -a Q01
+    // pm2 start ./strategy/quickTrend_strategy.js --name Q24 -- on -a Q24
 
     // pm2 start ./strategy/balance_monitor.js --name BAM
 

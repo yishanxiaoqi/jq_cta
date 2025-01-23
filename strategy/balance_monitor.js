@@ -21,6 +21,7 @@ class BalanceMonitor extends StrategyBase {
         //     "BinanceU.th_binance_cny_sub02.perp",
         //     "BinanceU.th_binance_cny_sub03.perp"
         // ];
+        // accounts不包括CTA，因为CTA是两个或多个account的组合
         this.accounts = [
             // "Binance.th_binance_cny_master.spot",
             "BinanceU.th_binance_cny_master.perp",
@@ -31,28 +32,37 @@ class BalanceMonitor extends StrategyBase {
             "BinanceU.th_binance_cny_master.perp": 131926.51,
             "BinanceU.th_binance_cny_sub01.perp": 51925.76,
             "BinanceU.th_binance_cny_sub02.perp": 4436.55,
-            "BinanceU.th_binance_cny_sub03.perp": 0
+            "BinanceU.th_binance_cny_sub03.perp": 0,
+            "CTA": 183852.3
         };
         this.denominator = {
             "BinanceU.th_binance_cny_master.perp": 106226.80,   
             "BinanceU.th_binance_cny_sub01.perp": 51925.76,
             "BinanceU.th_binance_cny_sub02.perp": 3657.59,
-            "BinanceU.th_binance_cny_sub03.perp": 0
+            "BinanceU.th_binance_cny_sub03.perp": 0,
+            "CTA": 131090.70
         };
         this.init_dates = {
             "BinanceU.th_binance_cny_master.perp": moment("2023-06-23"),
             "BinanceU.th_binance_cny_sub01.perp": moment("2024-12-27"),
             // "BinanceU.th_binance_cny_sub02.perp": moment("2023-10-24"),
             "BinanceU.th_binance_cny_sub02.perp": moment("2024-01-13"),
-            "BinanceU.th_binance_cny_sub03.perp": moment("2023-10-27")
+            "BinanceU.th_binance_cny_sub03.perp": moment("2023-10-27"),
+            "CTA": moment("2023-06-23")
         };
-        this.aliases = ["R01", "R06", "R12", "R24", "S24", "R48", "STR", "SRE"];
-        this.rev_aliases = ["R01", "R06", "R12", "R24", "S24", "R48"];
+        this.aliases = ["R01", "R06", "R12", "R24", "S24", "STR", "SRE", "Q24"];
+        this.rev_aliases = ["R01", "R06", "R12", "R24", "S24"];
+        // cta如今包含了两个账户：BinanceU.th_binance_cny_master.perp和BinanceU.th_binance_cny_sub01.perp
+        this.cta_accounts = ["BinanceU.th_binance_cny_master.perp", "BinanceU.th_binance_cny_sub01.perp"];
 
-        // 初始化各个账户的结单
+        // 初始化各个账户的结单，尤其是CTA
         this.account_summary = {};
-        for (let account of this.accounts) {
-            this.account_summary[account] = {};
+        for (let account of ["CTA"].concat(this.accounts)) {
+            this.account_summary[account] = {
+                "init_equity": this.init_equity[account],
+                "denominator": this.denominator[account],
+                "init_date": this.init_dates[account],
+            };
         }
 
         // 初始化各个订阅频道的更新时间
@@ -77,20 +87,26 @@ class BalanceMonitor extends StrategyBase {
                     account_id: account_id
                 }) 
             }
-        }, 1000 * 60 * 1);
+            this.update_cta_account_summary_to_ui();
+        }, 1000 * 60 * 0.5);
         
+        // 20250109: 各个策略的仓位和盈利情况不再推送，反正也不会看
+        // setInterval(() => { 
+        //     this.update_status_map_to_slack();
+        //     // 设置为5秒后发送账户总结
+        //     setTimeout(() => {
+        //         this.update_account_summary_to_slack();
+        //     }, 1000 * 5);
+        // }, 1000 * 60 * 5);
         setInterval(() => { 
-            this.update_status_map_to_slack();
-            // 设置为5秒后发送账户总结
-            setTimeout(() => {
-                this.update_account_summary_to_slack();
-            }, 1000 * 5);
+            // 每个5分钟推送账号截单到slack
+            this.update_account_summary_to_slack();
         }, 1000 * 60 * 5);
 
         // 记录净值
         schedule.scheduleJob('0 0/30 * * * *', function() {
-            for (let account of that.accounts) {
-                let [exchange, account_id, contract_type] = account.split(".");
+            for (let account of ["CTA"].concat(that.accounts)) {
+                let account_id = (account === "CTA") ? account : account.split(".")[1];
                 if (that.account_summary[account]["equity"] === undefined) return;
                 let ts = moment().format('YYYYMMDDHHmmssSSS');
                 let {equity, nv, leverage} = that.account_summary[account];
@@ -203,11 +219,11 @@ class BalanceMonitor extends StrategyBase {
         // 天数最小是1，如果是0的话后面的计算会报错
         let n_days = Math.max(1, - this.init_dates[account].diff(today, "days"));
 
-        this.account_summary[account]["wb"] =  stratutils.round(balance["wallet_balance_in_USD"], 2);
+        this.account_summary[account]["wallet_balance"] =  stratutils.round(balance["wallet_balance_in_USD"], 2);
 
         // FUSD for launchpool
         if (account === "BinanceU.th_binance_cny_master.perp") {
-            this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"] + 49951.8, 2);
+            this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"], 2);
         } else {
             this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"], 2);
         }
@@ -240,6 +256,7 @@ class BalanceMonitor extends StrategyBase {
                     let account_str = [exchange, data.account_id, contract_type].join(".");
                     if ((account_str === account) && (data.ts.slice(0, 14) === month_start)) {
                         that.account_summary[account]["month_init_nv"] = +data.nv;
+                        that.account_summary[account]["month_init_equity"] = +data.equity;
                     }
                 } catch (err) {
                     logger.info("err", err);
@@ -247,7 +264,10 @@ class BalanceMonitor extends StrategyBase {
             })
             .on("end", function () { 
                 // 如果没有读取到，一般情况是账户刚启用，那么净值定义为1
-                if (that.account_summary[account]["month_init_nv"] === undefined) that.account_summary[account]["month_init_nv"] = 1;
+                if (that.account_summary[account]["month_init_nv"] === undefined) {
+                    that.account_summary[account]["month_init_nv"] = 1;
+                    that.account_summary[account]["month_init_equity"] = that.account_summary[account]["init_equity"];
+                }
             });
 
         let current_nv = this.account_summary[account]["nv"];
@@ -257,39 +277,11 @@ class BalanceMonitor extends StrategyBase {
         this.account_summary[account]["pnl_in_cny"] = (this.account_summary[account]["pnl"] * usdt_to_cny / 10000).toFixed(2);          // 单位：万
         this.account_summary[account]["month_to_date_pnl"] = ((current_nv - month_init_nv) / month_init_nv * 100).toFixed(2);    // 百分比
 
-        let sendData = {
-            "tableName": account_id,
-            "tabName": "Summary",
-            "data": [
-                {
-                    "init_equity": this.init_equity[account],
-                    "wallet_balance": this.account_summary[account]["wb"],
-                    "unrealized_pnl": this.account_summary[account]["unrealized_pnl"],
-                    "equity": this.account_summary[account]["equity"]
-                },
-                {
-                    "denominator": this.denominator[account],
-                    "nv": this.account_summary[account]["nv"],
-                    "long_lev": this.account_summary[account]["long_lev"],
-                    "short_lev": this.account_summary[account]["short_lev"]
-                },
-                {
-                    "pnl": this.account_summary[account]["pnl"],
-                    "ret": this.account_summary[account]["ret"] * 100,                   // 百分比
-                    "annual_ret": this.account_summary[account]["annual_ret"] * 100,     // 百分比
-                    "leverage": this.account_summary[account]["leverage"]
-                },
-                {
-                    "usdt_to_cny": usdt_to_cny,
-                    "equity_in_cny": this.account_summary[account]["equity_in_cny"],
-                    "pnl_in_cny": this.account_summary[account]["pnl_in_cny"],
-                    "month_to_date_pnl": this.account_summary[account]["month_to_date_pnl"]
-                }
-            ]
-        }
+        // account_id和account是不一样的：
+        // acccount_id如th_binance_cny_master，account如BinanceU.th_binance_cny_master.perp
+        this.update_account_summary_to_ui(account_id, account, usdt_to_cny);
 
-        this.intercom.emit("UI_update", sendData, INTERCOM_SCOPE.UI);
-
+        
         // if (account_id === "th_binance_cny_sub01") return;
         // 计算仓位是否和预想一致
         for (let alias of this.aliases) {
@@ -340,15 +332,81 @@ class BalanceMonitor extends StrategyBase {
         }
     }
 
+    update_cta_account_summary_to_ui() {
+        let usdt_to_cny = 7.2;
+        let today = moment.now();
+        if (this.account_summary["BinanceU.th_binance_cny_master.perp"]["month_to_date_pnl"] && this.account_summary["BinanceU.th_binance_cny_sub01.perp"]["month_to_date_pnl"]) {
+            this.account_summary["CTA"]["wallet_balance"] = this.cta_accounts.map(account => this.account_summary[account]["wallet_balance"]).reduce((a, b) => a + b, 0);
+            this.account_summary["CTA"]["unrealized_pnl"] = this.cta_accounts.map(account => this.account_summary[account]["unrealized_pnl"]).reduce((a, b) => a + b, 0);
+            this.account_summary["CTA"]["equity"] = this.cta_accounts.map(account => this.account_summary[account]["equity"]).reduce((a, b) => a + b, 0);
+            this.account_summary["CTA"]["nv"] = stratutils.round(this.account_summary["CTA"]["equity"] / this.account_summary["CTA"]["denominator"], 4); 
+
+            let sum_long_position_initial_margin_in_USDT = this.cta_accounts.map(account => this.account_summary[account]["total_long_position_initial_margin_in_USDT"]).reduce((a, b) => a + b, 0);
+            let sum_short_position_initial_margin_in_USDT = this.cta_accounts.map(account => this.account_summary[account]["total_short_position_initial_margin_in_USDT"]).reduce((a, b) => a + b, 0);
+            let sum_position_initial_margin_in_USDT = this.cta_accounts.map(account => this.account_summary[account]["total_position_initial_margin_in_USDT"]).reduce((a, b) => a + b, 0);
+
+            this.account_summary["CTA"]["long_lev"] = stratutils.round(sum_long_position_initial_margin_in_USDT / this.account_summary["CTA"]["equity"], 2); 
+            this.account_summary["CTA"]["short_lev"] = stratutils.round(sum_short_position_initial_margin_in_USDT / this.account_summary["CTA"]["equity"], 2); 
+            this.account_summary["CTA"]["leverage"] = stratutils.round(sum_position_initial_margin_in_USDT / this.account_summary["CTA"]["equity"], 2); 
+
+            let n_cta_days = Math.max(1, - this.account_summary["CTA"]["init_date"].diff(today, "days"));
+            this.account_summary["CTA"]["pnl"] = stratutils.round(this.account_summary["CTA"]["equity"] - this.account_summary["CTA"]["init_equity"], 2);
+            this.account_summary["CTA"]["ret"] = stratutils.round(this.account_summary["CTA"]["nv"] - 1, 4); 
+            this.account_summary["CTA"]["annual_ret"] = stratutils.round(this.account_summary["CTA"]["ret"] / n_cta_days * 365, 4); 
+
+            let cta_month_init_equity = this.cta_accounts.map(account => this.account_summary[account]["month_init_equity"]).reduce((a, b) => a + b, 0);
+            this.account_summary["CTA"]["equity_in_cny"] = (this.account_summary["CTA"]["equity"] * usdt_to_cny / 10000).toFixed(2);      // 单位：万
+            this.account_summary["CTA"]["pnl_in_cny"] = (this.account_summary["CTA"]["pnl"] * usdt_to_cny / 10000).toFixed(2);            // 单位：万
+            this.account_summary["CTA"]["month_to_date_pnl"] = ((this.account_summary["CTA"]["equity"] - cta_month_init_equity) / cta_month_init_equity * 100).toFixed(2);             // 百分比
+        
+            this.update_account_summary_to_ui("CTA", "CTA", usdt_to_cny);
+        }
+    }
+
+    update_account_summary_to_ui(table_name, account, usdt_to_cny) {
+        let sendData = {
+            "tableName": table_name,
+            "tabName": "Summary",
+            "data": [
+                {
+                    "init_equity": this.account_summary[account]["init_equity"],
+                    "wallet_balance": this.account_summary[account]["wallet_balance"],
+                    "unrealized_pnl": this.account_summary[account]["unrealized_pnl"],
+                    "equity": this.account_summary[account]["equity"]
+                },
+                {
+                    "denominator": this.account_summary[account]["denominator"],
+                    "nv": this.account_summary[account]["nv"],
+                    "long_lev": this.account_summary[account]["long_lev"],
+                    "short_lev": this.account_summary[account]["short_lev"]
+                },
+                {
+                    "pnl": this.account_summary[account]["pnl"],
+                    "ret": this.account_summary[account]["ret"] * 100,                   // 百分比
+                    "annual_ret": this.account_summary[account]["annual_ret"] * 100,     // 百分比
+                    "leverage": this.account_summary[account]["leverage"]
+                },
+                {
+                    "usdt_to_cny": usdt_to_cny,
+                    "equity_in_cny": this.account_summary[account]["equity_in_cny"],
+                    "pnl_in_cny": this.account_summary[account]["pnl_in_cny"],
+                    "month_to_date_pnl": this.account_summary[account]["month_to_date_pnl"]
+                }
+            ]
+        }
+
+        this.intercom.emit("UI_update", sendData, INTERCOM_SCOPE.UI);
+    }
+
     update_account_summary_to_slack() {
         let that = this;
         let txt = "";
 
-        for (let account of that.accounts) {
-            let {pnl, ret, leverage, equity_in_cny, pnl_in_cny, month_to_date_pnl} = that.account_summary[account];
+        for (let account of that.accounts.concat(["CTA"])) {
+            let {pnl, ret, long_lev, short_lev, leverage, equity_in_cny, pnl_in_cny, month_to_date_pnl} = that.account_summary[account];
             let ret_per = `${parseFloat(ret * 100).toFixed(2)}%`;
             
-            txt += `====${account}====\npnl\t\tret\t\tleverage\n${pnl}\t\t${ret_per}\t\t${leverage}\nequity_in_cny\tpnl_in_cny\tmonth_to_date_pnl\n${equity_in_cny}\t\t${pnl_in_cny}\t\t${month_to_date_pnl}\n`;
+            txt += `====${account}====\npnl\t\tret\t\tleverage\n${pnl}\t\t${ret_per}\t\t${long_lev} + ${short_lev} = ${leverage}\nequity_in_cny\tpnl_in_cny\tmonth_to_date_pnl\n${equity_in_cny}\t\t${pnl_in_cny}\t\t${month_to_date_pnl}\n`;
         }
 
         txt += `[===IMPORTANT===]\n`

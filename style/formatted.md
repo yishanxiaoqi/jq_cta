@@ -486,6 +486,42 @@
 
 ```json
 {
+    "ref_id": "R01J0t23ZpPw34P6DrzNZBLfmH8IcD",
+    "action": "inspect_order",
+    "strategy": "BinanceU",
+    "metadata": {
+        "exchange": "BinanceU",
+        "symbol": "SKLUSDT",
+        "contract_type": "perp",
+        "event": "inspect_order",
+        "metadata": {
+            "account_id": "th_binance_cny_master",
+            "result": false,
+            "error_code": -2013,
+            "error_code_msg": "Order does not exist."
+        },
+        "timestamp": "20250127000105137",
+        "order_info": {
+            "original_amount": 0,
+            "filled": 0,
+            "avg_executed_price": 0,
+            "status": "unknown"
+        }
+    },
+    "request": {
+        "exchange": "BinanceU",
+        "symbol": "SKLUSDT",
+        "contract_type": "perp",
+        "account_id": "th_binance_cny_master",
+        "client_order_id": "R01DN1P3KL2a",
+        "ref_id": "R01J0t23ZpPw34P6DrzNZBLfmH8IcD",
+        "send_time": "20250127000105113"
+    }
+}
+```
+
+```json
+{
     "ref_id": "DMO0YAAhLD90gzUz9VlyDyk1qDv5U4",
     "action": "inspect_order",
     "strategy": "OKX",

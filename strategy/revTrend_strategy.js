@@ -1081,6 +1081,17 @@ class RevTrendStrategy extends StrategyBase {
             } else if (error_code_msg === "Futures Trading Quantitative Rules violated, only reduceOnly order is allowed, please try again later.") { 
                 // 尝试10分钟后重发，那么在这10分钟内会不断报order not active, but still in the order map
                 resend = true, timeout = 1000 * 60 * 10;
+            } else if (error_code_msg === "Timeout waiting for response from backend server. Send status unknown; execution status unknown.") {
+                // 1分钟后inspect this order，因为立即inspect order的话可能面临一样的response
+                setTimeout(() => {
+                    this.inspect_order({
+                        exchange: exchange,
+                        symbol: symbol,
+                        contract_type: contract_type,
+                        account_id: act_id,
+                        client_order_id: client_order_id
+                    });
+                }, 1000 * 60);
             } else {
                 logger.warn(`${that.alias}::on_response|${order_idf}::unknown error occured during ${action}: ${error_code}: ${error_code_msg}`);
                 return;
@@ -1265,6 +1276,46 @@ class RevTrendStrategy extends StrategyBase {
                 "type": "alert",
                 "msg": `${that.alias}:: order not active, but still in the order map as follows, \n${alert_string}`
             });
+        }
+    }
+
+    on_inspect_order_response(response) {
+        // 等待完善
+        logger.info(JSON.stringify(this.order_map));
+        let that = this;
+
+        let exchange = response["request"]["exchange"];
+        let symbol = response["request"]["symbol"];
+        let contract_type = response["request"]["contract_type"];
+        let client_order_id = response["request"]["client_order_id"];
+        let idf = [exchange, symbol, contract_type].join(".");
+
+        let label = client_order_id.slice(3, 5);
+        if (!Object.values(LABELMAP).includes(label)) {
+            logger.error(`${that.alias}::on_order_update|unknown order label ${label}!`);
+            return;
+        }
+        label = stratutils.get_key_by_value(LABELMAP, label);
+
+        if ((response["metadata"]["order_info"]["status"] === "unknown") && (response["metadata"]["metadata"]["error_code_msg"] === "Order does not exist.")) {
+            if (client_order_id in that.order_map[idf]) {
+                delete that.order_map[idf][client_order_id];
+                that.slack_publish({
+                    "type": "alert",
+                    "msg": `${that.alias}::${idf}::After inspecting, delete ${client_order_id} from order map!`
+                });
+            }
+
+            if ((label.slice(0, 6) in that.order_map[idf]) && (that.order_map[idf][label.slice(0, 6)]["client_order_id"] === client_order_id)) {
+                delete that.order_map[idf][label.slice(0, 6)];
+                that.slack_publish({
+                    "type": "alert",
+                    "msg": `${that.alias}::${idf}::After inspecting, delete ${label}|${client_order_id} from order map!`
+                });
+            }
+
+            // 将pre_bar_otime设置为undefined，方便重现发单，尤其是UP & DN单
+            that.pre_bar_otime[idf] = undefined;
         }
     }
 }

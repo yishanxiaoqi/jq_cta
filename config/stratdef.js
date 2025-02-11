@@ -53,7 +53,6 @@ SUBSCRIPTION_LIST = [
     'BinanceU|MTLUSDT|perp|trade',
     'BinanceU|NEARUSDT|perp|trade',
     'BinanceU|NKNUSDT|perp|trade',
-    'BinanceU|OMGUSDT|perp|trade',
     'BinanceU|ONTUSDT|perp|trade',
     'BinanceU|PEOPLEUSDT|perp|trade',
     'BinanceU|QTUMUSDT|perp|trade',

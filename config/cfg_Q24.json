@@ -10,22 +10,19 @@
         "ALICEUSDT",
         "CHZUSDT",
         "DOTUSDT",
-        "ETHUSDT",
-        "OMGUSDT"
+        "ETHUSDT"
     ],
     "idfs": [
         "BinanceU.ALICEUSDT.perp",
         "BinanceU.CHZUSDT.perp",
         "BinanceU.DOTUSDT.perp",
-        "BinanceU.ETHUSDT.perp",
-        "BinanceU.OMGUSDT.perp"
+        "BinanceU.ETHUSDT.perp"
     ],
     "entries": [
         "BinanceU.ALICEUSDT.perp.1d",
         "BinanceU.CHZUSDT.perp.1d",
         "BinanceU.DOTUSDT.perp.1d",
-        "BinanceU.ETHUSDT.perp.1d",
-        "BinanceU.OMGUSDT.perp.1d"
+        "BinanceU.ETHUSDT.perp.1d"
     ],
     "BinanceU.ALICEUSDT.perp.1d": {
         "splitAt": 0,
@@ -74,17 +71,5 @@
         "ini_usdt": 100,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "Q240088"
-    },
-    "BinanceU.OMGUSDT.perp.1d": {
-        "splitAt": 0,
-        "track_ATR_n": 5,
-        "track_ATR_multiplier": 0.5,
-        "stop_rate": 0.08,
-        "stoploss_rate": 0.04,
-        "af": 0.01,
-        "bar_enter_limit": 1,
-        "ini_usdt": 100,
-        "act_id": "th_binance_cny_sub02",
-        "cfgID": "Q240152"
     }
 }

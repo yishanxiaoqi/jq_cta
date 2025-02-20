@@ -20,6 +20,7 @@
         "HOTUSDT",
         "KAVAUSDT",
         "KSMUSDT",
+        "LINKUSDT",
         "MKRUSDT",
         "MTLUSDT",
         "NEARUSDT",
@@ -48,6 +49,7 @@
         "BinanceU.HOTUSDT.perp",
         "BinanceU.KAVAUSDT.perp",
         "BinanceU.KSMUSDT.perp",
+        "BinanceU.LINKUSDT.perp",
         "BinanceU.MKRUSDT.perp",
         "BinanceU.MTLUSDT.perp",
         "BinanceU.NEARUSDT.perp",
@@ -242,6 +244,19 @@
         "ini_usdt": 1000,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060253"
+    },
+    "BinanceU.LINKUSDT.perp": {
+        "splitAt": 2,
+        "track_ATR_n": 15,
+        "track_ATR_multiplier": 0.9,
+        "stoploss_rate": 0.04,
+        "cutloss_rate": 0.02,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "ini_usdt": 1000,
+        "act_id": "th_binance_cny_master",
+        "cfgID": "R060259"
     },
     "BinanceU.MKRUSDT.perp": {
         "splitAt": 4,

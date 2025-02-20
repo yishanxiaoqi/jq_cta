@@ -48,6 +48,7 @@ SUBSCRIPTION_LIST = [
     'BinanceU|ICXUSDT|perp|trade',
     'BinanceU|KSMUSDT|perp|trade',
     'BinanceU|KAVAUSDT|perp|trade',
+    'BinanceU|LINKUSDT|perp|trade',
     'BinanceU|LTCUSDT|perp|trade',
     'BinanceU|MKRUSDT|perp|trade',
     'BinanceU|MTLUSDT|perp|trade',

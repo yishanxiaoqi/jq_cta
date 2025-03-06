@@ -24,6 +24,7 @@ SUBSCRIPTION_LIST = [
     'BinanceU|AXSUSDT|perp|trade',
     'BinanceU|BALUSDT|perp|trade',
     'BinanceU|BANDUSDT|perp|trade',
+    'BinanceU|BATUSDT|perp|trade',
     'BinanceU|BNBUSDT|perp|trade',
     'BinanceU|BTCDOMUSDT|perp|trade',
     'BinanceU|BTCUSDT|perp|trade',

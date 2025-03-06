@@ -82,7 +82,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 3648,
+        "ini_usdt": 3500,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060131"
     },
@@ -95,7 +95,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 3648,
+        "ini_usdt": 3500,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060140"
     },
@@ -108,7 +108,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 4560,
+        "ini_usdt": 4375,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060059"
     },
@@ -134,7 +134,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 3648,
+        "ini_usdt": 3500,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060060"
     },
@@ -147,7 +147,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 4560,
+        "ini_usdt": 4375,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060062"
     },
@@ -160,7 +160,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 4560,
+        "ini_usdt": 4375,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060159"
     },
@@ -173,20 +173,20 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 4560,
+        "ini_usdt": 4375,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060177"
     },
     "BinanceU.DOGEUSDT.perp": {
         "splitAt": 5,
         "track_ATR_n": 5,
-        "track_ATR_multiplier": 1,
+        "track_ATR_multiplier": 1.0,
         "stoploss_rate": 0.01,
         "cutloss_rate": 0.01,
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 9121,
+        "ini_usdt": 8750,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060072"
     },
@@ -199,7 +199,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 4560,
+        "ini_usdt": 4375,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060073"
     },
@@ -212,7 +212,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 2000,
+        "ini_usdt": 5250,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060197"
     },
@@ -225,7 +225,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 2000,
+        "ini_usdt": 5250,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060079"
     },
@@ -238,7 +238,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 2000,
+        "ini_usdt": 5250,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060216"
     },
@@ -251,7 +251,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 5472,
+        "ini_usdt": 5250,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060029"
     },
@@ -264,7 +264,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 4560,
+        "ini_usdt": 4375,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060032"
     },
@@ -277,7 +277,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 4560,
+        "ini_usdt": 4375,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060087"
     },
@@ -290,7 +290,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 4560,
+        "ini_usdt": 4375,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060253"
     },
@@ -303,7 +303,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 5472,
+        "ini_usdt": 5250,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060259"
     },
@@ -316,7 +316,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 2000,
+        "ini_usdt": 4375,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060093"
     },
@@ -329,7 +329,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 3648,
+        "ini_usdt": 3500,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060270"
     },
@@ -342,7 +342,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 9121,
+        "ini_usdt": 8750,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060038"
     },
@@ -355,7 +355,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 4560,
+        "ini_usdt": 4375,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060095"
     },
@@ -368,7 +368,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 5472,
+        "ini_usdt": 4375,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060290"
     },
@@ -381,7 +381,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 5472,
+        "ini_usdt": 5250,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060099"
     },
@@ -394,7 +394,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 4560,
+        "ini_usdt": 4375,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060102"
     },
@@ -407,7 +407,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 4560,
+        "ini_usdt": 4375,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060319"
     },
@@ -420,7 +420,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 4560,
+        "ini_usdt": 4375,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060046"
     },
@@ -433,7 +433,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 2000,
+        "ini_usdt": 5250,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060329"
     },
@@ -446,7 +446,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 5472,
+        "ini_usdt": 5250,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060106"
     },
@@ -459,7 +459,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 4560,
+        "ini_usdt": 4375,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060110"
     },
@@ -472,7 +472,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 4560,
+        "ini_usdt": 4375,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060113"
     },

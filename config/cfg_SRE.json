@@ -17,7 +17,6 @@
         "DOGEUSDT",
         "ETCUSDT",
         "GRTUSDT",
-        "STMXUSDT",
         "STORJUSDT",
         "PEOPLEUSDT",
         "ANKRUSDT",
@@ -25,7 +24,6 @@
         "ICXUSDT",
         "KSMUSDT",
         "ONTUSDT",
-        "NKNUSDT",
         "MKRUSDT",
         "VETUSDT"
     ],
@@ -46,10 +44,8 @@
         "BinanceU.ICXUSDT.perp",
         "BinanceU.KSMUSDT.perp",
         "BinanceU.MKRUSDT.perp",
-        "BinanceU.NKNUSDT.perp",
         "BinanceU.ONTUSDT.perp",
         "BinanceU.PEOPLEUSDT.perp",
-        "BinanceU.STMXUSDT.perp",
         "BinanceU.STORJUSDT.perp",
         "BinanceU.VETUSDT.perp"
     ],
@@ -64,12 +60,10 @@
         "BinanceU.GRTUSDT.perp.1h",
         "BinanceU.ICXUSDT.perp.1h",
         "BinanceU.MKRUSDT.perp.1h",
-        "BinanceU.NKNUSDT.perp.1h",
         "BinanceU.VETUSDT.perp.1h",
         "BinanceU.DASHUSDT.perp.6h",
         "BinanceU.HOTUSDT.perp.6h",
         "BinanceU.KSMUSDT.perp.6h",
-        "BinanceU.STMXUSDT.perp.6h",
         "BinanceU.STORJUSDT.perp.6h",
         "BinanceU.PEOPLEUSDT.perp.6h",
         "BinanceU.ANKRUSDT.perp.6h",
@@ -198,18 +192,6 @@
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0045"
     },
-    "BinanceU.NKNUSDT.perp.1h": {
-        "splitAt": 0,
-        "track_ATR_n": 10,
-        "track_ATR_multiplier": 0.5,
-        "cutloss_rate": 0.4,
-        "ini_af": 0.02,
-        "delta_af": 0.02,
-        "bar_enter_limit": 1,
-        "ini_usdt": 150,
-        "act_id": "th_binance_cny_sub02",
-        "cfgID": "SRE0048"
-    },
     "BinanceU.VETUSDT.perp.1h": {
         "splitAt": 0,
         "track_ATR_n": 60,
@@ -257,18 +239,6 @@
         "ini_usdt": 150,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0085"
-    },
-    "BinanceU.STMXUSDT.perp.6h": {
-        "splitAt": 0,
-        "track_ATR_n": 10,
-        "track_ATR_multiplier": 0.7,
-        "cutloss_rate": 0.05,
-        "ini_af": 0.02,
-        "delta_af": 0.02,
-        "bar_enter_limit": 1,
-        "ini_usdt": 150,
-        "act_id": "th_binance_cny_sub02",
-        "cfgID": "SRE0070"
     },
     "BinanceU.PEOPLEUSDT.perp.6h": {
         "splitAt": 0,

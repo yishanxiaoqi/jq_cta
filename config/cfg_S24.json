@@ -12,6 +12,7 @@
         "CRVUSDT",
         "CTSIUSDT",
         "EOSUSDT",
+        "IOSTUSDT",
         "IOTAUSDT",
         "NKNUSDT",
         "RVNUSDT",
@@ -26,6 +27,7 @@
         "BinanceU.CRVUSDT.perp",
         "BinanceU.CTSIUSDT.perp",
         "BinanceU.EOSUSDT.perp",
+        "BinanceU.IOSTUSDT.perp",
         "BinanceU.IOTAUSDT.perp",
         "BinanceU.NKNUSDT.perp",
         "BinanceU.RVNUSDT.perp",
@@ -42,7 +44,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 10526,
+        "ini_usdt": 9121,
         "act_id": "th_binance_cny_sub01",
         "cfgID": "R240096"
     },
@@ -55,7 +57,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 10526,
+        "ini_usdt": 9121,
         "act_id": "th_binance_cny_sub01",
         "cfgID": "R240065"
     },
@@ -68,7 +70,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 10526,
+        "ini_usdt": 9121,
         "act_id": "th_binance_cny_sub01",
         "cfgID": "R240010"
     },
@@ -81,7 +83,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 10526,
+        "ini_usdt": 5472,
         "act_id": "th_binance_cny_sub01",
         "cfgID": "R240069"
     },
@@ -107,9 +109,22 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 10526,
+        "ini_usdt": 9121,
         "act_id": "th_binance_cny_sub01",
         "cfgID": "R240172"
+    },
+    "BinanceU.IOSTUSDT.perp": {
+        "splitAt": 5,
+        "track_ATR_n": 5,
+        "track_ATR_multiplier": 1,
+        "stoploss_rate": 0.03,
+        "cutloss_rate": 0.02,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "ini_usdt": 2000,
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "R240192"
     },
     "BinanceU.IOTAUSDT.perp": {
         "splitAt": 3,
@@ -120,7 +135,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 10526,
+        "ini_usdt": 9121,
         "act_id": "th_binance_cny_sub01",
         "cfgID": "R240079"
     },
@@ -133,7 +148,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 10526,
+        "ini_usdt": 9121,
         "act_id": "th_binance_cny_sub01",
         "cfgID": "R240036"
     },
@@ -146,7 +161,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 10526,
+        "ini_usdt": 9121,
         "act_id": "th_binance_cny_sub01",
         "cfgID": "R240087"
     },
@@ -159,22 +174,22 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 10526,
+        "ini_usdt": 9121,
         "act_id": "th_binance_cny_sub01",
         "cfgID": "R240057"
     },
     "BinanceU.YFIUSDT.perp": {
-        "splitAt": 13,
-        "track_ATR_n": 5,
-        "track_ATR_multiplier": 0.8,
+        "splitAt": 16,
+        "track_ATR_n": 50,
+        "track_ATR_multiplier": 0.6,
         "stoploss_rate": 0.05,
-        "cutloss_rate": 0.02,
+        "cutloss_rate": 0.03,
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 10526,
+        "ini_usdt": 9121,
         "act_id": "th_binance_cny_sub01",
-        "cfgID": "R240094"
+        "cfgID": "R240288"
     },
     "BinanceU.ZECUSDT.perp": {
         "splitAt": 17,
@@ -185,7 +200,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 10526,
+        "ini_usdt": 9121,
         "act_id": "th_binance_cny_sub01",
         "cfgID": "R240058"
     }

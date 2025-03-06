@@ -798,6 +798,9 @@ class RevTrendStrategy extends StrategyBase {
                 // 止损价（stoploss_price）更高，反手单为止损单
                 // 直接发LIMIT单等待成交，如果已经触发，就想办法在该Bar内成交；如果未触发，则一直等待
                 let tgt_qty = stratutils.transform_with_tick_size(- that.status_map[idf]["pos"], QUANTITY_TICK_SIZE[idf]);
+                // 如果open已经低于止损价，那么挂一个open的limit buy来进行平仓
+                if ((new_bar) && (that.klines[idf]["open"][0] !== undefined)) stoploss_price = Math.min(that.klines[idf]["open"][0], stoploss_price);
+
                 if (that.order_map[idf]["ANTI_S"] === undefined) {
                     // 对手单（止损单）未发送
                     orders_to_be_submitted.push({ client_order_id: that.alias + LABELMAP["ANTI_S|STOPLOSS"] + randomID(7), label: "ANTI_S|STOPLOSS", target: "EMPTY", quantity: tgt_qty, price: stoploss_price, direction: DIRECTION.BUY });
@@ -881,6 +884,9 @@ class RevTrendStrategy extends StrategyBase {
                 // 止损价（stoploss_price）更低，对手单为止损单
                 // 直接发LIMIT单等待成交，如果已经触发，就想办法在该Bar内成交；如果未触发，则一直等待；
                 let tgt_qty = stratutils.transform_with_tick_size(that.status_map[idf]["pos"], QUANTITY_TICK_SIZE[idf]);
+                // 如果open已经高于止损价，那么挂一个open的limit sell来进行平仓
+                if ((new_bar) && (that.klines[idf]["open"][0] !== undefined)) stoploss_price = Math.max(that.klines[idf]["open"][0], stoploss_price);
+
                 if (that.order_map[idf]["ANTI_L"] === undefined) {
                     orders_to_be_submitted.push({ client_order_id: that.alias + LABELMAP["ANTI_L|STOPLOSS"] + randomID(7), label: "ANTI_L|STOPLOSS", target: "EMPTY", quantity: tgt_qty, price: stoploss_price, direction: DIRECTION.SELL });
                     that.status_map[idf]["anti_order_sent"] = true;
@@ -1067,6 +1073,13 @@ class RevTrendStrategy extends StrategyBase {
                     delete that.order_map[idf]["DN"];
                 } else {
                     logger.info(`${that.alias}::${order_idf}::price less than min, but not a DN order, check!`);
+                }
+            } else if (error_code_msg === "Quantity greater than max quantity.") {
+                // quantity超过最大限制，通常是DN单，那就不设置DN单
+                if (label === "DN") {
+                    delete that.order_map[idf]["DN"];
+                } else {
+                    logger.info(`${that.alias}::${order_idf}::Quantity greater than max quantity, but not a DN order, check!`);
                 }
             } else if (error_code_msg === "Order would immediately trigger.") {
                 // The order would be triggered immediately, STOP order才会报这样的错，本策略都是LIMIT ORDER

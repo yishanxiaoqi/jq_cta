@@ -4,11 +4,13 @@ const moment = require("moment");
 const csv = require('csv-parser');
 const disk = require('diskusage');
 
-const StrategyBase = require("./strategy_base.js");
+const request = require('../module/request.js');
 const Intercom = require("../module/intercom");
+const StrategyBase = require("./strategy_base.js");
 const utils = require("../utils/util_func");
 const stratutils = require("../utils/strat_util.js");
 const schedule = require('node-schedule');
+const { on } = require("events");
 
 class BalanceMonitor extends StrategyBase {
     constructor(name, alias, intercom) {
@@ -31,14 +33,14 @@ class BalanceMonitor extends StrategyBase {
         this.init_equity = {
             "BinanceU.th_binance_cny_master.perp": 131926.51,
             "BinanceU.th_binance_cny_sub01.perp": 51925.76,
-            "BinanceU.th_binance_cny_sub02.perp": 4436.55,
+            "BinanceU.th_binance_cny_sub02.perp": 3636.55,
             "BinanceU.th_binance_cny_sub03.perp": 0,
             "CTA": 183852.3
         };
         this.denominator = {
             "BinanceU.th_binance_cny_master.perp": 106226.80,   
             "BinanceU.th_binance_cny_sub01.perp": 51925.76,
-            "BinanceU.th_binance_cny_sub02.perp": 3657.59,
+            "BinanceU.th_binance_cny_sub02.perp": 2069.74,
             "BinanceU.th_binance_cny_sub03.perp": 0,
             "CTA": 131090.70
         };
@@ -50,7 +52,7 @@ class BalanceMonitor extends StrategyBase {
             "BinanceU.th_binance_cny_sub03.perp": moment("2023-10-27"),
             "CTA": moment("2023-06-23")
         };
-        this.aliases = ["R01", "R06", "R12", "R24", "S24", "STR", "SRE", "Q24"];
+        this.aliases = ["R01", "R06", "R12", "R24", "S24", "STR", "SRE"];
         this.rev_aliases = ["R01", "R06", "R12", "R24", "S24"];
         // cta如今包含了两个账户：BinanceU.th_binance_cny_master.perp和BinanceU.th_binance_cny_sub01.perp
         this.cta_accounts = ["BinanceU.th_binance_cny_master.perp", "BinanceU.th_binance_cny_sub01.perp"];
@@ -72,6 +74,9 @@ class BalanceMonitor extends StrategyBase {
         for (let subscription of this.subscription_list) {
             this.sub_streams_upd_ts[subscription] = moment.now();
         }
+
+        // 更新futures交易所上交易的交易对
+        this.symbols_on_track = {};
     }
 
     start() {
@@ -103,8 +108,8 @@ class BalanceMonitor extends StrategyBase {
             this.update_account_summary_to_slack();
         }, 1000 * 60 * 5);
 
-        // 记录净值
         schedule.scheduleJob('0 0/30 * * * *', function() {
+            // 记录净值
             for (let account of ["CTA"].concat(that.accounts)) {
                 let account_id = (account === "CTA") ? account : account.split(".")[1];
                 if (that.account_summary[account]["equity"] === undefined) return;
@@ -115,6 +120,30 @@ class BalanceMonitor extends StrategyBase {
                     if (err) logger.info(`${that.alias}:: fs write file error!`);
                 });
             }
+
+            // 查看上架的交易对，如果有上新，推送到slack
+            that.check_symbols_on_track();
+        });
+    }
+
+    check_symbols_on_track() {
+        let that = this;
+        let url = "https://fapi.binance.com/fapi/v1/exchangeInfo";
+        request.get({
+            url: url, json: true
+        }, function (error, res, body) {
+            let newest_symbols_on_track = {};
+            body["symbols"].forEach(({symbol, onboardDate}) => {newest_symbols_on_track[symbol] = new Date(onboardDate)});
+            
+            let new_symbols = Object.keys(newest_symbols_on_track).filter(e => !(e in that.symbols_on_track));
+            that.symbols_on_track = {...newest_symbols_on_track};    // 创建一个新的instance，而非引用
+            if (new_symbols.length > 50) return;
+
+            let txt = "";
+            for (let symbol of new_symbols) {
+                txt += `${symbol} will be on board on ${newest_symbols_on_track[symbol]}!\n`
+            }
+            if (txt !== "") that.slack_publish({"type": "alert", "msg": txt});
         });
     }
 
@@ -223,7 +252,7 @@ class BalanceMonitor extends StrategyBase {
 
         // FUSD for launchpool
         if (account === "BinanceU.th_binance_cny_master.perp") {
-            this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"], 2);
+            this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"] + 56723.59, 2);
         } else {
             this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"], 2);
         }

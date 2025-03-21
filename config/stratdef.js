@@ -8,7 +8,7 @@
  * jq_binance_cny_master: 545756054@qq.com，大陆身份证认证，没有开启2FA
  */
 
-ALIASES = ["R01", "R06", "R12", "R24", "S24", "STR", "SRE", "Q24"];
+ALIASES = ["R01", "R06", "R12", "R24", "S24", "STR", "SRE"];
 
 SUBSCRIPTION_LIST = [
     // CTA 
@@ -16,7 +16,6 @@ SUBSCRIPTION_LIST = [
     'BinanceU|1INCHUSDT|perp|trade',
     'BinanceU|ADAUSDT|perp|trade',
     'BinanceU|ALGOUSDT|perp|trade',
-    'BinanceU|ALICEUSDT|perp|trade',
     'BinanceU|ALPHAUSDT|perp|trade',
     'BinanceU|ANKRUSDT|perp|trade',
     'BinanceU|ATOMUSDT|perp|trade',
@@ -61,6 +60,7 @@ SUBSCRIPTION_LIST = [
     'BinanceU|RVNUSDT|perp|trade',
     'BinanceU|RSRUSDT|perp|trade',
     'BinanceU|SANDUSDT|perp|trade',
+    'BinanceU|SFPUSDT|perp|trade',
     'BinanceU|SKLUSDT|perp|trade',
     'BinanceU|SNXUSDT|perp|trade',
     'BinanceU|SOLUSDT|perp|trade',

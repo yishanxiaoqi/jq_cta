@@ -80,15 +80,26 @@ class RevTrendStrategy extends StrategyBase {
             // let enter = (status === "LONG") ? that.status_map[idf]["long_enter"] : ((status === "SHORT") ? that.status_map[idf]["short_enter"] : "");
 
             // 计算time_gap
-            let gap = (that.prices[idf])? Math.round((moment.now() - utils._util_convert_timestamp_to_date(that.prices[idf]["upd_ts"])) / 1000) : "";
-            
+            let price_presentation = "";
+            if (that.prices[idf]) {
+                let gap = Math.round((moment.now() - utils._util_convert_timestamp_to_date(that.prices[idf]["upd_ts"])) / 1000);
+                price_presentation = `${that.prices[idf]["price"]}|${gap}`;
+                if (that.status_map[idf]["status"] === "LONG") {
+                    let percentage = that.status_map[idf]["short_enter"] ? ((that.prices[idf]["price"] - that.status_map[idf]["short_enter"]) / that.status_map[idf]["short_enter"] * 100).toFixed(0) + "%" : "miss";
+                    price_presentation += "|" + percentage;
+                } else if (that.status_map[idf]["status"] === "SHORT") {
+                    let percentage = that.status_map[idf]["long_enter"] ? ((that.status_map[idf]["long_enter"] - that.prices[idf]["price"]) / that.status_map[idf]["long_enter"] * 100).toFixed(0) + "%" : "miss";
+                    price_presentation += "|" + percentage;
+                }
+            }
+
             item[`${index + 1}|idf`] = idf;
             item[`${index + 1}|status`] = that.status_map[idf]["status"];
             item[`${index + 1}|triggered`] = that.status_map[idf]["triggered"];
             item[`${index + 1}|pos`] = that.status_map[idf]["pos"];
             item[`${index + 1}|fee`] = that.status_map[idf]["fee"];
             item[`${index + 1}|np`] = that.status_map[idf]["net_profit"];
-            item[`${index + 1}|price`] = (that.prices[idf])? `${that.prices[idf]["price"]}|${gap}`: "";
+            item[`${index + 1}|price`] = price_presentation;
             item[`${index + 1}|sp`] = that.status_map[idf]["stoploss_price"];
             item[`${index + 1}|up`] = that.status_map[idf]["up"];
             item[`${index + 1}|dn`] = that.status_map[idf]["dn"];

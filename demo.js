@@ -1,6 +1,3 @@
-require("./config/stratdef.js");
-const utils = require("./utils/util_func");
-const stratutils = require("./utils/strat_util.js");
+var html = HttpQuery('https://www.binance.com/en/support/announcement/c-49?navId=49')
 
-console.log(utils._util_get_human_readable_timestamp());
-console.log(new Date(1741852800000));
+console.log(html)

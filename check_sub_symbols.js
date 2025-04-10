@@ -4,7 +4,7 @@ const fs = require("fs");
 let aliases = ALIASES;
 let live_idfs = [];
 let live_idfs_d = {};
-let REV_aliases = ["R01", "R06", "R12", "R24", "S24", "R48"];
+let REV_aliases = ["R01", "R06", "R12", "R24", "S01", "S24", "R48"];
 
 console.log(aliases);
 

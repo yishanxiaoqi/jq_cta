@@ -8,7 +8,8 @@
 
    
     // #### 对于pm2来说，on前面的--不能少
-    // pm2 start ./strategy/revTrend_strategy.js --name R01 -- on -a R01 
+    // pm2 start ./strategy/revTrend_strategy.js --name R01 -- on -a R01
+    // pm2 start ./strategy/revTrend_strategy.js --name S01 -- on -a S01
     // pm2 start ./strategy/revTrend_strategy.js --name R06 -- on -a R06 
     // pm2 start ./strategy/revTrend_strategy.js --name R12 -- on -a R12
     // pm2 start ./strategy/revTrend_strategy.js --name R24 -- on -a R24

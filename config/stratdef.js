@@ -8,7 +8,7 @@
  * jq_binance_cny_master: 545756054@qq.com，大陆身份证认证，没有开启2FA
  */
 
-ALIASES = ["R01", "R06", "R12", "R24", "S24", "STR", "SRE"];
+ALIASES = ["R01", "R06", "R12", "R24", "S01", "S24", "STR", "SRE"];
 
 SUBSCRIPTION_LIST = [
     // CTA 
@@ -17,6 +17,7 @@ SUBSCRIPTION_LIST = [
     'BinanceU|ADAUSDT|perp|trade',
     'BinanceU|ALGOUSDT|perp|trade',
     'BinanceU|ALPHAUSDT|perp|trade',
+    'BinanceU|ANIMEUSDT|perp|trade',
     'BinanceU|ANKRUSDT|perp|trade',
     'BinanceU|ATOMUSDT|perp|trade',
     'BinanceU|AVAXUSDT|perp|trade',
@@ -71,7 +72,11 @@ SUBSCRIPTION_LIST = [
     'BinanceU|XMRUSDT|perp|trade',
     'BinanceU|XTZUSDT|perp|trade',
     'BinanceU|YFIUSDT|perp|trade',
-    'BinanceU|ZECUSDT|perp|trade'
+    'BinanceU|ZECUSDT|perp|trade',
+
+    // XMR similar
+    'BinanceU|CELOUSDT|perp|trade',
+    'BinanceU|FLOWUSDT|perp|trade',
 
     // 'BinanceU|1000SHIBUSDC|perp|trade',
 
@@ -1558,6 +1563,7 @@ QUANTITY_TICK_SIZE = {
     "BinanceU.DOTBUSD.perp": 0.1,
     "BinanceU.QNTUSDT.perp": 0.1,
     "BinanceU.STGUSDT.perp": 1,
+    "BinanceU.ANIMEUSDT.perp": 1,
 
     // "BinanceU.1000SHIBUSDC.perp": 1,
 
@@ -1998,6 +2004,7 @@ PRICE_TICK_SIZE = {
     "BinanceU.STGUSDT.perp": 0.0001,
     "BinanceU.REZUSDT.perp": 0.00001,
     "BinanceU.DYMUSDT.perp": 0.0001,
+    "BinanceU.ANIMEUSDT.perp": 0.0001,
 
     // "BinanceU.1000SHIBUSDC.perp": 0.000001,
 

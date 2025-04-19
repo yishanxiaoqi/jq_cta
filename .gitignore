@@ -10,6 +10,7 @@ log/*.json
 demo.js
 demo2.js
 test.js
+test.py
 
 # copy files
 *.copy

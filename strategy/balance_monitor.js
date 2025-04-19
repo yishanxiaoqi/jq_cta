@@ -10,7 +10,6 @@ const StrategyBase = require("./strategy_base.js");
 const utils = require("../utils/util_func");
 const stratutils = require("../utils/strat_util.js");
 const schedule = require('node-schedule');
-const { on } = require("events");
 
 class BalanceMonitor extends StrategyBase {
     constructor(name, alias, intercom) {
@@ -52,8 +51,8 @@ class BalanceMonitor extends StrategyBase {
             "BinanceU.th_binance_cny_sub03.perp": moment("2023-10-27"),
             "CTA": moment("2023-06-23")
         };
-        this.aliases = ["R01", "R06", "R12", "R24", "S01", "S24", "STR", "SRE"];
-        this.rev_aliases = ["R01", "R06", "R12", "R24", "S01", "S24"];
+        this.aliases = ["R01", "R06", "R12", "R24", "S24", "STR", "SRE"];
+        this.rev_aliases = ["R01", "R06", "R12", "R24", "S24"];
         // cta如今包含了两个账户：BinanceU.th_binance_cny_master.perp和BinanceU.th_binance_cny_sub01.perp
         this.cta_accounts = ["BinanceU.th_binance_cny_master.perp", "BinanceU.th_binance_cny_sub01.perp"];
 
@@ -336,9 +335,17 @@ class BalanceMonitor extends StrategyBase {
             }
         }
 
+        let additional_position = JSON.parse(fs.readFileSync(`./config/additional_position.json`, 'utf8'));
+        for (let symbol of Object.keys(additional_position[account_id]) ) {
+            let idf = [EXCHANGE.BINANCEU, symbol, CONTRACT_TYPE.PERP].join(".");
+            cal_positions[symbol] = (symbol in cal_positions) ? (cal_positions[symbol] + additional_position[account_id][symbol]) : additional_position[account_id][symbol];
+            cal_positions[symbol] = stratutils.transform_with_tick_size(cal_positions[symbol], QUANTITY_TICK_SIZE[idf]);
+        }
+
         // logger.info("BAM", JSON.stringify(cal_positions), JSON.stringify(real_positions));
 
         let warning_msg = "";
+        // wierd_symbols是指实际仓位中没有仓位，但是计算出来确有的交易对
         let wierd_symbols = Object.keys(cal_positions).filter((symbol) => ! (real_positions.map((e) => e["symbol"]).includes(symbol)));
 
         for (let symbol of wierd_symbols) {
@@ -351,7 +358,8 @@ class BalanceMonitor extends StrategyBase {
 
             let idf = [EXCHANGE.BINANCEU, symbol, CONTRACT_TYPE.PERP].join(".");
             let calculated_position = (symbol in cal_positions) ? stratutils.transform_with_tick_size(cal_positions[symbol], QUANTITY_TICK_SIZE[idf]) : 0;
-            if (position !== calculated_position) warning_msg += `${account_id}|inconsistent position of ${symbol}:: cal: ${calculated_position}, real: ${position} \n`
+
+            if (position !== calculated_position) warning_msg += `${account_id}|inconsistent position of ${symbol}:: cal: ${calculated_position}, real: ${position} \n`;
         }
 
         if (warning_msg !== "") {

@@ -1,5 +1,6 @@
 require("../config/typedef.js");
 
+const utils = require("../utils/util_func");
 const StrategyBase = require("./strategy_base.js");
 const Intercom = require("../module/intercom");
 
@@ -20,7 +21,35 @@ class DemoStrategy extends StrategyBase {
             // this._test_query_orders();
             // this._test_modify_order();
             // this._test_query_account();
+            this._test_send_fake_trade();
+            // this._test_make_call();
         }, 1000);
+    }
+
+    _test_make_call() {
+        this.call();
+    }
+
+    _test_send_fake_trade() {
+        let symbol = "ALPACAUSDT";
+        let metadata = [
+            [
+                String(482902330),          // aggregated trade id
+                utils._util_get_human_readable_timestamp(),
+                parseFloat("0.03800"),      // price
+                TRADE_SIDE.SELL,
+                parseFloat(843962.40 * 200)
+            ]
+        ];
+        let market_data = {
+            exchange: EXCHANGE.BINANCEU,
+            symbol: symbol,
+            contract_type: CONTRACT_TYPE.PERP,
+            data_type: MARKET_DATA.TRADE,
+            metadata: metadata,
+            timestamp: utils._util_get_human_readable_timestamp()
+        };
+        this.intercom.emit("MARKET_DATA", market_data, INTERCOM_SCOPE.FEED);
     }
 
     _test_send_post_only_order() {
@@ -137,9 +166,7 @@ class DemoStrategy extends StrategyBase {
     };
 
     _on_market_data_trade_ready(trade) {
-        if (trade["symbol"] === "XMRUSDT") {
-            console.log(JSON.stringify(trade));
-        }
+        if (trade.symbol === "ALPACAUSDT") console.log(JSON.stringify(trade));
     }
 
     _on_market_data_bestquote_ready(bestquote) {

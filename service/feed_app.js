@@ -1,5 +1,6 @@
 require("../config/typedef.js");
 const Slack = require("../module/slack");
+const Twilio = require("../module/twilio");
 const BinanceU = require("../exchange/exchange_binanceU.js");
 const OKX = require("../exchange/exchange_okx.js");
 
@@ -11,8 +12,10 @@ class FeedApp {
         this.name = "FeedApp";
         this.intercom = intercom;
         this.slack = new Slack.Slack();
+        this.twilio = new Twilio.Twilio();
 
         this.on_slack_publish_handler = this.on_slack_publish.bind(this);
+        this.on_twilio_call_handler = this.on_twilio_call.bind(this);
     }
 
     on_slack_publish(slack_publish) {
@@ -33,8 +36,13 @@ class FeedApp {
         }
     }
 
+    on_twilio_call() {
+        this.twilio.call();
+    }
+
     _register_events() {
         this.intercom.on("SLACK_PUBLISH", this.on_slack_publish_handler, INTERCOM_SCOPE.STRATEGY);
+        this.intercom.on("TWILIO_CALL", this.on_twilio_call_handler, INTERCOM_SCOPE.STRATEGY);
     }
 
     start() {

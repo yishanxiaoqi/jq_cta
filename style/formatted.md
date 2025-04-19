@@ -2,6 +2,25 @@
 
 ## 1.1 trade
 
+```json
+{
+    "exchange": "BinanceU",
+    "symbol": "TRBUSDT",
+    "contract_type": "perp",
+    "data_type": "trade",
+    "metadata": [
+        [
+            "482902330",            // aggregated trade id      
+            "20250416221201960",    // human readable ts
+            22.543,                 // price
+            "buy",                  // buyer the maker?
+            0.3                     // qty                
+        ]
+    ],
+    "timestamp": "20250416221202119"
+}
+```
+
 ## 1.2 bestquote
 
 ```json

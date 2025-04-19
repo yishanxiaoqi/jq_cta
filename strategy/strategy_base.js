@@ -35,6 +35,10 @@ class StrategyBase {
         this.intercom.emit("SLACK_PUBLISH", publish, INTERCOM_SCOPE.STRATEGY);
     }
 
+    call() {
+        this.intercom.emit("TWILIO_CALL", "", INTERCOM_SCOPE.STRATEGY);
+    }
+
     _register_events() {
         let that = this;
 

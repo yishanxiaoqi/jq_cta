@@ -1,3 +1,5 @@
+// 这个脚本是用来手动处理的，定义
+
 require("../config/typedef.js");
 const request = require('../module/request.js');
 const Intercom = require("../module/intercom.js");
@@ -8,7 +10,7 @@ class AnnStrategy extends StrategyBase {
     constructor(name, alias, intercom) {
         super(name, alias, intercom);
 
-        this.symbols = ["ZECUSDT", "JASMYUSDT", "ARKUSDT", "GPSUSDT", "PERPUSDT", "NKNUSDT", "FLMUSDT", "BSWUSDT", "ALPACAUSDT", "VOXELUSDT"];
+        // this.symbols = ["ZECUSDT", "JASMYUSDT", "ARKUSDT", "GPSUSDT", "PERPUSDT", "NKNUSDT", "FLMUSDT", "BSWUSDT", "ALPACAUSDT", "VOXELUSDT"];
         this.symbols = ["ZECUSDT", "JASMYUSDT"];
 
     }

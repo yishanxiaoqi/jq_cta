@@ -16,6 +16,7 @@
         "IOTAUSDT",
         "NKNUSDT",
         "RVNUSDT",
+        "TRBUSDT",
         "XTZUSDT",
         "YFIUSDT",
         "ZECUSDT"
@@ -31,6 +32,7 @@
         "BinanceU.IOTAUSDT.perp",
         "BinanceU.NKNUSDT.perp",
         "BinanceU.RVNUSDT.perp",
+        "BinanceU.TRBUSDT.perp",
         "BinanceU.XTZUSDT.perp",
         "BinanceU.YFIUSDT.perp",
         "BinanceU.ZECUSDT.perp"
@@ -164,6 +166,19 @@
         "ini_usdt": 8750,
         "act_id": "th_binance_cny_sub01",
         "cfgID": "R240087"
+    },
+    "BinanceU.TRBUSDT.perp": {
+        "splitAt": 17,
+        "track_ATR_n": 50,
+        "track_ATR_multiplier": 0.5,
+        "stoploss_rate": 0.03,
+        "cutloss_rate": 0.01,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "ini_usdt": 2000,
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "R240272"
     },
     "BinanceU.XTZUSDT.perp": {
         "splitAt": 17,

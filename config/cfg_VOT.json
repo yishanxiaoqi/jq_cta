@@ -1,0 +1,19 @@
+{
+    "alias": "VOT",
+    "clear_existing_status": true,
+    "interval": "1m",
+    "ini_usdt": 2000,
+    "act_id": "th_binance_cny_master",
+    "symbols": [
+        "ALPACAUSDT"
+    ],
+    "idfs": [
+        "BinanceU.ALPACAUSDT.perp"
+    ],
+    "BinanceU.ALPACAUSDT.perp": {
+        "track_min_n": 30,
+        "ini_usdt": 100,
+        "threshold": 100,
+        "act_id": "th_binance_cny_master"
+    }
+}

@@ -5,14 +5,86 @@
     "ini_usdt": 2000,
     "act_id": "th_binance_cny_master",
     "symbols": [
-        "ALPACAUSDT"
+        "ALPACAUSDT",
+        "ARKUSDT",
+        "BSWUSDT",
+        "FLMUSDT",
+        "GPSUSDT",
+        "JASMYUSDT",
+        "NKNUSDT",
+        "PERPUSDT",
+        "VOXELUSDT",
+        "ZECUSDT"
     ],
     "idfs": [
-        "BinanceU.ALPACAUSDT.perp"
+        "BinanceU.ALPACAUSDT.perp",
+        "BinanceU.ARKUSDT.perp",
+        "BinanceU.BSWUSDT.perp",
+        "BinanceU.FLMUSDT.perp",
+        "BinanceU.GPSUSDT.perp",
+        "BinanceU.JASMYUSDT.perp",
+        "BinanceU.NKNUSDT.perp",
+        "BinanceU.PERPUSDT.perp",
+        "BinanceU.VOXELUSDT.perp",
+        "BinanceU.ZECUSDT.perp"
     ],
     "BinanceU.ALPACAUSDT.perp": {
         "track_min_n": 30,
-        "ini_usdt": 100,
+        "ini_usdt": 20000,
+        "threshold": 100,
+        "act_id": "th_binance_cny_master"
+    },
+    "BinanceU.ARKUSDT.perp": {
+        "track_min_n": 30,
+        "ini_usdt": 20000,
+        "threshold": 100,
+        "act_id": "th_binance_cny_master"
+    },
+    "BinanceU.BSWUSDT.perp": {
+        "track_min_n": 30,
+        "ini_usdt": 20000,
+        "threshold": 100,
+        "act_id": "th_binance_cny_master"
+    },
+    "BinanceU.FLMUSDT.perp": {
+        "track_min_n": 30,
+        "ini_usdt": 20000,
+        "threshold": 100,
+        "act_id": "th_binance_cny_master"
+    },
+    "BinanceU.GPSUSDT.perp": {
+        "track_min_n": 30,
+        "ini_usdt": 20000,
+        "threshold": 100,
+        "act_id": "th_binance_cny_master"
+    },
+    "BinanceU.JASMYUSDT.perp": {
+        "track_min_n": 30,
+        "ini_usdt": 20000,
+        "threshold": 100,
+        "act_id": "th_binance_cny_master"
+    },
+    "BinanceU.NKNUSDT.perp": {
+        "track_min_n": 30,
+        "ini_usdt": 20000,
+        "threshold": 100,
+        "act_id": "th_binance_cny_master"
+    },
+    "BinanceU.PERPUSDT.perp": {
+        "track_min_n": 30,
+        "ini_usdt": 20000,
+        "threshold": 100,
+        "act_id": "th_binance_cny_master"
+    },
+    "BinanceU.VOXELUSDT.perp": {
+        "track_min_n": 30,
+        "ini_usdt": 20000,
+        "threshold": 100,
+        "act_id": "th_binance_cny_master"
+    },
+    "BinanceU.ZECUSDT.perp": {
+        "track_min_n": 30,
+        "ini_usdt": 20000,
         "threshold": 100,
         "act_id": "th_binance_cny_master"
     }

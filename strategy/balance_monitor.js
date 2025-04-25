@@ -251,8 +251,10 @@ class BalanceMonitor extends StrategyBase {
 
         // FUSD for launchpool
         if (account === "BinanceU.th_binance_cny_master.perp") {
-            // 49953.41 FDUSD + 2370.81 USDC + 2000 USDT in Bybit + 3000 USDT in Bybit
-            this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"] + 49953.41 + 2370.81 + 2000 + 3000, 2);
+            // 49953.41 FDUSD + 2370.81 USDC + 60000 USDT 划转到th_binance_cny_sub01z账户
+            this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"] + 49953.41 + 2370.81 + 60000, 2);
+        } else if (account === "BinanceU.th_binance_cny_sub01.perp") { 
+            this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"] - 60000, 2);
         } else {
             this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"], 2);
         }

@@ -17,3 +17,6 @@ test.py
 
 # slack token
 config/token.json
+
+# telephon
+*.session

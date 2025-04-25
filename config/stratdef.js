@@ -77,6 +77,15 @@ SUBSCRIPTION_LIST = [
 
     // VOT
     'BinanceU|ALPACAUSDT|perp|trade',
+    'BinanceU|ARKUSDT|perp|trade',
+    'BinanceU|BSWUSDT|perp|trade',
+    'BinanceU|FLMUSDT|perp|trade',
+    'BinanceU|GPSUSDT|perp|trade',
+    'BinanceU|JASMYUSDT|perp|trade',
+    'BinanceU|NKNUSDT|perp|trade',
+    'BinanceU|PERPUSDT|perp|trade',
+    'BinanceU|VOXELUSDT|perp|trade',
+    'BinanceU|ZECUSDT|perp|trade',
 
     // XES
     // 'BinanceU|XEMUSDT|perp|bestquote',

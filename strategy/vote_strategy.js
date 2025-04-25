@@ -36,6 +36,8 @@ class VoteStrategy extends StrategyBase {
     }
 
     start() {
+        let that = this;
+
         this._register_events();
         this.subscribe_market_data();
 
@@ -58,13 +60,13 @@ class VoteStrategy extends StrategyBase {
             that.send_fake_trade();
         });
 
-        setInterval(() => {
-            // 每隔1小时将status_map做一个记录
-            let ts = moment().format('YYYYMMDDHHmmssSSS'), month = moment().format('YYYY-MM');
-            fs.writeFile(`./log/status_map_${this.alias}_${month}.log`, ts + ": " + JSON.stringify(this.status_map) + "\n", { flag: "a+" }, (err) => {
-                if (err) logger.info(`${this.alias}::err`);
-            });
-        }, 1000 * 60 * 60);
+        // setInterval(() => {
+        //     // 每隔1小时将status_map做一个记录
+        //     let ts = moment().format('YYYYMMDDHHmmssSSS'), month = moment().format('YYYY-MM');
+        //     fs.writeFile(`./log/status_map_${this.alias}_${month}.log`, ts + ": " + JSON.stringify(this.status_map) + "\n", { flag: "a+" }, (err) => {
+        //         if (err) logger.info(`${this.alias}::err`);
+        //     });
+        // }, 1000 * 60 * 60);
     }
 
     refresh_ui() {
@@ -119,7 +121,7 @@ class VoteStrategy extends StrategyBase {
 
     send_fake_trade() {
         let that = this;
-        for (let idf of that.cfg["idf"]) {
+        for (let idf of that.cfg["idfs"]) {
             if (that.prices[idf]) {
                 let price = that.prices[idf]['price'];
                 let [exchange, symbol, contract_type] = idf.split(".");
@@ -171,14 +173,13 @@ class VoteStrategy extends StrategyBase {
                 that.status_map[idf] = {
                     "status": "EMPTY",
                     "pos": 0,
-                    "ma": 0,
+                    "volume_ma": 0,
                     "ratio": 0,
                     "long_enter": "",
                     "high_since_long": "",
                     "short_enter": "",
                     "low_since_short": "",
                     "bar_n": "",
-                    "bar_enter_n": 0,
                     "stoploss_price": "",
                     "fee": 0,
                     "quote_ccy": 0,
@@ -373,6 +374,12 @@ class VoteStrategy extends StrategyBase {
 
         // 更新kline数据，这里应该用>会不会更好？
         if (that.cur_bar_otime[idf] > that.klines[idf]["ts"][0]) {
+
+            // let ts = moment().format('YYYYMMDDHHmmssSSS'), month = moment().format('YYYY-MM');
+            // fs.writeFile(`./log/status_map_${this.alias}_${month}.log`, ts + ": " + JSON.stringify(this.status_map) + "\n", { flag: "a+" }, (err) => {
+            //     if (err) logger.info(`${this.alias}::err`);
+            // });
+
             that.klines[idf]["ts"].unshift(that.cur_bar_otime[idf]);
             that.klines[idf]["ts"].pop();
             that.klines[idf]["open"].unshift(price);
@@ -878,21 +885,21 @@ process.argv.forEach((val) => {
     }
 });
 
-// process.on('SIGINT', async () => {
-//     logger.info(`${strategy.alias}::SIGINT`);
-//     /* Note: Just work under pm2 environment */
-//     // strategy._test_cancel_order(strategy.test_order_id);
-//     setTimeout(() => process.exit(), 3000)
-// });
+process.on('SIGINT', async () => {
+    logger.info(`${strategy.alias}::SIGINT`);
+    /* Note: Just work under pm2 environment */
+    // strategy._test_cancel_order(strategy.test_order_id);
+    setTimeout(() => process.exit(), 3000)
+});
 
-// process.on('exit', async () => {
-//     logger.info(`${strategy.alias}:: exit`);
-// });
+process.on('exit', async () => {
+    logger.info(`${strategy.alias}:: exit`);
+});
 
-// process.on('uncaughtException', (err) => {
-//     logger.error(`uncaughtException: ${JSON.stringify(err.stack)}`);
-// });
+process.on('uncaughtException', (err) => {
+    logger.error(`uncaughtException: ${JSON.stringify(err.stack)}`);
+});
 
-// process.on('unhandledRejection', (reason, p) => {
-//     logger.error(`unhandledRejection: ${p}, reason: ${reason}`);
-// });
+process.on('unhandledRejection', (reason, p) => {
+    logger.error(`unhandledRejection: ${p}, reason: ${reason}`);
+});

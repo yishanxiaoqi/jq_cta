@@ -6,6 +6,7 @@
     "csv-parser": "^3.0.0",
     "diskusage": "^1.2.0",
     "json-bigint": "^1.0.0",
+    "md5": "^2.3.0",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.43",
     "node-schedule": "^2.1.1",

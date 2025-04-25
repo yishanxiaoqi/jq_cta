@@ -22,6 +22,8 @@
 
     // pm2 start ./strategy/balance_monitor.js --name BAM
 
+    // pm2 start announcement_monitor.py --name ANN --interpreter python3
+
     // #### UI 部分
     // cd middleware: pm2 start ./bin/www.js
     // 切换回~/jq_ui/，然后pm2 start npm --name "UI_React" -- start

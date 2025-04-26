@@ -1,7 +1,8 @@
-const moment = require("moment");
+const moment = require('moment');
 
-var startDate = moment(new Date('2015-05-21T10:17:28.593Z'));
-// Do your operations
-var endDate   = moment(new Date('2015-05-21T11:10:28.593Z'));
-var seconds = (startDate).diff(endDate, 'day');
-console.log(seconds);
+ts1 = "20250426181000000";
+ts2 = "20250426181000000";
+
+console.log(moment(ts1, "YYYYMMDDHHmmssSSS").diff(moment(ts2, "YYYYMMDDHHmmssSSS"), "seconds"));
+
+console.log( parseInt((ts1.slice(0, 12) + '00000')), parseInt(ts2), parseInt((ts1.slice(0, 12) + '00000')) < parseInt(ts2) );

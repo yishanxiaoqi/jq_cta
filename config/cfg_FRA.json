@@ -1,0 +1,25 @@
+{
+    "alias": "FRA",
+    "clear_existing_status": false,
+    "interval": "1h",
+    "act_id": "th_binance_cny_sub01",
+    "rates": [-0.01, -0.015, -0.02],
+    "mins": ["1min"],
+    "stoploss_rate": 0.05,
+    "rate_str_map": {
+        "005": -0.005,
+        "010": -0.01,
+        "015": -0.015,
+        "020": -0.02
+    },
+    "ini_usdt": {
+        "1min": 50,
+        "2min": 50,
+        "3min": 50
+    },
+    "tp_rate": {
+        "1min": 0.03,
+        "2min": 0.04,
+        "3min": 0.04
+    }
+}

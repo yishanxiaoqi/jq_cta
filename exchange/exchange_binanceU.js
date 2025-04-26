@@ -170,6 +170,25 @@ class ExchangeBinanceU extends ExchangeBase {
         });
     }
 
+    
+    on_channel_subscription(channel) {
+        const sub_id = +randomID(6, '0');
+        channel = this._format_subscription_item(channel);
+        logger.info(channel, 'subscription request received ...');
+        if (this.ws_connections["th_binance_cny_sub03"]["connected"] ) {
+            this._send_ws_message(this.ws_connections["th_binance_cny_sub03"]["ws"], { method: "SUBSCRIBE", params: [channel], id: sub_id });
+        }
+    }
+
+    on_channel_unsubscription(channel) {
+        const sub_id = +randomID(6, '0');
+        channel = this._format_subscription_item(channel);
+        logger.info(channel, 'remove subscription request received ...');
+        if (this.ws_connections["th_binance_cny_sub03"]["connected"] ) {
+            this._send_ws_message(this.ws_connections["th_binance_cny_sub03"]["ws"], { method: "UNSUBSCRIBE", params: [channel], id: sub_id });
+        }
+    }
+
     _reconnect_ws(account_id) {
         if (this.ws_connections[account_id]["reconnecting"]) {
             logger.info(`${this.name}|${account_id}: websocket is already reconnecting.`);

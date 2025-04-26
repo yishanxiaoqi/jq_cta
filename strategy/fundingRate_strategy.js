@@ -1,45 +1,39 @@
-// 统计过去30分钟的交易量，如果当前分钟的交易量与过去30分钟的平均交易量的比值超过阈值，则进行开仓
-// 主要为了应对币安的投票上币/下币事件，是一个事件驱动型策略
+// 在每小时结束前两分钟获取所有symbol的实时资金费率，如果出现资金费率高于-0.015或者-0.02，则在
+// 收取资金费率后的几分钟内做空，持仓时间最短1分钟，最长3min，如果持仓时间太长，波动性太大，可能
+// 较大亏损（也可以试一试，但是一定要加止损。再强调一遍，仓位控制和止损是长久盈利的根本。你手动交易
+// 亏损的主要原因就是没有仓位控制也没有止损，疯狂扛单加仓！）
 
 require("../config/typedef.js");
 const fs = require("fs");
 const moment = require("moment");
-const assert = require("assert");
 const randomID = require("random-id");
 
-const Intercom = require("../module/intercom");
+const Intercom = require("../module/intercom.js");
 const logger = require("../module/logger.js");
 const request = require('../module/request.js');
-const utils = require("../utils/util_func");
+const utils = require("../utils/util_func.js");
 const stratutils = require("../utils/strat_util.js");
 const StrategyBase = require("./strategy_base.js");
 const schedule = require('node-schedule');
 
-LABELS = ["UP", "DN", "TP", "SP"];
-// UP: 做多
-// DN: 做空
-// TP: 止盈
-// SP: 止损
+const LABELS = ["DN", "TP", "SP", "CV"];
+// DN: 开仓单
+// TP: 止盈单
+// SP: 止损单
+// CV: 平仓单
 
-class VoteStrategy extends StrategyBase {
+class FundingRateStrategy extends StrategyBase {
     constructor(name, alias, intercom) {
         super(name, alias, intercom);
 
         this.cfg = require(`../config/cfg_${alias}.json`);
 
-        this.init_status_map();
-        this.init_order_map();  // this will set order_map to be empty
+        this.status_map  = {};
+        this.order_map = {};
 
         // idf::exchange.symbol.contract_type
         this.prices = {};
-        this.klines = {}
-        this.cur_bar_otime = {};
-        this.pre_bar_otime = {};
-        this.cur_hour_otime = {};
-        this.pre_hour_otime = {};
-
         // set-up
-        this.interval = this.cfg["interval"];
         this.contract_type = CONTRACT_TYPE.PERP;
     }
 
@@ -49,7 +43,10 @@ class VoteStrategy extends StrategyBase {
         this._register_events();
         this.subscribe_market_data();
 
-        this.load_klines();
+        this.load_fundingRate();
+        schedule.scheduleJob('0 58 * * * *', function() {
+            that.load_fundingRate();
+        });
 
         setInterval(() => {
             fs.writeFile(`./config/status_map_${this.alias}.json`, JSON.stringify(this.status_map), function (err) {
@@ -58,23 +55,19 @@ class VoteStrategy extends StrategyBase {
             fs.writeFile(`./config/order_map_${this.alias}.json`, JSON.stringify(this.order_map), function (err) {
                 if (err) logger.info(`${this.alias}::err`);
             });
-            this.refresh_ui();
-        }, 1000 * 3);
+            that.refresh_ui();
+        }, 1000 * 5);
 
-        schedule.scheduleJob('30 * * * * *', function() {
-            // 每隔1分钟查询一下active orders，暂时不用
-            // that.query_active_orders();
-            // 每隔1分钟发送虚假交易，防止1分钟内没有交易量造成volume_ma计算出现偏差
-            that.send_fake_trade();
+        schedule.scheduleJob('30 1,5,58 * * * *', function() {
+            that.query_active_orders();
+            let ts = moment().format('YYYYMMDDHHmmssSSS'), month = moment().format('YYYY-MM');
+            fs.writeFile(`./log/status_map_${that.alias}_${month}.log`, ts + ": " + JSON.stringify(that.status_map) + "\n", { flag: "a+" }, (err) => {
+                if (err) logger.info(`${that.alias}::err`);
+            });
+            fs.writeFile(`./log/order_map_${that.alias}_${month}.log`, ts + ": " + JSON.stringify(that.order_map) + "\n", { flag: "a+" }, (err) => {
+                if (err) logger.info(`${that.alias}::err`);
+            });
         });
-
-        // setInterval(() => {
-        //     // 每隔1小时将status_map做一个记录
-        //     let ts = moment().format('YYYYMMDDHHmmssSSS'), month = moment().format('YYYY-MM');
-        //     fs.writeFile(`./log/status_map_${this.alias}_${month}.log`, ts + ": " + JSON.stringify(this.status_map) + "\n", { flag: "a+" }, (err) => {
-        //         if (err) logger.info(`${this.alias}::err`);
-        //     });
-        // }, 1000 * 60 * 60);
     }
 
     refresh_ui() {
@@ -85,34 +78,35 @@ class VoteStrategy extends StrategyBase {
             "data": []
         }
 
-        that.cfg["idfs"].forEach((idf, index) => {
-            if (!(idf in that.status_map)) return;
+        that.cfg["entries"].forEach((entry, index) => {
+            // entry: ALPACAUSDT_1min_015
             let item = {};
 
             // 计算time_gap
+            let symbol = entry.split("_")[0];
+            let idf = ["BinanceU", symbol, "perp"].join(".");
             let price_presentation = "";
             if (that.prices[idf]) {
                 let gap = Math.round((moment.now() - utils._util_convert_timestamp_to_date(that.prices[idf]["upd_ts"])) / 1000);
                 price_presentation = `${that.prices[idf]["price"]}|${gap}`;
-                if (that.status_map[idf]["status"] === "LONG") {
-                    let percentage = that.status_map[idf]["enter"] ? ((that.prices[idf]["price"] - that.status_map[idf]["enter"]) / that.status_map[idf]["enter"] * 100).toFixed(0) + "%" : "miss";
+                if (that.status_map[entry]["status"] === "LONG") {
+                    let percentage = that.status_map[entry]["enter"] ? ((that.prices[idf]["price"] - that.status_map[entry]["enter"]) / that.status_map[entry]["enter"] * 100).toFixed(0) + "%" : "miss";
                     price_presentation += "|" + percentage;
-                } else if (that.status_map[idf]["status"] === "SHORT") {
-                    let percentage = that.status_map[idf]["enter"] ? ((that.status_map[idf]["enter"] - that.prices[idf]["price"]) / that.status_map[idf]["enter"] * 100).toFixed(0) + "%" : "miss";
+                } else if (that.status_map[entry]["status"] === "SHORT") {
+                    let percentage = that.status_map[entry]["enter"] ? ((that.status_map[entry]["enter"] - that.prices[idf]["price"]) / that.status_map[entry]["enter"] * 100).toFixed(0) + "%" : "miss";
                     price_presentation += "|" + percentage;
                 }
             }
 
-            item[`${index + 1}|idf`] = idf;
-            item[`${index + 1}|status`] = that.status_map[idf]["status"];
-            item[`${index + 1}|pos`] = that.status_map[idf]["pos"];
-            item[`${index + 1}|fee`] = that.status_map[idf]["fee"];
-            item[`${index + 1}|np`] = that.status_map[idf]["net_profit"];
+            item[`${index + 1}|entry`] = entry;
+            item[`${index + 1}|status`] = that.status_map[entry]["status"];
+            item[`${index + 1}|pos`] = that.status_map[entry]["pos"];
+            item[`${index + 1}|fee`] = that.status_map[entry]["fee"];
+            item[`${index + 1}|np`] = that.status_map[entry]["net_profit"];
             item[`${index + 1}|price`] = price_presentation;
-            item[`${index + 1}|volume_ma`] = that.status_map[idf]["volume_ma"];
-            item[`${index + 1}|ratio`] = that.status_map[idf]["ratio"];
-            item[`${index + 1}|sp`] = that.status_map[idf]["sp_price"];
-            item[`${index + 1}|tp`] = that.status_map[idf]["tp_price"];
+            item[`${index + 1}|sp`] = that.status_map[entry]["stoploss_price"];
+            item[`${index + 1}|rate`] = that.status_map[entry]["rate"];
+            item[`${index + 1}|nextFundingTime`] = that.status_map[entry]["nextFundingTime"];
             sendData["data"].push(item);
         });
 
@@ -129,109 +123,56 @@ class VoteStrategy extends StrategyBase {
         });
     }
 
-    send_fake_trade() {
+    load_fundingRate() {
         let that = this;
-        for (let idf of that.cfg["idfs"]) {
-            if (that.prices[idf]) {
-                let price = that.prices[idf]['price'];
-                let [exchange, symbol, contract_type] = idf.split(".");
-                let metadata = [
-                    [
-                        String("xxxxxxxxx"),    // fake aggregated trade id
-                        utils._util_get_human_readable_timestamp(),
-                        parseFloat(price),      // price
-                        TRADE_SIDE.SELL,        // 交易方向
-                        parseFloat(0)           // 0交易量
-                    ]
-                ];
-                let market_data = {
-                    exchange: exchange,
-                    symbol: symbol,
-                    contract_type: contract_type,
-                    data_type: MARKET_DATA.TRADE,
-                    metadata: metadata,
-                    timestamp: utils._util_get_human_readable_timestamp()
-                };
-                this.intercom.emit("MARKET_DATA", market_data, INTERCOM_SCOPE.FEED);
-            }
-        }
-    }
+        that.cfg["symbols"] = [];
+        that.cfg["entries"] = [];
+        that.status_map = {};
 
-    init_order_map() {
-        let that = this;
-
-        // 注意exists和require的路径设置是不一样的
-        that.order_map = (!fs.existsSync(`./config/order_map_${that.alias}.json`)) ? {} : require(`../config/order_map_${that.alias}`);
-
-        // TODO: how to differ from new_start and first initialization
-        that.cfg["idfs"].forEach((idf) => {
-            if (that.cfg["clear_existing_status"]) {
-                that.order_map[idf] = {};
-            } else {
-                that.order_map[idf] = (that.order_map[idf]) ? that.order_map[idf] : {};
-            }
-        });
-    }
-
-    init_status_map() {
-        let that = this;
-
-        that.status_map = (!fs.existsSync(`./config/status_map_${that.alias}.json`)) ? {} : require(`../config/status_map_${that.alias}`);
-
-        that.cfg["idfs"].forEach((idf) => {
-            if ((that.status_map[idf] === undefined) || (that.cfg["clear_existing_status"])) {
-                that.status_map[idf] = {
-                    "status": "EMPTY",
-                    "pos": 0,
-                    "volume_ma": 0,
-                    "ratio": 0,
-                    "enter": "",
-                    "tp_price": "",
-                    "sp_price": "",
-                    "fee": 0,
-                    "quote_ccy": 0,
-                    "net_profit": 0
-                }
-            }
-        });
-    }
-
-    load_klines() {
-        let that = this;
-        that.cfg["idfs"].forEach((idf) => {
-            that.load_idf_klines(idf);
-        });
-    }
-
-    load_idf_klines(idf) {
-        let that = this;
-
-        that.klines[idf] = { "ts": [], "open": [], "volume": [], "ready": false };
-        let symbol = idf.split(".")[1];
-        let n_klines = that.cfg[idf]["track_min_n"] + 1;
-        let url = "https://fapi.binance.com/fapi/v1/klines?symbol=" + symbol + "&contractType=PERPETUAL&interval=1m&limit=" + n_klines;
-        logger.info(`Loading the klines from ${url}`);
+        let url = "https://fapi.binance.com/fapi/v1/premiumIndex?";
+        logger.info(`Loading the fundingRate from ${url}`);
         request.get({
             url: url, json: true
         }, function (error, res, body) {
-            for (let i = body.length - 1; i >= 0; i--) {
-                let ts = utils.get_human_readable_timestamp(body[i][0]);
-                that.klines[idf]["ts"].push(ts);
-                that.klines[idf]["open"].push(parseFloat(body[i][1]));
-                that.klines[idf]["volume"].push(parseFloat(body[i][5]));
-            }
-            that.klines[idf]["ready"] = true;
+            that.cfg["rates"].forEach(rate => {
+                let rate_str = rate.toFixed(3).slice(3, 6);
+                let items = body.filter(e => parseFloat(e['lastFundingRate']) <= rate);
+                items.forEach(item => {
+                    let symbol = item.symbol;
+                    let channel = `BinanceU|${symbol}|perp|trade`;
+                    that.cfg["symbols"].push(symbol);
+
+                    if (! SUBSCRIPTION_LIST.includes(channel)) {
+                        that.subscribe_channel(channel);
+                    }
+
+                    that.cfg["mins"].forEach(n_min => {
+                        let entry = `${item.symbol}_${n_min}_${rate_str}`;
+                        that.cfg["entries"].push(entry);
+
+                        that.status_map[entry] = {
+                            "status": "EMPTY",
+                            "pos": 0,
+                            "rate": parseFloat(item["lastFundingRate"]),
+                            "nextFundingTime": utils.get_human_readable_timestamp(item["nextFundingTime"]),
+                            "enter": "",
+                            "stoploss_price": "",
+                            "fee": 0,
+                            "quote_ccy": 0,
+                            "net_profit": 0
+                        };
+                        that.order_map[entry] = {}
+                    });
+                });
+            });
+
+            that.status_map["ready"] = true;
         });
 
-        // 5秒后，如果klines仍然是空的，则重新获取
+
+        // 5秒后，如果status_map仍然是空的，则重新获取
         setTimeout(() => {
-            logger.info(`${idf}:${JSON.stringify(that.klines[idf])}`);
-            if ((that.klines[idf]["ts"].length === 0) || (isNaN(that.klines[idf]['open'][0]))) {
-                that.klines[idf]["ready"] = false;
-                that.load_idf_klines(idf);
-            } else {
-                that.klines[idf]["ready"] = true;
-            }
+            if (that.status_map["ready"] === undefined) that.load_fundingRate(idf);
         }, 5000);
     }
 
@@ -252,15 +193,19 @@ class VoteStrategy extends StrategyBase {
         let idf = [exchange, symbol, contract_type].join(".");
 
         // 不是本策略的订单更新，自动过滤
+        // that.alias + "DN" + min_str + rate_str + randomID(5):: FRADN1min015XXXXX
         if (client_order_id.slice(0, 3) !== that.alias) return;
         logger.info(`${that.alias}::on_order_update|${JSON.stringify(order_update)}`);
 
         let label = client_order_id.slice(3, 5);
-        if ( !LABELS.includes(label) ) {
+        if (! LABELS.includes(label) ) {
             logger.info(`${that.alias}::on_order_update|unknown order label ${label}!`);
             return;
         }
-        let order_idf = [act_id, symbol, direction, label, client_order_id].join("|");
+        let min_str = client_order_id.slice(5, 9);
+        let rate_str = client_order_id.slice(9, 12);
+        let entry = [symbol, min_str, rate_str].join("_");
+        let order_idf = [act_id, entry, direction, label, client_order_id].join("|");
 
         if (order_status === ORDER_STATUS.SUBMITTED) {
 
@@ -274,7 +219,7 @@ class VoteStrategy extends StrategyBase {
             if (update_type === "cancelled") {
                 // 订单已经撤销，100毫秒后从order_map中删除该订单（1分钟之后的原因是防止on_response还要用）
                 logger.info(`${that.alias}::on_order_update|${order_idf} ${order_type} order cancelled, will be removed from order_map in 200ms!`);
-                setTimeout(() => delete that.order_map[idf][client_order_id], 100);
+                setTimeout(() => delete that.order_map[entry][client_order_id], 100);
             } else if (update_type === "expired") {
                 // Just expired (usually the stop order triggered), Do nothing here!
             } else {
@@ -292,20 +237,20 @@ class VoteStrategy extends StrategyBase {
             logger.info(`${that.alias}::on_order_update|${order_idf} ${order_type} order ${filled}/${original_amount} filled @${avg_executed_price}/${submit_price}!`);
 
             // 更新order_map
-            that.order_map[idf][client_order_id]["filled"] = filled;
+            that.order_map[entry][client_order_id]["filled"] = filled;
 
             // 更新position
-            that.status_map[idf]["pos"] += (direction === DIRECTION.BUY) ? new_filled : - new_filled;
-            that.status_map[idf]["fee"] += fee;
-            that.status_map[idf]["quote_ccy"] += (direction === DIRECTION.SELL) ? new_filled * avg_executed_price : - new_filled * avg_executed_price;
+            that.status_map[entry]["pos"] += (direction === DIRECTION.BUY) ? new_filled : - new_filled;
+            that.status_map[entry]["fee"] += fee;
+            that.status_map[entry]["quote_ccy"] += (direction === DIRECTION.SELL) ? new_filled * avg_executed_price : - new_filled * avg_executed_price;
 
-            that.status_map[idf]["pos"] = stratutils.transform_with_tick_size(that.status_map[idf]["pos"], QUANTITY_TICK_SIZE[idf]);
-            that.status_map[idf]["fee"] = stratutils.transform_with_tick_size(that.status_map[idf]["fee"], 0.001);
-            that.status_map[idf]["quote_ccy"] = stratutils.transform_with_tick_size(that.status_map[idf]["quote_ccy"], 0.01);
+            that.status_map[entry]["pos"] = stratutils.transform_with_tick_size(that.status_map[entry]["pos"], QUANTITY_TICK_SIZE[idf]);
+            that.status_map[entry]["fee"] = stratutils.transform_with_tick_size(that.status_map[entry]["fee"], 0.001);
+            that.status_map[entry]["quote_ccy"] = stratutils.transform_with_tick_size(that.status_map[entry]["quote_ccy"], 0.01);
 
             // 检查一下status_map变化
-            logger.info(`${that.alias}|${symbol}::${JSON.stringify(that.status_map[idf])}`);
-            logger.info(`${that.alias}|${symbol}::${JSON.stringify(that.order_map[idf])}`);
+            logger.info(`${that.alias}|${symbol}::${JSON.stringify(that.status_map[entry])}`);
+            logger.info(`${that.alias}|${symbol}::${JSON.stringify(that.order_map[entry])}`);
 
             // 如果止盈单成交，则取消止损单；如果止损单成交，则取消止盈单
             let orders_to_be_cancelled = [];
@@ -324,18 +269,15 @@ class VoteStrategy extends StrategyBase {
 
             if (order_status === ORDER_STATUS.FILLED) {
                 // 订单完全成交，更新status_map
-                that.status_map[idf]["status"] = that.order_map[idf][client_order_id]["target"];
-                that.status_map[idf]["enter"] = avg_executed_price;
+                that.status_map[entry]["status"] = that.order_map[entry][client_order_id]["target"];
+                that.status_map[entry]["enter"] = avg_executed_price;
 
                 // 订单完全成交，在order_map中删去该订单（注意：完全成交才删除，且当场删除！）
-                delete that.order_map[idf][label];
+                delete that.order_map[entry][label];
 
                 // remove the client_order_id from order_map 100ms later, as the on_response may need to use it!
-                setTimeout(() => delete that.order_map[idf][client_order_id], 100);
+                setTimeout(() => delete that.order_map[entry][client_order_id], 100);
 
-            } else {
-                // 订单部分成交，处于触发状态
-                that.status_map[idf]["status"] = "TBA";
             }
 
             // record the order filling details
@@ -343,7 +285,7 @@ class VoteStrategy extends StrategyBase {
             // 注意：这里添加了order_type
             let filled_info = [act_id, exchange, symbol, contract_type, client_order_id, order_type, original_amount, filled, submit_price, avg_executed_price, fee].join(",");
             // order_map中只提取label,target,quantity,time,filled等信息
-            let order_info = (that.order_map[idf][client_order_id] === undefined) ? ",,,," : Object.entries(that.order_map[idf][client_order_id]).filter((element) => ["label", "target", "quantity", "time", "filled"].includes(element[0])).map((element) => element[1]).join(",");
+            let order_info = (that.order_map[entry][client_order_id] === undefined) ? ",,,," : Object.entries(that.order_map[entry][client_order_id]).filter((element) => ["label", "target", "quantity", "time", "filled"].includes(element[0])).map((element) => element[1]).join(",");
             let output_string = [ts, filled_info, order_info].join(",");
             output_string += (order_status === ORDER_STATUS.FILLED) ? ",filled\n" : ",partially_filled\n";
             fs.writeFile(`./log/order_filling_${this.alias}.csv`, output_string, { flag: "a+" }, (err) => {
@@ -354,15 +296,6 @@ class VoteStrategy extends StrategyBase {
         }
     }
 
-    update_volume_ma(idf) {
-        // 更新volume_ma
-        let that = this;
-        
-        let volume_sum = that.klines[idf]["volume"].slice(1).reduce((a, b) => a + b);
-        let length = that.klines[idf]["volume"].slice(1).length;
-        that.status_map[idf]["volume_ma"] = (volume_sum / length).toFixed(2);
-    }
-
     _on_market_data_trade_ready(trade) {
         let that = this;
 
@@ -370,184 +303,90 @@ class VoteStrategy extends StrategyBase {
         let symbol = trade["symbol"];
         let contract_type = trade["contract_type"];
         let price = trade["metadata"][0][2];
-        let volume = trade["metadata"][0][4];
         let ts = trade["metadata"][0][1];
 
         let idf = [exchange, symbol, contract_type].join(".");
 
-        if (!that.cfg["idfs"].includes(idf)) return;
-        if (!that.klines[idf]["ready"]) return;
+        if ((that.cfg["symbols"] === undefined) || (!that.cfg["symbols"].includes(symbol))) return;
         that.prices[idf] = { "price": price, "upd_ts": ts };
 
-        // logger.info(symbol, ts, that.cur_bar_otime[idf], that.pre_bar_otime[idf]);
-        that.cur_bar_otime[idf] = stratutils.cal_bar_otime(ts, that.interval, 0);
-        that.cur_hour_otime[idf] = stratutils.cal_bar_otime(ts, "1h", 0);
-        // if the pre_bar_otime is undefined, it means the strategy is re-started
-        let new_start = (that.pre_bar_otime[idf] === undefined);
-        // new interal is not new_start, new bar means a new bar starts
-        let new_bar = (!new_start) && (that.cur_bar_otime[idf] !== that.pre_bar_otime[idf]);
-        let new_hour = (!new_start) && (that.cur_hour_otime[idf] !== that.pre_hour_otime[idf]);
-
-        if (new_start) {
-            logger.info(`${that.alias}::${idf}::NEW START!`);
-            that.update_volume_ma(idf);
-        } else if (new_bar) {
-            logger.info(`${that.alias}::${idf}::NEW MIN!`);
+        let corr_entries = that.cfg["entries"].filter((entry) => entry.split("_")[0] === symbol);
+        for (let entry of corr_entries) {
+            // 下单逻辑模块
+            that.status_map[entry]["net_profit"] = that.status_map[entry]["quote_ccy"] + that.status_map[entry]["pos"] * price - that.status_map[entry]["fee"];
+            that.status_map[entry]["net_profit"] = stratutils.transform_with_tick_size(that.status_map[entry]["net_profit"], 0.01);
+            that.main_execuation(entry, price, ts);
         }
-
-        // 更新kline数据，这里应该用>会不会更好？
-        if (that.cur_bar_otime[idf] > that.klines[idf]["ts"][0]) {
-
-            // let ts = moment().format('YYYYMMDDHHmmssSSS'), month = moment().format('YYYY-MM');
-            // fs.writeFile(`./log/status_map_${this.alias}_${month}.log`, ts + ": " + JSON.stringify(this.status_map) + "\n", { flag: "a+" }, (err) => {
-            //     if (err) logger.info(`${this.alias}::err`);
-            // });
-
-            that.klines[idf]["ts"].unshift(that.cur_bar_otime[idf]);
-            that.klines[idf]["ts"].pop();
-            that.klines[idf]["open"].unshift(price);
-            that.klines[idf]["open"].pop();
-            that.klines[idf]["volume"].unshift(volume);
-            that.klines[idf]["volume"].pop();
-
-            that.update_volume_ma(idf);
-
-        } else if (that.cur_bar_otime[idf] === that.klines[idf]["ts"][0]) {
-            that.klines[idf]["volume"][0] += volume;
-        } else {
-            logger.debug(`${that.alias}::${idf}::cur_bar_otime is smaller than klines ts[0]?`);
-        }
-
-        // update the ratio, which is current_volume / volume_ma
-        that.status_map[idf]["ratio"] = (that.klines[idf]["volume"][0] / that.status_map[idf]["volume_ma"]).toFixed(2);
-
-        // update bar open time and net_profit
-        that.pre_bar_otime[idf] = that.cur_bar_otime[idf];
-        that.pre_hour_otime[idf] = that.cur_hour_otime[idf];
-
-        // 下单逻辑模块
-        that.status_map[idf]["net_profit"] = that.status_map[idf]["quote_ccy"] + that.status_map[idf]["pos"] * price - that.status_map[idf]["fee"];
-        that.status_map[idf]["net_profit"] = stratutils.transform_with_tick_size(that.status_map[idf]["net_profit"], 0.01);
-        that.main_execuation(idf, new_hour);
     }
 
-    main_execuation(idf, new_hour) {
+    main_execuation(entry, price, ts) {
         let that = this;
-        let price = that.prices[idf]["price"];
-        let [exchange, symbol, contract_type] = idf.split(".");
-        let ini_usdt = (that.cfg[idf]["ini_usdt"]) ? that.cfg[idf]["ini_usdt"] : that.cfg["ini_usdt"];
-        let act_id = that.cfg[idf]["act_id"];
-        let af = that.cfg[idf]["af"];
-        let tp_rate = that.cfg[idf]["tp_rate"];
-        let sp_rate = that.cfg[idf]["sp_rate"];
+        let [symbol, min_str, rate_str] = entry.split("_");
+        let idf = ["BinanceU", symbol, "perp"].join(".");
+        let [exchange, _, contract_type] = idf.split(".");
+
+        let n_min = parseInt(min_str.split("min")[0]);
+        let ini_usdt = that.cfg["ini_usdt"][min_str];
+        let act_id = that.cfg["act_id"];
+        let stoploss_rate = that.cfg["stoploss_rate"];
+        let tp_rate = that.cfg["tp_rate"][min_str];
 
         let orders_to_be_submitted = [];    // {client_order_id: "", label: "", target: "", quantity: "", price: "", direction: ""}
-        let orders_to_be_cancelled = [];
+        let orders_to_be_cancelled = [];    // {client_order_id: "", label: "", target: "", quantity: "", price: "", direction: ""}
 
-        // 触发开仓条件：1、空仓；2、比例超过阈值
-        if ((that.status_map[idf]["status"] === "EMPTY") && (that.status_map[idf]["ratio"] >= that.cfg[idf]["threshold"])) {
+        if (that.status_map[entry]["status"] === "EMPTY") {
+            let nextFundingTime = that.status_map[entry]['nextFundingTime'];
+            let bar_otime = ts.slice(0, 10) + '0000000';
+            // 还没有到收取资金费率的时间，或者当前时间已经超过收取资金费率时间50秒，不再开仓
+            if ( (bar_otime !== nextFundingTime) || (moment(ts, "YYYYMMDDHHmmssSSS").diff(moment(nextFundingTime, "YYYYMMDDHHmmssSSS"), "seconds") > 50) ) return;
+            // 已经开过仓了，不再开仓
+            if (that.status_map[entry]["opened"] !== undefined ) return;
+
             // 设置仓位状态为TBA，避免不断发单开仓
-            that.status_map[idf]["status"] = "TBA";
+            that.status_map[entry]["status"] = "TBA";
+            that.status_map[entry]["opened"] = true;
+            that.status_map[entry]["coverTime"] = moment(nextFundingTime, "YYYYMMDDHHmmssSSS").add(n_min, 'minutes').format("YYYYMMDDHHmmssSSS");
             let qty = stratutils.transform_with_tick_size(ini_usdt / price, QUANTITY_TICK_SIZE[idf]);
-            if (price > that.klines[idf]["open"][0]) {
-                // 价格上涨，开LONG仓位
-                let up_client_order_id = that.alias + "UP" + randomID(7);
-                orders_to_be_submitted.push({ client_order_id: up_client_order_id, label: "UP", target: "LONG", 
-                    quantity: qty, price: price, order_type: ORDER_TYPE.MARKET, direction: DIRECTION.BUY });
-                
-                // 止盈单
-                let tp_client_order_id = that.alias + "TP" + randomID(7);
-                let tp_price = stratutils.transform_with_tick_size(price * (1 + tp_rate), PRICE_TICK_SIZE[idf]);
-                that.status_map[idf]["tp_price"] = tp_price;
-                orders_to_be_submitted.push({ client_order_id: tp_client_order_id, label: "TP", target: "EMPTY", 
-                    quantity: qty, price: tp_price, order_type: ORDER_TYPE.LIMIT, direction: DIRECTION.SELL });
+            let dn_client_order_id = that.alias + "DN" + min_str + rate_str + randomID(5);
+            orders_to_be_submitted.push({ client_order_id: dn_client_order_id, label: "DN", target: "SHORT", quantity: qty, order_type: ORDER_TYPE.MARKET, price: price, direction: DIRECTION.SELL });
+            
+            let tp_client_order_id = that.alias + "TP" + min_str + rate_str + randomID(5);
+            let tp_price = stratutils.transform_with_tick_size(price * (1 - tp_rate), PRICE_TICK_SIZE[idf]);
+            orders_to_be_submitted.push({ client_order_id: tp_client_order_id, label: "TP", target: "EMPTY", quantity: qty, order_type: ORDER_TYPE.LIMIT, price: tp_price, direction: DIRECTION.BUY });
+            
+            let sp_client_order_id = that.alias + "SP" + min_str + rate_str + randomID(5);
+            let sp_price = stratutils.transform_with_tick_size(price * (1 + stoploss_rate), PRICE_TICK_SIZE[idf]);
+            orders_to_be_submitted.push({ client_order_id: sp_client_order_id, label: "SP", target: "EMPTY", quantity: qty, order_type: ORDER_TYPE.STOP_MARKET, stop_price: sp_price, direction: DIRECTION.BUY });
 
-                // 止损单
-                let sp_client_order_id = that.alias + "SP" + randomID(7);
-                let sp_price = stratutils.transform_with_tick_size(price * (1 - sp_rate), PRICE_TICK_SIZE[idf]);
-                that.status_map[idf]["sp_price"] = sp_price;
-                orders_to_be_submitted.push({ client_order_id: sp_client_order_id, label: "SP", target: "EMPTY", 
-                    quantity: qty, stop_price: sp_price, order_type: ORDER_TYPE.STOP_MARKET, direction: DIRECTION.SELL });
-
-                
-            } else if (price < that.klines[idf]["open"][0]) {
-                // 价格下跌，开SHORT仓位
-                orders_to_be_submitted.push({ client_order_id: client_order_id, label: "DN", target: "SHORT", 
-                    quantity: qty, price: price, direction: DIRECTION.SELL });
-
-                // 止盈单
-                let tp_client_order_id = that.alias + "TP" + randomID(7);
-                let tp_price = stratutils.transform_with_tick_size(price * (1 - tp_rate), PRICE_TICK_SIZE[idf]);
-                that.status_map[idf]["tp_price"] = tp_price;
-                orders_to_be_submitted.push({ client_order_id: tp_client_order_id, label: "TP", target: "EMPTY", 
-                    quantity: qty, price: tp_price, order_type: ORDER_TYPE.LIMIT, direction: DIRECTION.BUY });
-
-                // 止损单
-                let sp_client_order_id = that.alias + "SP" + randomID(7);
-                let sp_price = stratutils.transform_with_tick_size(price * (1 + sp_rate), PRICE_TICK_SIZE[idf]);
-                that.status_map[idf]["sp_price"] = sp_price;
-                orders_to_be_submitted.push({ client_order_id: sp_client_order_id, label: "SP", target: "EMPTY", 
-                    quantity: qty, stop_price: sp_price, order_type: ORDER_TYPE.STOP_MARKET, direction: DIRECTION.BUY });
-            }
-
-            that.call();
             that.slack_publish({
                 "type": "alert",
-                "msg": `${that.alias}::${idf}::Ratio over 100, send the market order!`
+                "msg": `${that.alias}::${entry} open the position!`
             });
-        } else if ( (that.status_map[idf]["status"] === "LONG") && (new_hour) ) {
-            let qty = stratutils.transform_with_tick_size(Math.abs(that.status_map[idf]["pos"]), QUANTITY_TICK_SIZE[idf]);
-            if (that.order_map[idf]["TP"] !== undefined) orders_to_be_cancelled.push(that.order_map[idf]["TP"]["client_order_id"]);
-            if (that.order_map[idf]["SP"] !== undefined) orders_to_be_cancelled.push(that.order_map[idf]["SP"]["client_order_id"]);
 
-            // 止盈单
-            let tp_price = that.status_map[idf]["tp_price"];
-            tp_price = stratutils.transform_with_tick_size(tp_price - (tp_price - price) * af, PRICE_TICK_SIZE[idf]);
-            that.status_map[idf]["tp_price"] = tp_price;
-            let tp_client_order_id = that.alias + "TP" + randomID(7);
-            orders_to_be_submitted.push({ client_order_id: tp_client_order_id, label: "TP", target: "EMPTY", 
-                quantity: qty, price: tp_price, order_type: ORDER_TYPE.LIMIT, direction: DIRECTION.SELL });
-
-            // 止损单
-            let sp_price = that.status_map[idf]["sp_price"];
-            sp_price = stratutils.transform_with_tick_size(sp_price + (price - sp_price) * af, PRICE_TICK_SIZE[idf]);
-            that.status_map[idf]["sp_price"] = sp_price;
-            let sp_client_order_id = that.alias + "SP" + randomID(7);
-            orders_to_be_submitted.push({ client_order_id: sp_client_order_id, label: "SP", target: "EMPTY", 
-                quantity: qty, stop_price: sp_price, order_type: ORDER_TYPE.STOP_MARKET, direction: DIRECTION.SELL });
+            that.status_map[entry]["bar_enter_n"] = 1;
             
-        } else if ( (that.status_map[idf]["status"] === "SHORT") && (new_hour) ) {
-            let qty = stratutils.transform_with_tick_size(Math.abs(that.status_map[idf]["pos"]), QUANTITY_TICK_SIZE[idf]);
-            if (that.order_map[idf]["TP"] !== undefined) orders_to_be_cancelled.push(that.order_map[idf]["TP"]["client_order_id"]);
-            if (that.order_map[idf]["SP"] !== undefined) orders_to_be_cancelled.push(that.order_map[idf]["SP"]["client_order_id"]);
+        } else if (that.status_map[entry]["status"] === "SHORT") {
+            let cover_time = that.status_map[entry]["coverTime"];
+            // 当前时间还没到平仓时间，直接return 
+            if ( parseInt(ts.slice(0, 12) + '00000') < parseInt(cover_time) ) return;
+            that.status_map[entry]["status"] = "TBA";
 
-            // 止盈单
-            let tp_client_order_id = that.alias + "TP" + randomID(7);
-            let tp_price = that.status_map[idf]["tp_price"];
-            tp_price = stratutils.transform_with_tick_size(tp_price + (price - tp_price) * af, PRICE_TICK_SIZE[idf]);
-            that.status_map[idf]["tp_price"] = tp_price;
-            orders_to_be_submitted.push({ client_order_id: tp_client_order_id, label: "TP", target: "EMPTY", 
-                quantity: qty, price: tp_price, order_type: ORDER_TYPE.LIMIT, direction: DIRECTION.BUY });
+            let qty = Math.abs(that.status_map[entry]["pos"]);
+            let cv_client_order_id = that.alias + "CV" + min_str + rate_str + randomID(5);
+            orders_to_be_submitted.push({ client_order_id: cv_client_order_id, label: "CV", target: "EMPTY", quantity: qty, order_type: ORDER_TYPE.MARKET, price: price, direction: DIRECTION.BUY });
 
-            // 止损单
-            let sp_client_order_id = that.alias + "SP" + randomID(7);
-            let sp_price = that.status_map[idf]["sp_price"];
-            sp_price = stratutils.transform_with_tick_size(sp_price - (sp_price - price) * af, PRICE_TICK_SIZE[idf]);
-            that.status_map[idf]["sp_price"] = sp_price;
-            orders_to_be_submitted.push({ client_order_id: sp_client_order_id, label: "SP", target: "EMPTY", 
-                quantity: qty, stop_price: sp_price, order_type: ORDER_TYPE.STOP_MARKET, direction: DIRECTION.BUY });
-
+            if (that.order_map[entry]["TP"] !== undefined) orders_to_be_cancelled.push(that.order_map[entry]["TP"]["client_order_id"]);
+            if (that.order_map[entry]["SP"] !== undefined) orders_to_be_cancelled.push(that.order_map[entry]["SP"]["client_order_id"]);
         }
 
         orders_to_be_submitted.forEach((order) => {
-            let client_order_id = order.client_order_id, label = order.label, target = order.target, quantity = order.quantity;
-            let order_type = order.order_type, stop_price = order.stop_price, price = order.price, direction = order.direction;
+            let client_order_id = order.client_order_id, label = order.label, target = order.target, quantity = order.quantity, order_type = order.order_type, price = order.price, stop_price = order.stop_price, direction = order.direction;
 
             // 发送订单，同时建立order_map
             // {"3106609167": {"label": "DN", "target": "LONG", "quantity": 21133, "time": 1669492800445, "price": 0.04732, "filled": 0}}
-            that.order_map[idf][client_order_id] = { label: label, target: target, quantity: quantity, time: moment.now(), filled: 0 };
+            that.order_map[entry][client_order_id] = { label: label, target: target, quantity: quantity, time: moment.now(), filled: 0 };
             // {"ANTI_S": { "client_order_id": "3103898618",  "label": "ANTI_S|STOPLOSS", "price": 0.3214, "quantity": 100, "time": 1669492800445}}
-            that.order_map[idf][label] = { client_order_id: client_order_id, label: label, price: price, quantity: quantity, time: moment.now() };
+            that.order_map[entry][label] = { client_order_id: client_order_id, label: label, price: price, quantity: quantity, time: moment.now() };
 
             that.send_order({
                 label: label,
@@ -555,8 +394,8 @@ class VoteStrategy extends StrategyBase {
                 exchange: exchange,
                 symbol: symbol,
                 contract_type: contract_type,
+                stop_price: stop_price,     // 若为limit或者marketorder，则为undefined
                 price: price,
-                stop_price: stop_price,
                 quantity: quantity,
                 direction: direction,
                 order_type: order_type,
@@ -620,19 +459,22 @@ class VoteStrategy extends StrategyBase {
         let quantity = response["request"]["quantity"];
         let direction = response["request"]["direction"];
         let price = response["request"]["price"];
+        let order_type = response["request"]["order_type"];
 
         let label = client_order_id.slice(3, 5);
         if (!LABELS.includes(label)) {
             logger.info(`${that.alias}::on_send_order_response|unknown order label ${label}!`);
             return;
         }
-
+        let min_str = client_order_id.slice(5, 9);
+        let rate_str = client_order_id.slice(9, 12);
+        let entry = [symbol, min_str, rate_str].join("_");
         let idf = [exchange, symbol, contract_type].join(".");
-        let order_idf = [act_id, symbol, direction, label, client_order_id].join("|");
+        let order_idf = [act_id, entry, direction, label, client_order_id].join("|");
 
         if (response["metadata"]["metadata"]["result"] === false) {
             // 发单失败，1分钟后删除该订单信息
-            setTimeout(() => delete that.order_map[idf][client_order_id], 1000 * 60);
+            setTimeout(() => delete that.order_map[entry][client_order_id], 1000 * 60);
 
             let error_code = response["metadata"]["metadata"]["error_code"];
             let error_code_msg = response["metadata"]["metadata"]["error_code_msg"];
@@ -701,14 +543,14 @@ class VoteStrategy extends StrategyBase {
             } else if (error_code_msg === "Price less than min price.") {
                 // 价格低于最低发单价，通常是DN单，那就不设置DN单
                 if (label === "DN") {
-                    delete that.order_map[idf]["DN"];
+                    delete that.order_map[entry]["DN"];
                 } else {
                     logger.info(`${that.alias}::${order_idf}::price less than min, but not a DN order, check!`);
                 }
             } else if (error_code_msg === "Quantity greater than max quantity.") {
                 // quantity超过最大限制，通常是DN单，那就不设置DN单
                 if (label === "DN") {
-                    delete that.order_map[idf]["DN"];
+                    delete that.order_map[entry]["DN"];
                 } else {
                     logger.info(`${that.alias}::${order_idf}::Quantity greater than max quantity, but not a DN order, check!`);
                 }
@@ -745,10 +587,12 @@ class VoteStrategy extends StrategyBase {
                 logger.info(`${that.alias}::${order_idf}::resend the order in ${timeout} ms!`);
                 setTimeout(() => {
                     retry = (retry === undefined) ? 1 : retry + 1;
-                    let new_client_order_id = that.alias + label + randomID(7);
+                    let new_client_order_id = that.alias + label + min_str + rate_str + randomID(5);
 
-                    that.order_map[idf][new_client_order_id] = { label: label, target: target, quantity: quantity, time: moment.now(), filled: 0 };
-                    that.order_map[idf][label] = { client_order_id: new_client_order_id, label: label, price: price, quantity: quantity, time: moment.now() };
+                    // 注意：order_map里面的key只有ANTI_L, ANTI_S, UP, DN四种；
+                    // 但是label有六种！
+                    that.order_map[entry][new_client_order_id] = { label: label, target: target, quantity: quantity, time: moment.now(), filled: 0 };
+                    that.order_map[entry][label] = { client_order_id: new_client_order_id, label: label, price: price, quantity: quantity, time: moment.now() };
 
                     that.send_order({
                         retry: retry,
@@ -760,7 +604,7 @@ class VoteStrategy extends StrategyBase {
                         price: price,
                         quantity: quantity,
                         direction: direction,
-                        order_type: ORDER_TYPE.MARKET,
+                        order_type: order_type,
                         account_id: act_id,
                         client_order_id: new_client_order_id
                     });
@@ -786,13 +630,16 @@ class VoteStrategy extends StrategyBase {
         let direction = response["request"]["direction"];
 
         let label = client_order_id.slice(3, 5);
-        if (!LABELS.includes(label)) {
+        if ( !LABELS.includes(label) ) {
             logger.info(`${that.alias}::on_cancel_order_response|unknown order label ${label}!`);
             return;
         }
 
+        let min_str = client_order_id.slice(5, 9);
+        let rate_str = client_order_id.slice(9, 12);
+        let entry = [symbol, min_str, rate_str].join("_");
         let idf = [exchange, symbol, contract_type].join(".");
-        let order_idf = [act_id, symbol, direction, label, client_order_id].join("|");
+        let order_idf = [act_id, entry, direction, label, client_order_id].join("|");
 
         if (response["metadata"]["metadata"]["result"] === false) {
             //撤单失败
@@ -872,20 +719,20 @@ class VoteStrategy extends StrategyBase {
 
         let alert_string = "";
 
-        for (let idf of that.cfg["idfs"]) {
+        for (let entry of that.cfg["entries"]) {
             let symbol = idf.split(".")[1];
             let corr_active_orders = active_orders.filter(item => (item.symbol === symbol));
             let corr_active_client_order_ids = corr_active_orders.map(item => item.client_order_id);
             let string = corr_active_client_order_ids.join(",");
 
-            let index = that.cfg["idfs"].indexOf(idf);
+            let index = that.cfg["entries"].indexOf(idf);
 
             let item = {};
             item[`${index + 1}|orders`] = string;
             sendData["data"].push(item);
 
             // TODO: 从order_map删除item
-            for (let [key, value] of Object.entries(that.order_map[idf])) {
+            for (let [key, value] of Object.entries(that.order_map[entry])) {
                 
                 if (key.startsWith(that.alias)) {
                     // 以
@@ -894,16 +741,16 @@ class VoteStrategy extends StrategyBase {
                     if (corr_active_client_order_ids.includes(value.client_order_id)) continue;
                 }
 
-                if (that.order_map[idf][key]["ToBeDeleted"]) {
+                if (that.order_map[entry][key]["ToBeDeleted"]) {
                     // 超过10秒才删除，避免order_update推送延迟，导致order_update的处理过程中order_map中信息缺失
                     if (moment.now() - value["ToBeDeletedTime"] > 1000 * 10) {
-                        alert_string += `${idf}: ${key}: ${JSON.stringify(that.order_map[idf][key])}\n`;
+                        alert_string += `${idf}: ${key}: ${JSON.stringify(that.order_map[entry][key])}\n`;
                         // 如果delete了，在deal_with_TBA里面又会报错？
-                        // delete that.order_map[idf][key];
+                        // delete that.order_map[entry][key];
                     }
                 } else {
-                    that.order_map[idf][key]["ToBeDeleted"] = true;
-                    that.order_map[idf][key]["ToBeDeletedTime"] = moment.now();
+                    that.order_map[entry][key]["ToBeDeleted"] = true;
+                    that.order_map[entry][key]["ToBeDeletedTime"] = moment.now();
                 }
             }
         }
@@ -931,35 +778,32 @@ class VoteStrategy extends StrategyBase {
         let idf = [exchange, symbol, contract_type].join(".");
 
         let label = client_order_id.slice(3, 5);
-        if (!LABELS.values(LABELMAP).includes(label)) {
+        if (!LABELS.includes(label)) {
             logger.error(`${that.alias}::on_order_update|unknown order label ${label}!`);
             return;
         }
 
         if ((response["metadata"]["order_info"]["status"] === "unknown") && (response["metadata"]["metadata"]["error_code_msg"] === "Order does not exist.")) {
-            if (client_order_id in that.order_map[idf]) {
-                delete that.order_map[idf][client_order_id];
+            if (client_order_id in that.order_map[entry]) {
+                delete that.order_map[entry][client_order_id];
                 that.slack_publish({
                     "type": "alert",
                     "msg": `${that.alias}::${idf}::After inspecting, delete ${client_order_id} from order map!`
                 });
             }
 
-            if ((label in that.order_map[idf]) && (that.order_map[idf][label]["client_order_id"] === client_order_id)) {
-                delete that.order_map[idf][label];
+            if ((label.slice(0, 6) in that.order_map[entry]) && (that.order_map[entry][label.slice(0, 6)]["client_order_id"] === client_order_id)) {
+                delete that.order_map[entry][label.slice(0, 6)];
                 that.slack_publish({
                     "type": "alert",
                     "msg": `${that.alias}::${idf}::After inspecting, delete ${label}|${client_order_id} from order map!`
                 });
             }
-
-            // 将pre_bar_otime设置为undefined，方便重现发单，尤其是UP & DN单
-            that.pre_bar_otime[idf] = undefined;
         }
     }
 }
 
-module.exports = VoteStrategy;
+module.exports = FundingRateStrategy;
 
 let strategy;
 
@@ -983,26 +827,26 @@ process.argv.forEach((val) => {
             INTERCOM_CONFIG[`LOCALHOST_UI`]
         ];
 
-        strategy = new VoteStrategy("Vote", alias, new Intercom(intercom_config));
+        strategy = new FundingRateStrategy("FundingRate", alias, new Intercom(intercom_config));
         strategy.start();
     }
 });
 
-process.on('SIGINT', async () => {
-    logger.info(`${strategy.alias}::SIGINT`);
-    /* Note: Just work under pm2 environment */
-    // strategy._test_cancel_order(strategy.test_order_id);
-    setTimeout(() => process.exit(), 3000)
-});
+// process.on('SIGINT', async () => {
+//     logger.info(`${strategy.alias}::SIGINT`);
+//     /* Note: Just work under pm2 environment */
+//     // strategy._test_cancel_order(strategy.test_order_id);
+//     setTimeout(() => process.exit(), 3000)
+// });
 
-process.on('exit', async () => {
-    logger.info(`${strategy.alias}:: exit`);
-});
+// process.on('exit', async () => {
+//     logger.info(`${strategy.alias}:: exit`);
+// });
 
-process.on('uncaughtException', (err) => {
-    logger.error(`uncaughtException: ${JSON.stringify(err.stack)}`);
-});
+// process.on('uncaughtException', (err) => {
+//     logger.error(`uncaughtException: ${JSON.stringify(err.stack)}`);
+// });
 
-process.on('unhandledRejection', (reason, p) => {
-    logger.error(`unhandledRejection: ${p}, reason: ${reason}`);
-});
+// process.on('unhandledRejection', (reason, p) => {
+//     logger.error(`unhandledRejection: ${p}, reason: ${reason}`);
+// });

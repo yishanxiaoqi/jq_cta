@@ -55,6 +55,7 @@ class BalanceMonitor extends StrategyBase {
         this.rev_aliases = ["R01", "R06", "R12", "R24", "S24"];
         // cta如今包含了两个账户：BinanceU.th_binance_cny_master.perp和BinanceU.th_binance_cny_sub01.perp
         this.cta_accounts = ["BinanceU.th_binance_cny_master.perp", "BinanceU.th_binance_cny_sub01.perp"];
+        this.cta_positions = {};
 
         // 初始化各个账户的结单，尤其是CTA
         this.account_summary = {};
@@ -347,7 +348,7 @@ class BalanceMonitor extends StrategyBase {
         // logger.info("BAM", JSON.stringify(cal_positions), JSON.stringify(real_positions));
 
         let warning_msg = "";
-        // wierd_symbols是指实际仓位中没有仓位，但是计算出来确有的交易对
+        // wierd_symbols是指实际仓位中没有仓位，但是计算出来却有的交易对
         let wierd_symbols = Object.keys(cal_positions).filter((symbol) => ! (real_positions.map((e) => e["symbol"]).includes(symbol)));
 
         for (let symbol of wierd_symbols) {
@@ -357,6 +358,14 @@ class BalanceMonitor extends StrategyBase {
         for (let item of real_positions) {
             let symbol = item["symbol"];
             let position = item["position"];
+
+            if (that.cta_accounts.includes(account)) {
+                if (that.cta_positions[symbol] === undefined) that.cta_positions[symbol] = {};
+                that.cta_positions[symbol][account] = position;
+            }
+
+            // logger.info(JSON.stringify(that.cta_positions));
+            // logger.info(JSON.stringify(that.latest_prices));
 
             let idf = [EXCHANGE.BINANCEU, symbol, CONTRACT_TYPE.PERP].join(".");
             let calculated_position = (symbol in cal_positions) ? stratutils.transform_with_tick_size(cal_positions[symbol], QUANTITY_TICK_SIZE[idf]) : 0;
@@ -463,6 +472,28 @@ class BalanceMonitor extends StrategyBase {
         let disk_info = disk.checkSync('/');
         let disk_usage = ((1 - disk_info.available / disk_info.total) * 100).toFixed(1);
         txt += `Disk usage: ${disk_usage} %\n`;
+
+
+        // 计算仓位的价值和占比，要永远记住，控制仓位才能长久！
+        txt += `[===永远要控制仓位===]\n`
+        let value_position = {};
+        for (let symbol of Object.keys(that.cta_positions)) {
+            let sum_pos = Object.values(that.cta_positions[symbol]).reduce((a, b) => a + b, 0);
+            let sub = `BinanceU|${symbol}|perp|trade`;
+            if (that.latest_prices[sub] !== undefined) {
+                let sum_value = Math.abs(sum_pos * that.latest_prices[sub]);
+                value_position[symbol] = sum_value;
+            }
+        }
+        let top3 = Object.entries(value_position).sort(([, a], [, b]) => b - a).slice(0, 3).map(([n]) => n);
+        for (let symbol of top3) {
+            let sub = `BinanceU|${symbol}|perp|trade`;
+            if (this.account_summary["CTA"]["equity"]) {
+                let sum_pos = Object.values(that.cta_positions[symbol]).reduce((a, b) => a + b, 0);
+                let per_value = (value_position[symbol] / that.account_summary["CTA"]["equity"] * 100);
+                txt += `${symbol}: \n${value_position[symbol].toFixed(0)}USDT \t${per_value.toFixed(1)}% \t${sum_pos.toFixed(2)}\n`;
+            }
+        }
 
         this.slack_publish({
             "type": "info",

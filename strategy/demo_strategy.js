@@ -21,10 +21,20 @@ class DemoStrategy extends StrategyBase {
             // this._test_query_orders();
             // this._test_modify_order();
             // this._test_query_account();
-            // this._test_send_fake_trade();
+            this._test_send_fake_trade();
             // this._test_make_call();
-            this._test_slack_publish();
+            // this._test_slack_publish();
+            // this._test_channel_subscription();
+            // setTimeout(() => {this._test_channel_unsubscription()}, 60 * 1000);
         }, 1000);
+    }
+
+    _test_channel_subscription() {
+        this.subscribe_channel("Binance|JOEUSDT|perp|trade");
+    }
+
+    _test_channel_unsubscription() {
+        this.unsubscribe_channel("Binance|JOEUSDT|perp|trade");
     }
 
     _test_make_call() {
@@ -32,14 +42,14 @@ class DemoStrategy extends StrategyBase {
     }
 
     _test_send_fake_trade() {
-        let symbol = "PERPUSDT";
+        let symbol = "ALPACAUSDT";
         let metadata = [
             [
                 String(482902330),          // aggregated trade id
                 utils._util_get_human_readable_timestamp(),
                 parseFloat("0.3"),      // price
                 TRADE_SIDE.SELL,
-                parseFloat(100244.51 * 200)
+                parseFloat(12488296.37 * 200)
             ]
         ];
         let market_data = {
@@ -167,7 +177,7 @@ class DemoStrategy extends StrategyBase {
     };
 
     _on_market_data_trade_ready(trade) {
-        // if (trade.symbol === "ALPACAUSDT") console.log(JSON.stringify(trade));
+        if (trade.symbol === "JOEUSDT") console.log(JSON.stringify(trade));
     }
 
     _on_market_data_bestquote_ready(bestquote) {

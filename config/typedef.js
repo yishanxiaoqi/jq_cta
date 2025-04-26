@@ -121,6 +121,7 @@ INTERCOM_CHANNEL = {
     ACCOUNT_UPDATE: "ACCOUNT_UPDATE",
     // Strategy -> Feed 
     OKX_TRADE: "OKX_TRADE",
+    SUBSCRIPTION: "SUBSCRIPTION",
     
     // rest (strategy -> exg -> strategy)
     REQUEST_RESPONSE: "REQUEST_RESPONSE"         

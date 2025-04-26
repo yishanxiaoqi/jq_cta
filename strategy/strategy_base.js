@@ -56,6 +56,14 @@ class StrategyBase {
         logger.info(`${this.name}: no implement for subscribe market data.`)
     }
 
+    subscribe_channel(channel) {
+        this.intercom.emit("CHANNEL_SUBSCRIPTION", channel, INTERCOM_SCOPE.STRATEGY);
+    }
+
+    unsubscribe_channel(channel) {
+        this.intercom.emit("CHANNEL_UNSUBSCRIPTION", channel, INTERCOM_SCOPE.STRATEGY);
+    }
+
     on_market_data_ready(market_data) {
         switch (market_data['data_type']) {
             case MARKET_DATA.ORDERBOOK:

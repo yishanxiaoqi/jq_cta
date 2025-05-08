@@ -918,25 +918,28 @@ OKX：改单成功
 ```json
 {
     "exchange": "BinanceU",
-    "symbol": "XEMUSDT",
+    "symbol": "XMRUSDT",
     "contract_type": "perp",
     "metadata": {
         "result": true,
-        "account_id": "jq_cta_02",
-        "order_id": 6300810354,
-        "client_order_id": "R01UPTYQwC5V",
-        "direction": "Sell",
-        "timestamp": 1688395825951,
-        "update_type": "submitted"
+        "account_id": "th_binance_cny_master",
+        "order_id": 12212193643,
+        "client_order_id": "R01SRsHMeyUL",
+        "direction": "Buy",
+        "timestamp": "20250505021738447",
+        "fee": 0.19126663,
+        "fee_asset": "USDT",
+        "update_type": "executed"
     },
-    "timestamp": "20230703225025960",
+    "timestamp": "20250505021738452",
     "order_info": {
-        "original_amount": 3367,
-        "filled": 0,
-        "new_filled": 0,
-        "avg_executed_price": 0,
-        "submit_price": 0.0297,
-        "status": "new"
+        "order_type": "limit",
+        "original_amount": 22.108,
+        "filled": 3.501,
+        "new_filled": 3.501,
+        "avg_executed_price": 273.16,
+        "submit_price": 273.16,
+        "status": "partially_filled"
     }
 }
 ```

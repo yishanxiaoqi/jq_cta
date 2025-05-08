@@ -47,12 +47,7 @@ class RevTrendStrategy extends StrategyBase {
                 if (err) logger.info(`${this.alias}::err`);
             });
             this.refresh_ui();
-        }, 1000 * 3);
-
-        setInterval(() => {
-            // 每隔1分钟查询一下active orders
-            this.query_active_orders();
-        }, 1000 * 60 * 1);
+        }, 1000 * 5);
 
         setInterval(() => {
             // 每隔1小时将status_map做一个记录
@@ -1235,15 +1230,51 @@ class RevTrendStrategy extends StrategyBase {
         }
     }
 
-    on_query_orders_response(response) {
+    on_inspect_order_response(response) {
+        // 等待完善
+        logger.info(JSON.stringify(this.order_map));
         let that = this;
 
-        if (response["metadata"]["metadata"]["result"] === false) {
-            let error_code = response["metadata"]["metadata"]["error_code"];
-            let error_code_msg = response["metadata"]["metadata"]["error_code_msg"];
-            logger.debug(`${that.alias}:: an error occured during query orders: ${error_code}: ${error_code_msg}`);
-            return
+        let exchange = response["request"]["exchange"];
+        let symbol = response["request"]["symbol"];
+        let contract_type = response["request"]["contract_type"];
+        let client_order_id = response["request"]["client_order_id"];
+        let idf = [exchange, symbol, contract_type].join(".");
+
+        let label = client_order_id.slice(3, 5);
+        if (!Object.values(LABELMAP).includes(label)) {
+            logger.error(`${that.alias}::on_order_update|unknown order label ${label}!`);
+            return;
         }
+        label = stratutils.get_key_by_value(LABELMAP, label);
+
+        if ((response["metadata"]["order_info"]["status"] === "unknown") && (response["metadata"]["metadata"]["error_code_msg"] === "Order does not exist.")) {
+            if (client_order_id in that.order_map[idf]) {
+                delete that.order_map[idf][client_order_id];
+                that.slack_publish({
+                    "type": "alert",
+                    "msg": `${that.alias}::${idf}::After inspecting, delete ${client_order_id} from order map!`
+                });
+            }
+
+            if ((label.slice(0, 6) in that.order_map[idf]) && (that.order_map[idf][label.slice(0, 6)]["client_order_id"] === client_order_id)) {
+                delete that.order_map[idf][label.slice(0, 6)];
+                that.slack_publish({
+                    "type": "alert",
+                    "msg": `${that.alias}::${idf}::After inspecting, delete ${label}|${client_order_id} from order map!`
+                });
+            }
+
+            // 将pre_bar_otime设置为undefined，方便重现发单，尤其是UP & DN单
+            that.pre_bar_otime[idf] = undefined;
+        }
+    }
+
+    on_active_orders(response) {
+        let that = this;
+
+        let act_id = response["metadata"]["metadata"]["account_id"];
+        if (!that.cfg["act_ids"].includes(act_id)) return;
 
         let orders = response["metadata"]["metadata"]["orders"];
         let active_orders = orders.filter(item => item.client_order_id.slice(0, 3) === that.alias);
@@ -1255,8 +1286,9 @@ class RevTrendStrategy extends StrategyBase {
         }
 
         let alert_string = "";
+        let corr_idfs = that.cfg["idfs"].filter(e => that.cfg[e]["act_id"] == act_id);
 
-        for (let idf of that.cfg["idfs"]) {
+        for (let idf of corr_idfs) {
             let symbol = idf.split(".")[1];
             let corr_active_orders = active_orders.filter(item => (item.symbol === symbol));
             let corr_active_client_order_ids = corr_active_orders.map(item => item.client_order_id);
@@ -1303,45 +1335,6 @@ class RevTrendStrategy extends StrategyBase {
         }
     }
 
-    on_inspect_order_response(response) {
-        // 等待完善
-        logger.info(JSON.stringify(this.order_map));
-        let that = this;
-
-        let exchange = response["request"]["exchange"];
-        let symbol = response["request"]["symbol"];
-        let contract_type = response["request"]["contract_type"];
-        let client_order_id = response["request"]["client_order_id"];
-        let idf = [exchange, symbol, contract_type].join(".");
-
-        let label = client_order_id.slice(3, 5);
-        if (!Object.values(LABELMAP).includes(label)) {
-            logger.error(`${that.alias}::on_order_update|unknown order label ${label}!`);
-            return;
-        }
-        label = stratutils.get_key_by_value(LABELMAP, label);
-
-        if ((response["metadata"]["order_info"]["status"] === "unknown") && (response["metadata"]["metadata"]["error_code_msg"] === "Order does not exist.")) {
-            if (client_order_id in that.order_map[idf]) {
-                delete that.order_map[idf][client_order_id];
-                that.slack_publish({
-                    "type": "alert",
-                    "msg": `${that.alias}::${idf}::After inspecting, delete ${client_order_id} from order map!`
-                });
-            }
-
-            if ((label.slice(0, 6) in that.order_map[idf]) && (that.order_map[idf][label.slice(0, 6)]["client_order_id"] === client_order_id)) {
-                delete that.order_map[idf][label.slice(0, 6)];
-                that.slack_publish({
-                    "type": "alert",
-                    "msg": `${that.alias}::${idf}::After inspecting, delete ${label}|${client_order_id} from order map!`
-                });
-            }
-
-            // 将pre_bar_otime设置为undefined，方便重现发单，尤其是UP & DN单
-            that.pre_bar_otime[idf] = undefined;
-        }
-    }
 }
 
 module.exports = RevTrendStrategy;
@@ -1371,6 +1364,8 @@ process.argv.forEach((val) => {
         strategy = new RevTrendStrategy("RevTrend", alias, new Intercom(intercom_config));
         strategy.start();
     }
+
+    
 });
 
 process.on('SIGINT', async () => {

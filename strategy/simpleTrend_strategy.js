@@ -52,11 +52,6 @@ class SimpleTrendStrategy extends StrategyBase{
         }, 1000 * 3);
 
         setInterval(() => {
-            // 每隔5分钟查询一下active orders
-            this.query_active_orders();
-        }, 1000 * 60 * 5);
-
-        setInterval(() => {
             // 每隔1小时将status_map做一个记录
             let ts = moment().format('YYYYMMDDHHmmssSSS'), month = moment().format('YYYY-MM');
             fs.writeFile(`./log/status_map_${this.alias}_${month}.log`, ts + ": " + JSON.stringify(this.status_map) + "\n", { flag: "a+" }, (err) => {
@@ -90,20 +85,6 @@ class SimpleTrendStrategy extends StrategyBase{
         });
 
         this.intercom.emit("UI_update", sendData, INTERCOM_SCOPE.UI);
-    }
-
-    query_active_orders() {
-        let that = this;
-        // 随机挑选一个entry进行query
-        let entry = that.cfg["entries"][Math.floor(Math.random() * that.cfg["entries"].length)];
-        let [exchange, symbol, contract_type, interval] = entry.split(".");
-        let act_id = that.cfg[entry]["act_id"];
-        that.query_orders({
-            exchange: exchange,
-            symbol: symbol,
-            contract_type: contract_type,
-            account_id: act_id,
-        });
     }
 
     init_order_map() {
@@ -705,16 +686,11 @@ class SimpleTrendStrategy extends StrategyBase{
         }
     }
 
-    on_query_orders_response(response) {
+    on_active_orders(response) {
         let that = this;
-        let symbol = response["request"]["symbol"];
 
-        if (response["metadata"]["metadata"]["result"] === false) {
-            let error_code = response["metadata"]["metadata"]["error_code"];
-            let error_code_msg = response["metadata"]["metadata"]["error_code_msg"];
-            logger.debug(`${that.alias}::${symbol} an error occured during query orders: ${error_code}: ${error_code_msg}`);
-            return
-        }
+        let act_id = response["metadata"]["metadata"]["account_id"];
+        if (!that.cfg["act_ids"].includes(act_id)) return;
 
         let orders = response["metadata"]["metadata"]["orders"];
 

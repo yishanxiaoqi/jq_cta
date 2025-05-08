@@ -122,6 +122,8 @@ INTERCOM_CHANNEL = {
     // Strategy -> Feed 
     OKX_TRADE: "OKX_TRADE",
     SUBSCRIPTION: "SUBSCRIPTION",
+    // strategy -> strategy
+    ACTIVE_ORDERS: "ACTIVE_ORDERS",
     
     // rest (strategy -> exg -> strategy)
     REQUEST_RESPONSE: "REQUEST_RESPONSE"         

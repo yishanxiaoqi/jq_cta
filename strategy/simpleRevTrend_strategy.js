@@ -49,11 +49,6 @@ class SimpleRevTrendStrategy extends StrategyBase {
         }, 1000 * 3);
 
         setInterval(() => {
-            // 每隔1分钟查询一下active orders
-            this.query_active_orders();
-        }, 1000 * 60 * 1);
-
-        setInterval(() => {
             // 每隔1小时将status_map做一个记录
             let ts = moment().format('YYYYMMDDHHmmssSSS'), month = moment().format('YYYY-MM');
             fs.writeFile(`./log/status_map_${this.alias}_${month}.log`, ts + ": " + JSON.stringify(this.status_map) + "\n", { flag: "a+" }, (err) => {
@@ -1174,17 +1169,12 @@ class SimpleRevTrendStrategy extends StrategyBase {
         }
     }
 
-    on_query_orders_response(response) {
+    on_active_orders(response) {
         let that = this;
-        
-        if (response["metadata"]["metadata"]["result"] === false) {
-            let error_code = response["metadata"]["metadata"]["error_code"];
-            let error_code_msg = response["metadata"]["metadata"]["error_code_msg"];
-            logger.debug(`${that.alias}:: an error occured during query orders: ${error_code}: ${error_code_msg}`);
-            return
-        }
 
         let act_id = response["metadata"]["metadata"]["account_id"];
+        if (!that.cfg["act_ids"].includes(act_id)) return;
+
         let orders = response["metadata"]["metadata"]["orders"];
         let active_orders = orders.filter(item => item.client_order_id.slice(0, 3) === that.alias);
 
@@ -1195,8 +1185,9 @@ class SimpleRevTrendStrategy extends StrategyBase {
         }
 
         let alert_string = "";
+        let corr_entries = that.cfg["entries"].filter(e => that.cfg[e]["act_id"] == act_id);
 
-        for (let entry of that.cfg["entries"]) {
+        for (let entry of corr_entries) {
             if (act_id !== that.cfg[entry]["act_id"]) continue;
 
             let symbol = entry.split(".")[1];

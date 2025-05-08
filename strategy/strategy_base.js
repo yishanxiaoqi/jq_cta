@@ -19,6 +19,7 @@ class StrategyBase {
         this.on_order_update_handler = this.on_order_update.bind(this);
         this.on_response_handler = this.on_response.bind(this);
         this.on_account_update_handler = this.on_account_update.bind(this);
+        this.on_active_orders_handler = this.on_active_orders.bind(this);
 
         this.exchanges = {};
         this.exchanges["Binance"] = new Binance("Binance", intercom);
@@ -47,6 +48,7 @@ class StrategyBase {
         this.intercom.on(INTERCOM_CHANNEL.ORDER_UPDATE, that.on_order_update_handler, INTERCOM_SCOPE.FEED);
         this.intercom.on(INTERCOM_CHANNEL.ACCOUNT_UPDATE, that.on_account_update_handler, INTERCOM_SCOPE.FEED);
         this.intercom.on(INTERCOM_CHANNEL.WS_RESPONSE, that.on_response_handler, INTERCOM_SCOPE.FEED);
+        this.intercom.on(INTERCOM_CHANNEL.ACTIVE_ORDERS, that.on_active_orders_handler, INTERCOM_SCOPE.STRATEGY);
 
         // eventhandler
         this.intercom.on(INTERCOM_CHANNEL.REQUEST_RESPONSE, that.on_response_handler);
@@ -200,6 +202,10 @@ class StrategyBase {
         // logger.info(`${this.name}: no implementation for position update!`);
     }
 
+    on_active_orders(active_orders) {
+        // logger.info(`${this.name}: no implementation for position update!`);
+    }
+
     async send_order(order, ref_id = this.alias + randomID(27)) {
         let idf = [order.exchange, order.symbol, order.contract_type].join(".");
         logger.debug(`Emitting send order request from ${this.name}|${this.alias}|${idf}|${order.client_order_id}|${order.label}|${order.quantity}@${order.price}`);
@@ -286,7 +292,7 @@ class StrategyBase {
     async query_account(query, ref_id = this.alias + randomID(27)) {
         // 目前来看query_account覆盖了query_position的功能
         // 区别在于query position可以指定一个symbol进行query
-        logger.debug(`Emitting query balance request from ${this.name}|${this.alias}|${query.account_id}`);
+        // logger.debug(`Emitting query balance request from ${this.name}|${this.alias}|${query.account_id}`);
 
         // 这里可以放一些下单信息的检查和更新
         if (query["ref_id"] === undefined) query["ref_id"] = ref_id;

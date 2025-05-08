@@ -5,7 +5,6 @@
     "ini_usdt": 2000,
     "act_id": "th_binance_cny_sub01",
     "symbols": [
-        "ALPACAUSDT",
         "ARKUSDT",
         "BSWUSDT",
         "FLMUSDT",
@@ -17,7 +16,6 @@
         "ZECUSDT"
     ],
     "idfs": [
-        "BinanceU.ALPACAUSDT.perp",
         "BinanceU.ARKUSDT.perp",
         "BinanceU.BSWUSDT.perp",
         "BinanceU.FLMUSDT.perp",
@@ -28,18 +26,9 @@
         "BinanceU.VOXELUSDT.perp",
         "BinanceU.ZECUSDT.perp"
     ],
-    "BinanceU.ALPACAUSDT.perp": {
-        "track_min_n": 30,
-        "ini_usdt": 50,
-        "sp_rate": 0.1,
-        "tp_rate": 0.2,
-        "af": 0.01,
-        "threshold": 100,
-        "act_id": "th_binance_cny_sub01"
-    },
     "BinanceU.ARKUSDT.perp": {
         "track_min_n": 30,
-        "ini_usdt": 50,
+        "ini_usdt": 1000,
         "sp_rate": 0.1,
         "tp_rate": 0.2,
         "af": 0.01,
@@ -48,7 +37,7 @@
     },
     "BinanceU.BSWUSDT.perp": {
         "track_min_n": 30,
-        "ini_usdt": 50,
+        "ini_usdt": 1000,
         "sp_rate": 0.1,
         "tp_rate": 0.2,
         "af": 0.01,
@@ -57,7 +46,7 @@
     },
     "BinanceU.FLMUSDT.perp": {
         "track_min_n": 30,
-        "ini_usdt": 50,
+        "ini_usdt": 1000,
         "sp_rate": 0.1,
         "tp_rate": 0.2,
         "af": 0.01,
@@ -66,7 +55,7 @@
     },
     "BinanceU.GPSUSDT.perp": {
         "track_min_n": 30,
-        "ini_usdt": 50,
+        "ini_usdt": 1000,
         "sp_rate": 0.1,
         "tp_rate": 0.2,
         "af": 0.01,
@@ -75,7 +64,7 @@
     },
     "BinanceU.JASMYUSDT.perp": {
         "track_min_n": 30,
-        "ini_usdt": 50,
+        "ini_usdt": 1000,
         "sp_rate": 0.1,
         "tp_rate": 0.2,
         "af": 0.01,
@@ -84,7 +73,7 @@
     },
     "BinanceU.NKNUSDT.perp": {
         "track_min_n": 30,
-        "ini_usdt": 50,
+        "ini_usdt": 1000,
         "sp_rate": 0.1,
         "tp_rate": 0.2,
         "af": 0.01,
@@ -93,7 +82,7 @@
     },
     "BinanceU.PERPUSDT.perp": {
         "track_min_n": 30,
-        "ini_usdt": 50,
+        "ini_usdt": 1000,
         "sp_rate": 0.1,
         "tp_rate": 0.2,
         "af": 0.01,
@@ -102,7 +91,7 @@
     },
     "BinanceU.VOXELUSDT.perp": {
         "track_min_n": 30,
-        "ini_usdt": 50,
+        "ini_usdt": 1000,
         "sp_rate": 0.1,
         "tp_rate": 0.2,
         "af": 0.01,
@@ -111,7 +100,7 @@
     },
     "BinanceU.ZECUSDT.perp": {
         "track_min_n": 30,
-        "ini_usdt": 50,
+        "ini_usdt": 1000,
         "sp_rate": 0.1,
         "tp_rate": 0.2,
         "af": 0.01,

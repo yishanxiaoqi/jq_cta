@@ -108,6 +108,11 @@ class BalanceMonitor extends StrategyBase {
             this.update_account_summary_to_slack();
         }, 1000 * 60 * 5);
 
+        setInterval(() => { 
+            // 每隔1分钟查询一下active orders，并推送到各个策略
+            this.query_active_orders();
+        }, 1000 * 60);
+
         schedule.scheduleJob('0 0/30 * * * *', function() {
             // 记录净值
             for (let account of ["CTA"].concat(that.accounts)) {
@@ -124,6 +129,18 @@ class BalanceMonitor extends StrategyBase {
             // 查看上架的交易对，如果有上新，推送到slack
             that.check_symbols_on_track();
         });
+    }
+
+    query_active_orders() {
+        let that = this;
+        for (let account of that.accounts) {
+            let [exchange, account_id, contract_type] = account.split(".");
+            that.query_orders({
+                exchange: exchange,
+                contract_type: contract_type,
+                account_id: account_id,
+            });
+        }
     }
 
     check_symbols_on_track() {
@@ -355,6 +372,11 @@ class BalanceMonitor extends StrategyBase {
             if (cal_positions[symbol] !== 0) warning_msg += `${account_id}|inconsistent position of ${symbol}:: cal: ${cal_positions[symbol]}, real: 0 \n`
         }
 
+        // real_positions没有的怎么主动清除，否则会一直残存在cta_positions里面
+        Object.keys(that.cta_positions).filter((symbol) => ! (real_positions.map((e) => e["symbol"]).includes(symbol))).map((symbol) => {
+            that.cta_positions[symbol][account] = 0;
+        });
+
         for (let item of real_positions) {
             let symbol = item["symbol"];
             let position = item["position"];
@@ -379,6 +401,19 @@ class BalanceMonitor extends StrategyBase {
                 "msg": warning_msg
             });
         }
+    }
+
+    on_query_orders_response(response) {
+        let that = this;
+
+        if (response["metadata"]["metadata"]["result"] === false) {
+            let error_code = response["metadata"]["metadata"]["error_code"];
+            let error_code_msg = response["metadata"]["metadata"]["error_code_msg"];
+            logger.debug(`${that.alias}:: an error occured during query orders: ${error_code}: ${error_code_msg}`);
+            return
+        }
+
+        this.intercom.emit(INTERCOM_CHANNEL.ACTIVE_ORDERS, response, INTERCOM_SCOPE.STRATEGY);
     }
 
     update_cta_account_summary_to_ui() {
@@ -490,8 +525,9 @@ class BalanceMonitor extends StrategyBase {
             let sub = `BinanceU|${symbol}|perp|trade`;
             if (this.account_summary["CTA"]["equity"]) {
                 let sum_pos = Object.values(that.cta_positions[symbol]).reduce((a, b) => a + b, 0);
+                let sum_pos_str = (sum_pos > 0) ? "LONG" : "SHORT";
                 let per_value = (value_position[symbol] / that.account_summary["CTA"]["equity"] * 100);
-                txt += `${symbol}: \n${value_position[symbol].toFixed(0)}USDT \t${per_value.toFixed(1)}% \t${sum_pos.toFixed(2)}\n`;
+                txt += `${symbol}: \n${value_position[symbol].toFixed(0)}USDT \t${per_value.toFixed(1)}% \t${sum_pos_str}\n`;
             }
         }
 
@@ -509,8 +545,11 @@ class BalanceMonitor extends StrategyBase {
 
     _on_market_data_trade_ready(trade) {
         let subscription = [trade.exchange, trade.symbol, trade.contract_type, "trade"].join("|");
-        this.sub_streams_upd_ts[subscription] = moment.now();
-        this.latest_prices[subscription] = trade["metadata"][0][2];
+
+        if (SUBSCRIPTION_LIST.includes(subscription)) {
+            this.sub_streams_upd_ts[subscription] = moment.now();
+            this.latest_prices[subscription] = trade["metadata"][0][2];
+        }
     }
 }
 

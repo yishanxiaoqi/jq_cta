@@ -39,6 +39,7 @@ SUBSCRIPTION_LIST = [
     'BinanceU|EOSUSDT|perp|trade',
     'BinanceU|FLMUSDT|perp|trade',
     'BinanceU|GRTUSDT|perp|trade',
+    'BinanceU|HBARUSDT|perp|trade',
     'BinanceU|HOTUSDT|perp|trade',
     'BinanceU|IOSTUSDT|perp|trade',
     'BinanceU|IOTAUSDT|perp|trade',
@@ -76,16 +77,12 @@ SUBSCRIPTION_LIST = [
     // 'BinanceU|1000SHIBUSDC|perp|trade',
 
     // VOT
-    'BinanceU|ALPACAUSDT|perp|trade',
-    'BinanceU|ARKUSDT|perp|trade',
-    'BinanceU|BSWUSDT|perp|trade',
-    'BinanceU|FLMUSDT|perp|trade',
-    'BinanceU|GPSUSDT|perp|trade',
-    'BinanceU|JASMYUSDT|perp|trade',
-    'BinanceU|NKNUSDT|perp|trade',
-    'BinanceU|PERPUSDT|perp|trade',
-    'BinanceU|VOXELUSDT|perp|trade',
-    'BinanceU|ZECUSDT|perp|trade',
+    // 'BinanceU|ARKUSDT|perp|trade',
+    // 'BinanceU|BSWUSDT|perp|trade',
+    // 'BinanceU|GPSUSDT|perp|trade',
+    // 'BinanceU|JASMYUSDT|perp|trade',
+    // 'BinanceU|PERPUSDT|perp|trade',
+    // 'BinanceU|VOXELUSDT|perp|trade',
 
     // XES
     // 'BinanceU|XEMUSDT|perp|bestquote',
@@ -1759,7 +1756,8 @@ QUANTITY_TICK_SIZE = {
     "BinanceU.ZILUSDT.perp": 1,
     "BinanceU.ZKUSDT.perp": 1,
     "BinanceU.ZROUSDT.perp": 0.1,
-    "BinanceU.ZRXUSDT.perp": 0.1
+    "BinanceU.ZRXUSDT.perp": 0.1,
+    "BinanceU.SYRUPUSDT.perp": 1
 };
 
 MIN_ORDER_SIZE = {
@@ -2186,7 +2184,8 @@ MIN_ORDER_SIZE = {
     "BinanceU.ZILUSDT.perp": 1,
     "BinanceU.ZKUSDT.perp": 1,
     "BinanceU.ZROUSDT.perp": 0.1,
-    "BinanceU.ZRXUSDT.perp": 0.1
+    "BinanceU.ZRXUSDT.perp": 0.1,
+    "BinanceU.SYRUPUSDT.perp": 1
 };
 
 MAX_ORDER_SIZE = {
@@ -3467,7 +3466,8 @@ PRICE_TICK_SIZE = {
     "BinanceU.ZILUSDT.perp": 1e-05,
     "BinanceU.ZKUSDT.perp": 1e-05,
     "BinanceU.ZROUSDT.perp": 0.0001,
-    "BinanceU.ZRXUSDT.perp": 0.0001
+    "BinanceU.ZRXUSDT.perp": 0.0001,
+    "BinanceU.SYRUPUSDT.perp": 0.00001
 };
 
 TRANSFER_LIMIT = {

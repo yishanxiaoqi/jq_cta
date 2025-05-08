@@ -4,7 +4,10 @@
     "max_num": 100,
     "ini_usdt": 2000,
     "interval": "12h",
-    "act_id": "th_binance_cny_master",
+    "act_ids": [
+        "th_binance_cny_master", 
+        "th_binance_cny_sub01"
+    ],
     "symbols": [
         "ADAUSDT",
         "ALGOUSDT",

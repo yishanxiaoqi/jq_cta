@@ -4,7 +4,6 @@
 require("../config/typedef.js");
 const fs = require("fs");
 const moment = require("moment");
-const assert = require("assert");
 const randomID = require("random-id");
 
 const Intercom = require("../module/intercom");
@@ -15,6 +14,7 @@ const stratutils = require("../utils/strat_util.js");
 const StrategyBase = require("./strategy_base.js");
 const schedule = require('node-schedule');
 
+// 订单标签直接列在每个策略文件顶端比较清晰易读
 LABELS = ["UP", "DN", "TP", "SP"];
 // UP: 做多
 // DN: 做空
@@ -62,8 +62,8 @@ class VoteStrategy extends StrategyBase {
         }, 1000 * 3);
 
         schedule.scheduleJob('30 * * * * *', function() {
-            // 每隔1分钟查询一下active orders，暂时不用
-            // that.query_active_orders();
+            // 每隔30秒查询一下active orders
+            that.query_active_orders();
             // 每隔1分钟发送虚假交易，防止1分钟内没有交易量造成volume_ma计算出现偏差
             that.send_fake_trade();
         });
@@ -309,8 +309,14 @@ class VoteStrategy extends StrategyBase {
 
             // 如果止盈单成交，则取消止损单；如果止损单成交，则取消止盈单
             let orders_to_be_cancelled = [];
-            if ((label === "TP") && (that.order_map[entry]["SP"] !== undefined)) orders_to_be_cancelled.push(that.order_map[entry]["SP"]["client_order_id"]);
-            if ((label === "SP") && (that.order_map[entry]["TP"] !== undefined)) orders_to_be_cancelled.push(that.order_map[entry]["TP"]["client_order_id"]);
+            if ((label === "TP") && (that.order_map[idf]["SP"] !== undefined)) {
+                orders_to_be_cancelled.push(that.order_map[idf]["SP"]["client_order_id"]);
+                delete that.order_map[idf]["SP"];
+            };
+            if ((label === "SP") && (that.order_map[idf]["TP"] !== undefined)) {
+                orders_to_be_cancelled.push(that.order_map[idf]["TP"]["client_order_id"]);
+                delete that.order_map[idf]["TP"];
+            }
 
             orders_to_be_cancelled.forEach((client_order_id) => {
                 that.cancel_order({
@@ -391,9 +397,10 @@ class VoteStrategy extends StrategyBase {
         if (new_start) {
             logger.info(`${that.alias}::${idf}::NEW START!`);
             that.update_volume_ma(idf);
-        } else if (new_bar) {
-            logger.info(`${that.alias}::${idf}::NEW MIN!`);
-        }
+        } 
+        // else if (new_bar) {
+        //     logger.info(`${that.alias}::${idf}::NEW MIN!`);
+        // }
 
         // 更新kline数据，这里应该用>会不会更好？
         if (that.cur_bar_otime[idf] > that.klines[idf]["ts"][0]) {
@@ -472,8 +479,9 @@ class VoteStrategy extends StrategyBase {
                 
             } else if (price < that.klines[idf]["open"][0]) {
                 // 价格下跌，开SHORT仓位
-                orders_to_be_submitted.push({ client_order_id: client_order_id, label: "DN", target: "SHORT", 
-                    quantity: qty, price: price, direction: DIRECTION.SELL });
+                let dn_client_order_id = that.alias + "DN" + randomID(7);
+                orders_to_be_submitted.push({ client_order_id: dn_client_order_id, label: "DN", target: "SHORT", 
+                    quantity: qty, price: price, order_type: ORDER_TYPE.MARKET, direction: DIRECTION.SELL });
 
                 // 止盈单
                 let tp_client_order_id = that.alias + "TP" + randomID(7);
@@ -490,10 +498,10 @@ class VoteStrategy extends StrategyBase {
                     quantity: qty, stop_price: sp_price, order_type: ORDER_TYPE.STOP_MARKET, direction: DIRECTION.BUY });
             }
 
-            that.call();
+            // that.call();
             that.slack_publish({
                 "type": "alert",
-                "msg": `${that.alias}::${idf}::Ratio over 100, send the market order!`
+                "msg": `${moment().format("HH:mm")}|${that.alias}::${idf}::Ratio over 100, send the market order!`
             });
         } else if ( (that.status_map[idf]["status"] === "LONG") && (new_hour) ) {
             let qty = stratutils.transform_with_tick_size(Math.abs(that.status_map[idf]["pos"]), QUANTITY_TICK_SIZE[idf]);
@@ -713,7 +721,22 @@ class VoteStrategy extends StrategyBase {
                     logger.info(`${that.alias}::${order_idf}::Quantity greater than max quantity, but not a DN order, check!`);
                 }
             } else if (error_code_msg === "Order would immediately trigger.") {
-                // The order would be triggered immediately, STOP order才会报这样的错，本策略都是LIMIT ORDER
+                // The order would be triggered immediately, STOP order才会报这样的错
+                let sp_client_order_id = that.alias + "SP" + randomID(7);
+                that.order_map[idf][sp_client_order_id] = { label: label, target: target, quantity: quantity, time: moment.now(), filled: 0 };
+                that.order_map[idf][label] = { client_order_id: sp_client_order_id, label: label, price: 0, quantity: quantity, time: moment.now() };
+                this.send_order({
+                    label: label,
+                    target: target,
+                    exchange: exchange,
+                    symbol: symbol,
+                    contract_type: contract_type,
+                    quantity: quantity,
+                    direction: direction,
+                    order_type: ORDER_TYPE.MARKET,
+                    account_id: act_id,
+                    client_order_id: sp_client_order_id
+                });
             } else if (error_code_msg === "Futures Trading Quantitative Rules violated, only reduceOnly order is allowed, please try again later.") {
                 this.query_quantitative_rules({
                     exchange: EXCHANGE.BINANCEU,

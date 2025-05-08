@@ -21,20 +21,22 @@ class DemoStrategy extends StrategyBase {
             // this._test_query_orders();
             // this._test_modify_order();
             // this._test_query_account();
-            this._test_send_fake_trade();
+            // this._test_send_fake_trade();
             // this._test_make_call();
             // this._test_slack_publish();
             // this._test_channel_subscription();
-            // setTimeout(() => {this._test_channel_unsubscription()}, 60 * 1000);
+            // this._test_channel_unsubscription();
+            // this._test_query_position();
         }, 1000);
     }
 
     _test_channel_subscription() {
-        this.subscribe_channel("Binance|JOEUSDT|perp|trade");
+        // this.subscribe_channel("BinanceU|JOEUSDT|perp|trade");
+        this.subscribe_channel("BinanceU|JOEUSDT|perp|bestquote");
     }
 
     _test_channel_unsubscription() {
-        this.unsubscribe_channel("Binance|JOEUSDT|perp|trade");
+        this.unsubscribe_channel("BinanceU|BTCUSDT|perp|bestquote");
     }
 
     _test_make_call() {
@@ -47,9 +49,9 @@ class DemoStrategy extends StrategyBase {
             [
                 String(482902330),          // aggregated trade id
                 utils._util_get_human_readable_timestamp(),
-                parseFloat("0.3"),      // price
+                parseFloat("0.17"),      // price
                 TRADE_SIDE.SELL,
-                parseFloat(12488296.37 * 200)
+                parseFloat(6685475.57 * 200)
             ]
         ];
         let market_data = {
@@ -105,7 +107,7 @@ class DemoStrategy extends StrategyBase {
             exchange: EXCHANGE.BINANCEU,
             // symbol: "XEMUSDT",
             contract_type: CONTRACT_TYPE.PERP,
-            account_id: "th_binance_cny_sub01"
+            account_id: "th_binance_cny_master"
         });
     }
 
@@ -120,12 +122,13 @@ class DemoStrategy extends StrategyBase {
     _test_send_order() {
         this.send_order({
             exchange: EXCHANGE.BINANCEU,
-            symbol: "BTCUSDT",
+            symbol: "ALPACAUSDT",
             contract_type: CONTRACT_TYPE.PERP,
-            stop_price: 57000,
-            quantity: 0.01,
-            direction: DIRECTION.BUY,
-            order_type: ORDER_TYPE.STOP_MARKET,
+            // stop_price: 0.2,
+            price: 0.2,
+            quantity: 100,
+            direction: DIRECTION.SELL,
+            order_type: ORDER_TYPE.LIMIT,
             account_id: "th_binance_cny_sub01",
             client_order_id: "12345678911xxx"
         });
@@ -133,12 +136,12 @@ class DemoStrategy extends StrategyBase {
 
     _test_cancel_order() {
         this.cancel_order({
-            exchange: EXCHANGE.OKX,
-            symbol: "CRVUSDT",
+            exchange: EXCHANGE.BINANCEU,
+            symbol: "ALPACAUSDT",
             contract_type: CONTRACT_TYPE.PERP,
-            order_id: "627254420702912542",
-            account_id: "jq_okx_cny_master",
-            // client_order_id: "12345678911xxx"
+            // order_id: "627254420702912542",
+            account_id: "th_binance_cny_sub01",
+            client_order_id: "VOTSPmvaIq8M"
         });
     };
 
@@ -213,6 +216,10 @@ class DemoStrategy extends StrategyBase {
                 client_order_id: order.client_order_id
             })
         }
+    }
+
+    on_active_orders(active_orders) {
+        console.log(JSON.stringify(active_orders));
     }
 }
 

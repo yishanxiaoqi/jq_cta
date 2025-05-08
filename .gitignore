@@ -20,3 +20,4 @@ config/token.json
 
 # telephon
 *.session
+*.session-journal

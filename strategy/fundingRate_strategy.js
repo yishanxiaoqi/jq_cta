@@ -44,7 +44,7 @@ class FundingRateStrategy extends StrategyBase {
         this.subscribe_market_data();
 
         this.load_fundingRate();
-        schedule.scheduleJob('0 58 * * * *', function() {
+        schedule.scheduleJob('30 59 * * * *', function() {
             that.load_fundingRate();
         });
 
@@ -139,11 +139,14 @@ class FundingRateStrategy extends StrategyBase {
                 let items = body.filter(e => parseFloat(e['lastFundingRate']) <= rate);
                 items.forEach(item => {
                     let symbol = item.symbol;
-                    let channel = `BinanceU|${symbol}|perp|trade`;
+                    let channels = [`BinanceU|${symbol}|perp|trade`, `BinanceU|${symbol}|perp|bestquote`];
                     that.cfg["symbols"].push(symbol);
 
-                    if (! SUBSCRIPTION_LIST.includes(channel)) {
-                        that.subscribe_channel(channel);
+                    // TODO: 不要一个一个订阅，会导致websocket过载，要一起订阅
+                    for (let channel of channels) {
+                        if (! SUBSCRIPTION_LIST.includes(channel)) {
+                            that.subscribe_channel(channel);
+                        }
                     }
 
                     that.cfg["mins"].forEach(n_min => {
@@ -312,10 +315,26 @@ class FundingRateStrategy extends StrategyBase {
 
         let corr_entries = that.cfg["entries"].filter((entry) => entry.split("_")[0] === symbol);
         for (let entry of corr_entries) {
-            // 下单逻辑模块
+            that.main_execuation(entry, price, ts);
             that.status_map[entry]["net_profit"] = that.status_map[entry]["quote_ccy"] + that.status_map[entry]["pos"] * price - that.status_map[entry]["fee"];
             that.status_map[entry]["net_profit"] = stratutils.transform_with_tick_size(that.status_map[entry]["net_profit"], 0.01);
-            that.main_execuation(entry, price, ts);
+        }
+    }
+
+    _on_market_data_bestquote_ready(bestquote) {
+        let that = this;
+
+        let exchange = bestquote["exchange"];
+        let symbol = bestquote["symbol"];
+        let contract_type = bestquote["contract_type"];
+        let ts = bestquote["metadata"][0][1];
+        let best_bid = bestquote.metadata[0][4];
+
+        if ((that.cfg["symbols"] === undefined) || (!that.cfg["symbols"].includes(symbol))) return;
+
+        let corr_entries = that.cfg["entries"].filter((entry) => entry.split("_")[0] === symbol);
+        for (let entry of corr_entries) {
+            that.main_execuation(entry, best_bid, ts);
         }
     }
 
@@ -360,10 +379,8 @@ class FundingRateStrategy extends StrategyBase {
 
             that.slack_publish({
                 "type": "alert",
-                "msg": `${that.alias}::${entry} open the position!`
+                "msg": `${moment().format("HH:mm")}|${that.alias}::${entry} open the position!`
             });
-
-            that.status_map[entry]["bar_enter_n"] = 1;
             
         } else if (that.status_map[entry]["status"] === "SHORT") {
             let cover_time = that.status_map[entry]["coverTime"];

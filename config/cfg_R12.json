@@ -9,15 +9,17 @@
         "th_binance_cny_sub01"
     ],
     "symbols": [
+        "1INCHUSDT",
         "ADAUSDT",
         "ALGOUSDT",
-        "ALPHAUSDT",
         "ANKRUSDT",
         "ATOMUSDT",
         "AXSUSDT",
+        "BNBUSDT",
         "CHZUSDT",
         "CRVUSDT",
         "EGLDUSDT",
+        "ENJUSDT",
         "GRTUSDT",
         "HOTUSDT",
         "KAVAUSDT",
@@ -25,25 +27,31 @@
         "LTCUSDT",
         "MKRUSDT",
         "NEARUSDT",
+        "NEOUSDT",
         "ONTUSDT",
         "QTUMUSDT",
+        "RLCUSDT",
         "RSRUSDT",
         "SANDUSDT",
         "SNXUSDT",
         "SUSHIUSDT",
         "THETAUSDT",
-        "VETUSDT"
+        "VETUSDT",
+        "XTZUSDT",
+        "ZECUSDT"
     ],
     "idfs": [
+        "BinanceU.1INCHUSDT.perp",
         "BinanceU.ADAUSDT.perp",
         "BinanceU.ALGOUSDT.perp",
-        "BinanceU.ALPHAUSDT.perp",
         "BinanceU.ANKRUSDT.perp",
         "BinanceU.ATOMUSDT.perp",
         "BinanceU.AXSUSDT.perp",
+        "BinanceU.BNBUSDT.perp",
         "BinanceU.CHZUSDT.perp",
         "BinanceU.CRVUSDT.perp",
         "BinanceU.EGLDUSDT.perp",
+        "BinanceU.ENJUSDT.perp",
         "BinanceU.GRTUSDT.perp",
         "BinanceU.HOTUSDT.perp",
         "BinanceU.KAVAUSDT.perp",
@@ -51,15 +59,32 @@
         "BinanceU.LTCUSDT.perp",
         "BinanceU.MKRUSDT.perp",
         "BinanceU.NEARUSDT.perp",
+        "BinanceU.NEOUSDT.perp",
         "BinanceU.ONTUSDT.perp",
         "BinanceU.QTUMUSDT.perp",
+        "BinanceU.RLCUSDT.perp",
         "BinanceU.RSRUSDT.perp",
         "BinanceU.SANDUSDT.perp",
         "BinanceU.SNXUSDT.perp",
         "BinanceU.SUSHIUSDT.perp",
         "BinanceU.THETAUSDT.perp",
-        "BinanceU.VETUSDT.perp"
+        "BinanceU.VETUSDT.perp",
+        "BinanceU.XTZUSDT.perp",
+        "BinanceU.ZECUSDT.perp"
     ],
+    "BinanceU.1INCHUSDT.perp": {
+        "splitAt": 8,
+        "track_ATR_n": 20,
+        "track_ATR_multiplier": 0.6,
+        "stoploss_rate": 0.05,
+        "cutloss_rate": 0.03,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "ini_usdt": 500,
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "R120136"
+    },
     "BinanceU.ADAUSDT.perp": {
         "splitAt": 8,
         "track_ATR_n": 10,
@@ -74,30 +99,17 @@
         "cfgID": "R120002"
     },
     "BinanceU.ALGOUSDT.perp": {
-        "splitAt": 5,
-        "track_ATR_n": 10,
-        "track_ATR_multiplier": 0.7,
-        "stoploss_rate": 0.05,
-        "cutloss_rate": 0.01,
-        "ini_af": 0.02,
-        "delta_af": 0.02,
-        "bar_enter_limit": 1,
-        "ini_usdt": 3420,
-        "act_id": "th_binance_cny_master",
-        "cfgID": "R120003"
-    },
-    "BinanceU.ALPHAUSDT.perp": {
-        "splitAt": 7,
-        "track_ATR_n": 10,
-        "track_ATR_multiplier": 0.7,
-        "stoploss_rate": 0.04,
+        "splitAt": 6,
+        "track_ATR_n": 50,
+        "track_ATR_multiplier": 0.5,
+        "stoploss_rate": 0.01,
         "cutloss_rate": 0.01,
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
         "ini_usdt": 4275,
         "act_id": "th_binance_cny_master",
-        "cfgID": "R120005"
+        "cfgID": "R120143"
     },
     "BinanceU.ANKRUSDT.perp": {
         "splitAt": 3,
@@ -138,6 +150,19 @@
         "act_id": "th_binance_cny_master",
         "cfgID": "R120067"
     },
+    "BinanceU.BNBUSDT.perp": {
+        "splitAt": 4,
+        "track_ATR_n": 5,
+        "track_ATR_multiplier": 1.4,
+        "stoploss_rate": 0.03,
+        "cutloss_rate": 0.01,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "ini_usdt": 1000,
+        "act_id": "th_binance_cny_master",
+        "cfgID": "R120169"
+    },
     "BinanceU.CHZUSDT.perp": {
         "splitAt": 0,
         "track_ATR_n": 5,
@@ -165,17 +190,30 @@
         "cfgID": "R120076"
     },
     "BinanceU.EGLDUSDT.perp": {
-        "splitAt": 9,
-        "track_ATR_n": 10,
-        "track_ATR_multiplier": 0.7,
-        "stoploss_rate": 0.04,
-        "cutloss_rate": 0.01,
+        "splitAt": 8,
+        "track_ATR_n": 25,
+        "track_ATR_multiplier": 0.6,
+        "stoploss_rate": 0.05,
+        "cutloss_rate": 0.05,
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
         "ini_usdt": 5130,
         "act_id": "th_binance_cny_master",
-        "cfgID": "R120027"
+        "cfgID": "R120197"
+    },
+    "BinanceU.ENJUSDT.perp": {
+        "splitAt": 0,
+        "track_ATR_n": 50,
+        "track_ATR_multiplier": 0.5,
+        "stoploss_rate": 0.05,
+        "cutloss_rate": 0.04,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "ini_usdt": 1000,
+        "act_id": "th_binance_cny_master",
+        "cfgID": "R120203"
     },
     "BinanceU.GRTUSDT.perp": {
         "splitAt": 3,
@@ -268,6 +306,19 @@
         "act_id": "th_binance_cny_master",
         "cfgID": "R120037"
     },
+    "BinanceU.NEOUSDT.perp": {
+        "splitAt": 7,
+        "track_ATR_n": 25,
+        "track_ATR_multiplier": 0.5,
+        "stoploss_rate": 0.01,
+        "cutloss_rate": 0.01,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "ini_usdt": 500,
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "R120288"
+    },
     "BinanceU.ONTUSDT.perp": {
         "splitAt": 6,
         "track_ATR_n": 20,
@@ -293,6 +344,19 @@
         "ini_usdt": 4275,
         "act_id": "th_binance_cny_master",
         "cfgID": "R120041"
+    },
+    "BinanceU.RLCUSDT.perp": {
+        "splitAt": 2,
+        "track_ATR_n": 10,
+        "track_ATR_multiplier": 1.2,
+        "stoploss_rate": 0.05,
+        "cutloss_rate": 0.04,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "ini_usdt": 500,
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "R120319"
     },
     "BinanceU.RSRUSDT.perp": {
         "splitAt": 2,
@@ -371,5 +435,31 @@
         "ini_usdt": 4275,
         "act_id": "th_binance_cny_master",
         "cfgID": "R120053"
+    },
+    "BinanceU.XTZUSDT.perp": {
+        "splitAt": 0,
+        "track_ATR_n": 35,
+        "track_ATR_multiplier": 0.6,
+        "stoploss_rate": 0.05,
+        "cutloss_rate": 0.05,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "ini_usdt": 500,
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "R120388"
+    },
+    "BinanceU.ZECUSDT.perp": {
+        "splitAt": 1,
+        "track_ATR_n": 20,
+        "track_ATR_multiplier": 0.5,
+        "stoploss_rate": 0.05,
+        "cutloss_rate": 0.05,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "ini_usdt": 500,
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "R120410"
     }
 }

@@ -431,6 +431,7 @@ class SimpleTrendStrategy extends StrategyBase{
         let bar_enter_limit = that.cfg[entry]["bar_enter_limit"];
 
         // cal indicators -----------------------------------------------
+        // STR策略中用的是true_ATR，即计算过去一段时间每个interval内的High - Low，取其中的最大值作为ATR
         let highs = Object.values(that.klines[entry]["high"]).slice(1);
         let lows = Object.values(that.klines[entry]["low"]).slice(1);
         let H_Ls = highs.map((high, i) => high - lows[i]);

@@ -17,7 +17,7 @@ class DemoStrategy extends StrategyBase {
             // this._test_send_post_only_order();
             // this._test_send_order();
             // this._test_cancel_order();
-            // this._test_inspect_order();
+            this._test_inspect_order();
             // this._test_query_orders();
             // this._test_modify_order();
             // this._test_query_account();
@@ -147,12 +147,12 @@ class DemoStrategy extends StrategyBase {
 
     _test_inspect_order() {
         this.inspect_order({
-            exchange: EXCHANGE.OKX,
-            symbol: "CRVUSDT",
+            exchange: EXCHANGE.BINANCEU,
+            symbol: "EOSUSDT",
             contract_type: CONTRACT_TYPE.PERP,
-            // order_id: 166453859845,
-            account_id: "jq_okx_cny_master",
-            client_order_id: "12345678910"
+            order_id: 42911050509,
+            account_id: "th_binance_cny_sub01",
+            // client_order_id: "12345678910"
         });
     };
 
@@ -196,7 +196,7 @@ class DemoStrategy extends StrategyBase {
     }
 
     on_order_update(order_update) {
-        console.log(JSON.stringify(order_update));
+        // console.log(JSON.stringify(order_update));
     }
 
     on_query_account_response(response) {
@@ -219,7 +219,7 @@ class DemoStrategy extends StrategyBase {
     }
 
     on_active_orders(active_orders) {
-        console.log(JSON.stringify(active_orders));
+        // console.log(JSON.stringify(active_orders));
     }
 }
 

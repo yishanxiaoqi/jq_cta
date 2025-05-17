@@ -14,6 +14,7 @@
         "ALPHAUSDT",
         "ANKRUSDT",
         "ATOMUSDT",
+        "BATUSDT",
         "BNBUSDT",
         "CHZUSDT",
         "DOGEUSDT",
@@ -31,6 +32,7 @@
         "MKRUSDT",
         "MTLUSDT",
         "NEARUSDT",
+        "NEOUSDT",
         "ONTUSDT",
         "QTUMUSDT",
         "RSRUSDT",
@@ -40,7 +42,8 @@
         "SOLUSDT",
         "THETAUSDT",
         "VETUSDT",
-        "XMRUSDT"
+        "XMRUSDT",
+        "XRPUSDT"
     ],
     "idfs": [
         "BinanceU.ADAUSDT.perp",
@@ -48,6 +51,7 @@
         "BinanceU.ALPHAUSDT.perp",
         "BinanceU.ANKRUSDT.perp",
         "BinanceU.ATOMUSDT.perp",
+        "BinanceU.BATUSDT.perp",
         "BinanceU.BNBUSDT.perp",
         "BinanceU.CHZUSDT.perp",
         "BinanceU.DOGEUSDT.perp",
@@ -65,6 +69,7 @@
         "BinanceU.MKRUSDT.perp",
         "BinanceU.MTLUSDT.perp",
         "BinanceU.NEARUSDT.perp",
+        "BinanceU.NEOUSDT.perp",
         "BinanceU.ONTUSDT.perp",
         "BinanceU.QTUMUSDT.perp",
         "BinanceU.RSRUSDT.perp",
@@ -74,7 +79,8 @@
         "BinanceU.SOLUSDT.perp",
         "BinanceU.THETAUSDT.perp",
         "BinanceU.VETUSDT.perp",
-        "BinanceU.XMRUSDT.perp"
+        "BinanceU.XMRUSDT.perp",
+        "BinanceU.XRPUSDT.perp"
     ],
     "BinanceU.ADAUSDT.perp": {
         "splitAt": 3,
@@ -140,6 +146,19 @@
         "ini_usdt": 3420,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060060"
+    },
+    "BinanceU.BATUSDT.perp": {
+        "splitAt": 0,
+        "track_ATR_n": 20,
+        "track_ATR_multiplier": 0.8,
+        "stoploss_rate": 0.04,
+        "cutloss_rate": 0.02,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "ini_usdt": 1000,
+        "act_id": "th_binance_cny_master",
+        "cfgID": "R060064"
     },
     "BinanceU.BNBUSDT.perp": {
         "splitAt": 0,
@@ -362,6 +381,19 @@
         "act_id": "th_binance_cny_master",
         "cfgID": "R060095"
     },
+    "BinanceU.NEOUSDT.perp": {
+        "splitAt": 1,
+        "track_ATR_n": 35,
+        "track_ATR_multiplier": 0.3,
+        "stoploss_rate": 0.01,
+        "cutloss_rate": 0.01,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "ini_usdt": 500,
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "R060283"
+    },
     "BinanceU.ONTUSDT.perp": {
         "splitAt": 0,
         "track_ATR_n": 5,
@@ -491,5 +523,18 @@
         "ini_usdt": 3000,
         "act_id": "th_binance_cny_master",
         "cfgID": "R060360"
+    },
+    "BinanceU.XRPUSDT.perp": {
+        "splitAt": 0,
+        "track_ATR_n": 10,
+        "track_ATR_multiplier": 1.1,
+        "stoploss_rate": 0.05,
+        "cutloss_rate": 0.01,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "ini_usdt": 500,
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "R060361"
     }
 }

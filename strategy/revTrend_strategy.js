@@ -74,7 +74,7 @@ class RevTrendStrategy extends StrategyBase {
             // let status = that.status_map[idf]["status"];
             // let enter = (status === "LONG") ? that.status_map[idf]["long_enter"] : ((status === "SHORT") ? that.status_map[idf]["short_enter"] : "");
 
-            // 计算time_gap
+            // 计算time_gap和盈利情况
             let price_presentation = "";
             if (that.prices[idf]) {
                 let gap = Math.round((moment.now() - utils._util_convert_timestamp_to_date(that.prices[idf]["upd_ts"])) / 1000);
@@ -514,7 +514,7 @@ class RevTrendStrategy extends StrategyBase {
         if (new_start) {
             logger.info(`${that.alias}::${idf}::NEW START!`);
         } else if (new_bar) {
-            logger.info(`${that.alias}::${idf}::NEW BAR!`);
+            logger.info(`${that.alias}::${idf}::NEW BAR!::${JSON.stringify(trade)}`);
             // 如果一些订单已经触发但是迟迟不能成交，必须进行处理
             // TODO: 如果在new_bar的一瞬间正在部分成交（虽然是小概率事件），怎么办？
             that.status_map[idf]["bar_enter_n"] = 0;

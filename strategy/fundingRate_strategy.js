@@ -166,6 +166,11 @@ class FundingRateStrategy extends StrategyBase {
                         };
                         that.order_map[entry] = {}
                     });
+
+                    let idf = `BinanceU.${symbol}.perp`;
+                    if ((PRICE_TICK_SIZE[idf] === undefined) || (QUANTITY_TICK_SIZE[idf] === undefined)) {
+                        that.load_tick_size(idf);
+                    }
                 });
             });
 
@@ -175,8 +180,32 @@ class FundingRateStrategy extends StrategyBase {
 
         // 5秒后，如果status_map仍然是空的，则重新获取
         setTimeout(() => {
-            if (that.status_map["ready"] === undefined) that.load_fundingRate(idf);
+            if (that.status_map["ready"] === undefined) that.load_fundingRate();
         }, 5000);
+    }
+
+    load_tick_size(idf) {
+        let [exchange, symbol, contract_type] = idf.split(".");
+        let url = "https://fapi.binance.com/fapi/v1/exchangeInfo";
+        request.get({
+            url: url, json: true
+        }, function (error, res, body) {
+            let infos = body["symbols"].filter(e => e.symbol == symbol);
+            if (infos.length === 1) {
+                let info = infos[0];
+                PRICE_TICK_SIZE[idf] = parseFloat(info["filters"].filter(e => e.filterType === "PRICE_FILTER")[0]["tickSize"]);
+                QUANTITY_TICK_SIZE[idf] = parseFloat(info["filters"].filter(e => e.filterType === "LOT_SIZE")[0]["stepSize"]);
+                that.slack_publish({
+                    "type": "alert",
+                    "msg": `FRA::${idf} tick size info updated!`
+                });
+            } else {
+                that.slack_publish({
+                    "type": "alert",
+                    "msg": `FRA::${idf} tick size info not right::${infos}`
+                });
+            }
+        });
     }
 
     on_order_update(order_update) {

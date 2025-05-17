@@ -51,8 +51,8 @@ class BalanceMonitor extends StrategyBase {
             "BinanceU.th_binance_cny_sub03.perp": moment("2023-10-27"),
             "CTA": moment("2023-06-23")
         };
-        this.aliases = ["R01", "R06", "R12", "R24", "S24", "STR", "SRE"];
-        this.rev_aliases = ["R01", "R06", "R12", "R24", "S24"];
+        this.aliases = ["R01", "R06", "R12", "R24", "STR", "SRE"];
+        this.rev_aliases = ["R01", "R06", "R12", "R24"];
         // cta如今包含了两个账户：BinanceU.th_binance_cny_master.perp和BinanceU.th_binance_cny_sub01.perp
         this.cta_accounts = ["BinanceU.th_binance_cny_master.perp", "BinanceU.th_binance_cny_sub01.perp"];
         this.cta_positions = {};
@@ -269,8 +269,8 @@ class BalanceMonitor extends StrategyBase {
 
         // FUSD for launchpool
         if (account === "BinanceU.th_binance_cny_master.perp") {
-            // 49953.41 FDUSD + 2370.81 USDC + 60000 USDT 划转到th_binance_cny_sub01z账户
-            this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"] + 49953.41 + 2370.81 + 60000, 2);
+            // 2370.81 USDC + 60000 USDT 划转到th_binance_cny_sub01z账户
+            this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"] + 2370.81 + 60000, 2);
         } else if (account === "BinanceU.th_binance_cny_sub01.perp") { 
             this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"] - 60000, 2);
         } else {

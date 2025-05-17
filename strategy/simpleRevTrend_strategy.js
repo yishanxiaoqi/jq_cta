@@ -70,7 +70,19 @@ class SimpleRevTrendStrategy extends StrategyBase {
             let idf  = entry.split(".").slice(0, 3).join(".");
             let item = {};
 
-            let gap = (that.prices[idf])? Math.round((moment.now() - utils._util_convert_timestamp_to_date(that.prices[idf]["upd_ts"])) / 1000) : "";
+                    // 计算time_gap
+            let price_presentation = "";
+            if (that.prices[idf]) {
+                let gap = Math.round((moment.now() - utils._util_convert_timestamp_to_date(that.prices[idf]["upd_ts"])) / 1000);
+                price_presentation = `${that.prices[idf]["price"]}|${gap}`;
+                if (that.status_map[entry]["status"] === "LONG") {
+                    let percentage = that.status_map[entry]["enter"] ? ((that.prices[idf]["price"] - that.status_map[entry]["enter"]) / that.status_map[entry]["enter"] * 100).toFixed(0) + "%" : "miss";
+                    price_presentation += "|" + percentage;
+                } else if (that.status_map[entry]["status"] === "SHORT") {
+                    let percentage = that.status_map[entry]["enter"] ? ((that.status_map[entry]["enter"] - that.prices[idf]["price"]) / that.status_map[entry]["enter"] * 100).toFixed(0) + "%" : "miss";
+                    price_presentation += "|" + percentage;
+                }
+            }
 
             item[`${index + 1}|entry`] = entry;
             item[`${index + 1}|status`] = that.status_map[entry]["status"];
@@ -78,7 +90,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
             item[`${index + 1}|pos`] = that.status_map[entry]["pos"];
             item[`${index + 1}|fee`] = that.status_map[entry]["fee"];
             item[`${index + 1}|np`] = that.status_map[entry]["net_profit"];
-            item[`${index + 1}|price`] = (that.prices[idf])? `${that.prices[idf]["price"]}|${gap}`: "";
+            item[`${index + 1}|price`] = price_presentation;
             item[`${index + 1}|enter`] = that.status_map[entry]["enter"];
             item[`${index + 1}|sar`] = that.status_map[entry]["sar"];
             item[`${index + 1}|up`] = that.status_map[entry]["up"];
@@ -492,7 +504,7 @@ class SimpleRevTrendStrategy extends StrategyBase {
             if (new_start) {
                 logger.info(`${that.alias}::${entry}::NEW START!`);
             } else if (new_bar) {
-                logger.info(`${that.alias}::${entry}::NEW BAR!`);
+                logger.info(`${that.alias}::${entry}::NEW BAR!::${JSON.stringify(trade)}`);
                 // 如果一些订单已经触发但是迟迟不能成交，必须进行处理
                 // TODO: 如果在new_bar的一瞬间正在部分成交（虽然是小概率事件），怎么办？
                 that.status_map[entry]["bar_enter_n"] = 0;

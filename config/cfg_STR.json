@@ -60,7 +60,7 @@
         "cfgID": "STR0014"
     },
     "BinanceU.BTCDOMUSDT.perp.1d": {
-        "ini_usdt": 2000,
+        "ini_usdt": 5000,
         "splitAt": 0,
         "track_ATR_multiplier": 0.9,
         "track_ATR_n": 5,

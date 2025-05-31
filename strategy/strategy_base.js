@@ -54,16 +54,12 @@ class StrategyBase {
         this.intercom.on(INTERCOM_CHANNEL.REQUEST_RESPONSE, that.on_response_handler);
     }
 
-    subscribe_market_data() {
-        logger.info(`${this.name}: no implement for subscribe market data.`)
+    subscribe_market_data(subscription_list) {
+        this.intercom.emit("MARKET_DATA_SUBSCRIPTION", subscription_list, INTERCOM_SCOPE.STRATEGY);
     }
 
-    subscribe_channel(channel) {
-        this.intercom.emit("CHANNEL_SUBSCRIPTION", channel, INTERCOM_SCOPE.STRATEGY);
-    }
-
-    unsubscribe_channel(channel) {
-        this.intercom.emit("CHANNEL_UNSUBSCRIPTION", channel, INTERCOM_SCOPE.STRATEGY);
+    unsubscribe_market_data(unsubscription_list) {
+        this.intercom.emit("MARKET_DATA_UNSUBSCRIPTION", unsubscription_list, INTERCOM_SCOPE.STRATEGY);
     }
 
     on_market_data_ready(market_data) {

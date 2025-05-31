@@ -35,8 +35,6 @@ class RevTrendStrategy extends StrategyBase {
 
     start() {
         this._register_events();
-        this.subscribe_market_data();
-
         this.load_klines();
 
         setInterval(() => {
@@ -587,6 +585,8 @@ class RevTrendStrategy extends StrategyBase {
                 // 已经部分反手，放弃剩下的反手
                 logger.info(`${that.alias}::${act_id}|${idf} deal with TBA: cancel the remaining ANTI_L order!`);
                 that.status_map[idf]["status"] = "SHORT";
+
+                delete that.order_map[idf]["ANTI_L"];
             } else if (that.status_map[idf]["pos"] === 0) {
                 // 已经平仓，放弃剩下的反手
                 logger.info(`${that.alias}::${act_id}|${idf} deal with TBA: cancel the remaining ANTI_L order!`);
@@ -609,6 +609,8 @@ class RevTrendStrategy extends StrategyBase {
                 // 已经部分反手，放弃剩下的反手
                 logger.info(`${that.alias}::${act_id}|${idf} deal with TBA: cancel the remaining ANTI_S order!`);
                 that.status_map[idf]["status"] = "LONG";
+
+                delete that.order_map[idf]["ANTI_S"];
             } else if (that.status_map[idf]["pos"] === 0) {
                 // 已经平仓，放弃剩下的反手
                 logger.info(`${that.alias}::${act_id}|${idf} deal with TBA: cancel the remaining ANTI_S order!`);
@@ -1271,9 +1273,16 @@ class RevTrendStrategy extends StrategyBase {
     }
 
     on_active_orders(response) {
+        // BAM会统一查询所有交易账户的active orders并推送给各个策略端，然后再由策略段负责检查
+        // 检查逻辑：
+        // 1. 筛选出client_order_id属于本策略的订单, client_order_id不属于任何策略的订单会在BAM处alert；
+        // 2. client_order_id属于本策略，但是压根没有对应的idf；
+        // 3. client_order_id属于本策略，也有对应的idf，但是act_id不对；
         let that = this;
 
-        let act_id = response["metadata"]["metadata"]["account_id"];
+        let exchange = response["request"]["exchange"];
+        let contract_type = response["request"]["contract_type"];
+        let act_id = response["request"]["account_id"];
         if (!that.cfg["act_ids"].includes(act_id)) return;
 
         let orders = response["metadata"]["metadata"]["orders"];
@@ -1327,10 +1336,19 @@ class RevTrendStrategy extends StrategyBase {
         that.intercom.emit("UI_update", sendData, INTERCOM_SCOPE.UI);
 
         if (alert_string !== "") {
-            logger.info(`${that.alias}:: order not active, but still in the order map as follows, \n${alert_string}`);
+            logger.info(`${that.alias}|${act_id}::order not active, but still in the order map as follows, \n${alert_string}`);
+            alert_string = `${that.alias}|${act_id}::order not active, but still in the order map as follows, \n${alert_string}\n`;
+        }
+
+        let wierd_orders_1 = active_orders.filter(e => !that.cfg["idfs"].includes([exchange, e.symbol, contract_type].join(".")));
+        let wierd_orders_2 = active_orders.filter(e => that.cfg["idfs"].includes([exchange, e.symbol, contract_type].join(".")) && (that.cfg[[exchange, e.symbol, contract_type].join(".")]["act_id"] !== act_id));
+
+        if (wierd_orders_1.length > 0) alert_string += `${that.alias}|${act_id}::idf not exists:: ${JSON.stringify(wierd_orders_1)}\n`;
+        if (wierd_orders_2.length > 0) alert_string += `${that.alias}|${act_id}::act_id inconsistent:: ${JSON.stringify(wierd_orders_2)}\n`; 
+        if (alert_string !== "") {
             that.slack_publish({
                 "type": "alert",
-                "msg": `${that.alias}:: order not active, but still in the order map as follows, \n${alert_string}`
+                "msg": alert_string
             });
         }
     }

@@ -13,8 +13,7 @@ class ExchangeBase {
         this.intercom = intercom;
 
         this.on_market_data_subscription_handler = this.on_market_data_subscription.bind(this);
-        this.on_channel_subscription_handler = this.on_channel_subscription.bind(this);
-        this.on_channel_unsubscription_handler = this.on_channel_unsubscription.bind(this);
+        this.on_market_data_unsubscription_handler = this.on_market_data_unsubscription.bind(this);
     }
 
     start() {
@@ -25,24 +24,19 @@ class ExchangeBase {
     _register_events() {
         // 收听策略端的订阅请求
         this.intercom.on("MARKET_DATA_SUBSCRIPTION", this.on_market_data_subscription_handler, INTERCOM_SCOPE.STRATEGY);
-        this.intercom.on("CHANNEL_SUBSCRIPTION", this.on_channel_subscription_handler, INTERCOM_SCOPE.STRATEGY);
-        this.intercom.on("CHANNEL_UNSUBSCRIPTION", this.on_channel_unsubscription_handler, INTERCOM_SCOPE.STRATEGY);
+        this.intercom.on("MARKET_DATA_UNSUBSCRIPTION", this.on_market_data_unsubscription_handler, INTERCOM_SCOPE.STRATEGY);
     }
 
     on_market_data_subscription(subscription_list) {
         logger.info(`${this.name}: no on_market_data_subscription implementation yet.`)
     }
 
+    on_market_data_unsubscription(unsubscription_list) {
+        logger.info(`${this.name}: no on_market_data_unsubscription implementation yet.`)
+    }
+
     _format_subscription_list() {
         return SUBSCRIPTION_LIST.filter(x => x.split("|")[0] === this.name).map(x => this._format_subscription_item(x));
-    }
-
-    on_channel_subscription(channel) {
-        logger.info(`${this.name}: no on_channel_subscription implementation yet.`)
-    }
-
-    on_channel_unsubscription(channel) {
-        logger.info(`${this.name}: no on_channel_unsubscription implementation yet.`)
     }
 
     send_order() {

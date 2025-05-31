@@ -413,6 +413,19 @@ class BalanceMonitor extends StrategyBase {
             return
         }
 
+        let act_id = response["metadata"]["metadata"]["account_id"];
+        let orders = response["metadata"]["metadata"]["orders"];
+        
+        // 检查异常单：不属于任何策略
+        let wierd_orders = orders.filter(item => !ALIASES.includes(item.client_order_id.slice(0, 3)));
+        // let alert = wierd_orders.map(e => `${act_id}|${e.symbol}|${e.client_order_id}|${e.direction}|${e.price}`).join(", ");
+        if (wierd_orders.length !== 0) {
+            that.slack_publish({
+                "type": "alert",
+                "msg": `${that.alias}|${act_id}::wierd orders found: ${JSON.stringify(wierd_orders)}, not belong to any strategies!`
+            });
+        }
+
         this.intercom.emit(INTERCOM_CHANNEL.ACTIVE_ORDERS, response, INTERCOM_SCOPE.STRATEGY);
     }
 

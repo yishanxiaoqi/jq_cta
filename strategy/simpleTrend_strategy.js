@@ -37,8 +37,6 @@ class SimpleTrendStrategy extends StrategyBase{
 
     start() {
         this._register_events();
-        this.subscribe_market_data();
-
         this.load_klines();
 
         setInterval(() => {
@@ -695,17 +693,8 @@ class SimpleTrendStrategy extends StrategyBase{
 
         let orders = response["metadata"]["metadata"]["orders"];
 
-        // 检查异常单：不属于任何策略
-        let wierd_orders = orders.filter(item => !ALIASES.includes(item.client_order_id.slice(0, 3)));
-        if (wierd_orders.length !== 0) {
-            that.slack_publish({
-                "type": "alert",
-                "msg": `${that.alias}::wierd orders found: ${JSON.stringify(wierd_orders)}, not belong to any strategies!`
-            });
-        }
-
         // 检查异常单：下单超过10分钟，还是没成交
-        wierd_orders = orders.filter(item => (item.client_order_id.slice(0, 3) == that.alias) && (item["filled"] < item["original_amount"]) && (moment.now() - moment(item["create_time"], 'YYYYMMDDHHmmssSSS', 'Asia/Shanghai').toDate() > 1000 * 60 * 10));
+        let wierd_orders = orders.filter(item => (item.client_order_id.slice(0, 3) == that.alias) && (item["filled"] < item["original_amount"]) && (moment.now() - moment(item["create_time"], 'YYYYMMDDHHmmssSSS', 'Asia/Shanghai').toDate() > 1000 * 60 * 10));
         if (wierd_orders.length !== 0) {
             that.slack_publish({
                 "type": "alert",

@@ -11,32 +11,30 @@ class DemoStrategy extends StrategyBase {
 
     start() {
         this._register_events();
-        this.subscribe_market_data();
 
         setTimeout(() => {
             // this._test_send_post_only_order();
-            // this._test_send_order();
+            this._test_send_order();
             // this._test_cancel_order();
-            this._test_inspect_order();
+            // this._test_inspect_order();
             // this._test_query_orders();
             // this._test_modify_order();
             // this._test_query_account();
             // this._test_send_fake_trade();
             // this._test_make_call();
             // this._test_slack_publish();
-            // this._test_channel_subscription();
-            // this._test_channel_unsubscription();
+            // this._test_subscribe_market_data();
+            // this._test_unsubscribe_market_data();
             // this._test_query_position();
         }, 1000);
     }
 
-    _test_channel_subscription() {
-        // this.subscribe_channel("BinanceU|JOEUSDT|perp|trade");
-        this.subscribe_channel("BinanceU|JOEUSDT|perp|bestquote");
+    _test_subscribe_market_data() {
+        this.subscribe_market_data(["BinanceU|JOEUSDT|perp|bestquote"]);
     }
 
-    _test_channel_unsubscription() {
-        this.unsubscribe_channel("BinanceU|BTCUSDT|perp|bestquote");
+    _test_unsubscribe_market_data() {
+        this.unsubscribe_market_data(["BinanceU|AERGOUSDT|perp|bestquote"]);
     }
 
     _test_make_call() {
@@ -122,16 +120,28 @@ class DemoStrategy extends StrategyBase {
     _test_send_order() {
         this.send_order({
             exchange: EXCHANGE.BINANCEU,
-            symbol: "ALPACAUSDT",
+            symbol: "BTCUSDT",
             contract_type: CONTRACT_TYPE.PERP,
             // stop_price: 0.2,
-            price: 0.2,
-            quantity: 100,
+            price: 113863,
+            quantity: 0.01,
             direction: DIRECTION.SELL,
             order_type: ORDER_TYPE.LIMIT,
-            account_id: "th_binance_cny_sub01",
-            client_order_id: "12345678911xxx"
+            account_id: "th_binance_cny_master",
+            client_order_id: "R01DNJ3r850F"
         });
+        // this.send_order({
+        //     exchange: EXCHANGE.BINANCEU,
+        //     symbol: "BANDUSDT",
+        //     contract_type: CONTRACT_TYPE.PERP,
+        //     // stop_price: 0.2,
+        //     price: 0.7634,
+        //     quantity: 200,
+        //     direction: DIRECTION.SELL,
+        //     order_type: ORDER_TYPE.LIMIT,
+        //     account_id: "th_binance_cny_master",
+        //     client_order_id: "R01DNJ3r850E"
+        // });
     };
 
     _test_cancel_order() {
@@ -148,10 +158,10 @@ class DemoStrategy extends StrategyBase {
     _test_inspect_order() {
         this.inspect_order({
             exchange: EXCHANGE.BINANCEU,
-            symbol: "EOSUSDT",
+            symbol: "ALPHAUSDT",
             contract_type: CONTRACT_TYPE.PERP,
-            order_id: 42911050509,
-            account_id: "th_binance_cny_sub01",
+            order_id: 6571146410,
+            account_id: "th_binance_cny_master",
             // client_order_id: "12345678910"
         });
     };
@@ -173,9 +183,9 @@ class DemoStrategy extends StrategyBase {
     _test_query_orders() {
         this.query_orders({
             exchange: EXCHANGE.BINANCEU,
-            // symbol: "BALUSDT",
+            symbol: "ALPHAUSDT",
             contract_type: CONTRACT_TYPE.PERP,
-            account_id: "th_binance_cny_sub01"
+            account_id: "th_binance_cny_master"
         });
     };
 
@@ -204,22 +214,11 @@ class DemoStrategy extends StrategyBase {
     }
 
     on_query_orders_response(response) {
-        let orders = response.metadata.metadata.orders.filter((e) => e.client_order_id.startsWith("SRE"));
-
-        for (let order of orders) {
-            this.cancel_order({
-                exchange: EXCHANGE.BINANCEU,
-                symbol: order.symbol,
-                contract_type: CONTRACT_TYPE.PERP,
-                // order_id: "627254420702912542",
-                account_id: "th_binance_cny_sub01",
-                client_order_id: order.client_order_id
-            })
-        }
+        console.log(JSON.stringify(response));
     }
 
-    on_active_orders(active_orders) {
-        // console.log(JSON.stringify(active_orders));
+    on_active_orders(response) {
+        console.log(JSON.stringify(response));
     }
 }
 

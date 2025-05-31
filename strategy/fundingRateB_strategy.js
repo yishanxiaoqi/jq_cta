@@ -3,6 +3,8 @@
 // 较大亏损（也可以试一试，但是一定要加止损。再强调一遍，仓位控制和止损是长久盈利的根本。你手动交易
 // 亏损的主要原因就是没有仓位控制也没有止损，疯狂扛单加仓！）
 
+// 在收取资金费用后发limit_order，等待成交；如果预定时间内没成交，则取消这个limit_order，同时平仓
+
 require("../config/typedef.js");
 const fs = require("fs");
 const moment = require("moment");
@@ -17,12 +19,13 @@ const StrategyBase = require("./strategy_base.js");
 const schedule = require('node-schedule');
 
 const LABELS = ["DN", "TP", "SP", "CV"];
+// 暂时只有开仓DN和平仓CV 
 // DN: 开仓单
 // TP: 止盈单
 // SP: 止损单
 // CV: 平仓单
 
-class FundingRateStrategy extends StrategyBase {
+class FundingRateBStrategy extends StrategyBase {
     constructor(name, alias, intercom) {
         super(name, alias, intercom);
 
@@ -126,6 +129,7 @@ class FundingRateStrategy extends StrategyBase {
         that.cfg["symbols"] = [];
         that.cfg["entries"] = [];
         that.status_map = {};
+        
 
         let url = "https://fapi.binance.com/fapi/v1/premiumIndex?";
         logger.info(`${that.alias}::Loading the fundingRate from ${url}`);
@@ -166,14 +170,14 @@ class FundingRateStrategy extends StrategyBase {
                         that.load_tick_size(idf);
                     }
                 });
-
-                // NOTE: 不要一个一个订阅，会导致websocket过载，要一起订阅，汇总成subscription_list发送一次请求
-                subscription_list = subscription_list.filter(e => ! SUBSCRIPTION_LIST.includes(e));
-                console.log(JSON.stringify(subscription_list));
-                if (subscription_list.length > 0) {
-                    that.subscribe_market_data(subscription_list);
-                }
             });
+
+            // NOTE: 不要一个一个订阅，会导致websocket过载，要一起订阅，汇总成subscription_list发送一次请求
+            subscription_list = subscription_list.filter(e => ! SUBSCRIPTION_LIST.includes(e));
+            console.log(JSON.stringify(subscription_list));
+            if (subscription_list.length > 0) {
+                that.subscribe_market_data(subscription_list);
+            }
 
             that.status_map["ready"] = true;
         });
@@ -228,7 +232,7 @@ class FundingRateStrategy extends StrategyBase {
         let idf = [exchange, symbol, contract_type].join(".");
 
         // 不是本策略的订单更新，自动过滤
-        // that.alias + "DN" + min_str + rate_str + randomID(5):: FRADN1min015XXXXX
+        // that.alias + "DN" + min_str + rate_str + randomID(5):: FRADN01min015XXXXX
         if (client_order_id.slice(0, 3) !== that.alias) return;
         logger.info(`${that.alias}::on_order_update|${JSON.stringify(order_update)}`);
 
@@ -287,21 +291,6 @@ class FundingRateStrategy extends StrategyBase {
             logger.info(`${that.alias}|${symbol}::${JSON.stringify(that.status_map[entry])}`);
             logger.info(`${that.alias}|${symbol}::${JSON.stringify(that.order_map[entry])}`);
 
-            // 如果止盈单成交，则取消止损单；如果止损单成交，则取消止盈单
-            let orders_to_be_cancelled = [];
-            if ((label === "TP") && (that.order_map[entry]["SP"] !== undefined)) orders_to_be_cancelled.push(that.order_map[entry]["SP"]["client_order_id"]);
-            if ((label === "SP") && (that.order_map[entry]["TP"] !== undefined)) orders_to_be_cancelled.push(that.order_map[entry]["TP"]["client_order_id"]);
-
-            orders_to_be_cancelled.forEach((client_order_id) => {
-                that.cancel_order({
-                    exchange: exchange,
-                    symbol: symbol,
-                    contract_type: contract_type,
-                    client_order_id: client_order_id,
-                    account_id: act_id,
-                });
-            });
-
             if (order_status === ORDER_STATUS.FILLED) {
                 // 订单完全成交，更新status_map
                 that.status_map[entry]["status"] = that.order_map[entry][client_order_id]["target"];
@@ -347,7 +336,7 @@ class FundingRateStrategy extends StrategyBase {
 
         let corr_entries = that.cfg["entries"].filter((entry) => entry.split("_")[0] === symbol);
         for (let entry of corr_entries) {
-            that.main_execuation(entry, price, ts);
+            that.main_execuation(entry, price, ts, "trade");
             that.status_map[entry]["net_profit"] = that.status_map[entry]["quote_ccy"] + that.status_map[entry]["pos"] * price - that.status_map[entry]["fee"];
             that.status_map[entry]["net_profit"] = stratutils.transform_with_tick_size(that.status_map[entry]["net_profit"], 0.01);
         }
@@ -366,11 +355,11 @@ class FundingRateStrategy extends StrategyBase {
 
         let corr_entries = that.cfg["entries"].filter((entry) => entry.split("_")[0] === symbol);
         for (let entry of corr_entries) {
-            that.main_execuation(entry, best_bid, ts);
+            that.main_execuation(entry, best_bid, ts, "bestquote");
         }
     }
 
-    main_execuation(entry, price, ts) {
+    main_execuation(entry, price, ts, trigger_type) {
         let that = this;
         let [symbol, min_str, rate_str] = entry.split("_");
         let idf = ["BinanceU", symbol, "perp"].join(".");
@@ -379,8 +368,7 @@ class FundingRateStrategy extends StrategyBase {
         let n_min = parseInt(min_str.split("min")[0]);
         let ini_usdt = that.cfg["ini_usdt"][min_str];
         let act_id = that.cfg["act_id"];
-        let stoploss_rate = that.cfg["stoploss_rate"];
-        let tp_rate = that.cfg["tp_rate"][min_str];
+        let tolerance = that.cfg["tolerance"];
 
         let orders_to_be_submitted = [];    // {client_order_id: "", label: "", target: "", quantity: "", price: "", direction: ""}
         let orders_to_be_cancelled = [];    // {client_order_id: "", label: "", target: "", quantity: "", price: "", direction: ""}
@@ -397,21 +385,16 @@ class FundingRateStrategy extends StrategyBase {
             that.status_map[entry]["status"] = "TBA";
             that.status_map[entry]["opened"] = true;
             that.status_map[entry]["coverTime"] = moment(nextFundingTime, "YYYYMMDDHHmmssSSS").add(n_min, 'minutes').format("YYYYMMDDHHmmssSSS");
+
+            // 设置发单价格
+            price = stratutils.transform_with_tick_size(price * (1 - tolerance), PRICE_TICK_SIZE[idf]);
             let qty = stratutils.transform_with_tick_size(ini_usdt / price, QUANTITY_TICK_SIZE[idf]);
             let dn_client_order_id = that.alias + "DN" + min_str + rate_str + randomID(5);
-            orders_to_be_submitted.push({ client_order_id: dn_client_order_id, label: "DN", target: "SHORT", quantity: qty, order_type: ORDER_TYPE.MARKET, price: price, direction: DIRECTION.SELL });
-            
-            let tp_client_order_id = that.alias + "TP" + min_str + rate_str + randomID(5);
-            let tp_price = stratutils.transform_with_tick_size(price * (1 - tp_rate), PRICE_TICK_SIZE[idf]);
-            orders_to_be_submitted.push({ client_order_id: tp_client_order_id, label: "TP", target: "EMPTY", quantity: qty, order_type: ORDER_TYPE.LIMIT, price: tp_price, direction: DIRECTION.BUY });
-            
-            let sp_client_order_id = that.alias + "SP" + min_str + rate_str + randomID(5);
-            let sp_price = stratutils.transform_with_tick_size(price * (1 + stoploss_rate), PRICE_TICK_SIZE[idf]);
-            orders_to_be_submitted.push({ client_order_id: sp_client_order_id, label: "SP", target: "EMPTY", quantity: qty, order_type: ORDER_TYPE.STOP_MARKET, stop_price: sp_price, direction: DIRECTION.BUY });
+            orders_to_be_submitted.push({ client_order_id: dn_client_order_id, label: "DN", target: "SHORT", quantity: qty, order_type: ORDER_TYPE.LIMIT, price: price, direction: DIRECTION.SELL });
 
             that.slack_publish({
                 "type": "alert",
-                "msg": `${moment().format("HH:mm")}|${that.alias}::${entry} open the position!`
+                "msg": `${moment().format("HH:mm")}|${that.alias}::${entry} open the position triggered by ${trigger_type}!`
             });
             
         } else if (that.status_map[entry]["status"] === "SHORT") {
@@ -423,9 +406,15 @@ class FundingRateStrategy extends StrategyBase {
             let qty = Math.abs(that.status_map[entry]["pos"]);
             let cv_client_order_id = that.alias + "CV" + min_str + rate_str + randomID(5);
             orders_to_be_submitted.push({ client_order_id: cv_client_order_id, label: "CV", target: "EMPTY", quantity: qty, order_type: ORDER_TYPE.MARKET, price: price, direction: DIRECTION.BUY });
+        }
 
-            if (that.order_map[entry]["TP"] !== undefined) orders_to_be_cancelled.push(that.order_map[entry]["TP"]["client_order_id"]);
-            if (that.order_map[entry]["SP"] !== undefined) orders_to_be_cancelled.push(that.order_map[entry]["SP"]["client_order_id"]);
+        if ( (that.status_map[entry]["coverTime"] !== undefined) && ( parseInt(ts.slice(0, 12) + '00000') >= parseInt(that.status_map[entry]["coverTime"]) ) ) {
+            // 如果DN只有部分成交或者未成交，则取消
+            // TODO: 触发频繁取消订单，怎么办？
+            if ((that.order_map[entry]["DN"] !== undefined) && (that.status_map[entry]["dn_cancelled"] !== true)) {
+                orders_to_be_cancelled.push(that.order_map[entry]["DN"]["client_order_id"]);
+                that.status_map[entry]["dn_cancelled"] = true;
+            }
         }
 
         orders_to_be_submitted.forEach((order) => {
@@ -580,7 +569,7 @@ class FundingRateStrategy extends StrategyBase {
                 // 杠杆问题，降低杠杆
                 let key = KEY[act_id];
                 let url = "https://fapi.binance.com/fapi/v1/leverage";
-                stratutils.set_leverage_by_rest(symbol, 10, url, key);
+                stratutils.set_leverage_by_rest(symbol, 5, url, key);
 
                 logger.info(`${that.alias}::${order_idf}::change leverage to 10 and resent the order.`);
                 resend = true;
@@ -831,7 +820,7 @@ class FundingRateStrategy extends StrategyBase {
         let min_str = client_order_id.slice(5, 10);
         let rate_str = client_order_id.slice(10, 13);
         let entry = [symbol, min_str, rate_str].join("_");
-
+        
         if (!LABELS.includes(label)) {
             logger.error(`${that.alias}::on_order_update|unknown order label ${label}!`);
             return;
@@ -842,7 +831,7 @@ class FundingRateStrategy extends StrategyBase {
                 delete that.order_map[entry][client_order_id];
                 that.slack_publish({
                     "type": "alert",
-                    "msg": `${that.alias}::${entry}::After inspecting, delete ${client_order_id} from order map!`
+                    "msg": `${that.alias}::${idf}::After inspecting, delete ${client_order_id} from order map!`
                 });
             }
 
@@ -850,14 +839,14 @@ class FundingRateStrategy extends StrategyBase {
                 delete that.order_map[entry][label.slice(0, 6)];
                 that.slack_publish({
                     "type": "alert",
-                    "msg": `${that.alias}::${entry}::After inspecting, delete ${label}|${client_order_id} from order map!`
+                    "msg": `${that.alias}::${idf}::After inspecting, delete ${label}|${client_order_id} from order map!`
                 });
             }
         }
     }
 }
 
-module.exports = FundingRateStrategy;
+module.exports = FundingRateBStrategy;
 
 let strategy;
 
@@ -881,26 +870,26 @@ process.argv.forEach((val) => {
             INTERCOM_CONFIG[`LOCALHOST_UI`]
         ];
 
-        strategy = new FundingRateStrategy("FundingRate", alias, new Intercom(intercom_config));
+        strategy = new FundingRateBStrategy("FundingRateB", alias, new Intercom(intercom_config));
         strategy.start();
     }
 });
 
-process.on('SIGINT', async () => {
-    logger.info(`${strategy.alias}::SIGINT`);
-    /* Note: Just work under pm2 environment */
-    // strategy._test_cancel_order(strategy.test_order_id);
-    setTimeout(() => process.exit(), 3000)
-});
+// process.on('SIGINT', async () => {
+//     logger.info(`${strategy.alias}::SIGINT`);
+//     /* Note: Just work under pm2 environment */
+//     // strategy._test_cancel_order(strategy.test_order_id);
+//     setTimeout(() => process.exit(), 3000)
+// });
 
-process.on('exit', async () => {
-    logger.info(`${strategy.alias}:: exit`);
-});
+// process.on('exit', async () => {
+//     logger.info(`${strategy.alias}:: exit`);
+// });
 
-process.on('uncaughtException', (err) => {
-    logger.error(`uncaughtException: ${JSON.stringify(err.stack)}`);
-});
+// process.on('uncaughtException', (err) => {
+//     logger.error(`uncaughtException: ${JSON.stringify(err.stack)}`);
+// });
 
-process.on('unhandledRejection', (reason, p) => {
-    logger.error(`unhandledRejection: ${p}, reason: ${reason}`);
-});
+// process.on('unhandledRejection', (reason, p) => {
+//     logger.error(`unhandledRejection: ${p}, reason: ${reason}`);
+// });

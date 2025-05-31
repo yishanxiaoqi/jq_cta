@@ -171,21 +171,23 @@ class ExchangeBinanceU extends ExchangeBase {
     }
 
     
-    on_channel_subscription(channel) {
+    on_market_data_subscription(subscription_list) {
         const sub_id = +randomID(6, '0');
-        channel = this._format_subscription_item(channel);
-        logger.info(channel, 'subscription request received ...');
+        const sub_streams = subscription_list.map(e => this._format_subscription_item(e));
+
+        logger.info(subscription_list, 'subscription request received ...');
         if (this.ws_connections["th_binance_cny_sub03"]["connected"] ) {
-            this._send_ws_message(this.ws_connections["th_binance_cny_sub03"]["ws"], { method: "SUBSCRIBE", params: [channel], id: sub_id });
+            this._send_ws_message(this.ws_connections["th_binance_cny_sub03"]["ws"], { method: "SUBSCRIBE", params: sub_streams, id: sub_id });
         }
     }
 
-    on_channel_unsubscription(channel) {
-        const sub_id = +randomID(6, '0');
-        channel = this._format_subscription_item(channel);
-        logger.info(channel, 'remove subscription request received ...');
+    on_market_data_unsubscription(unsubscription_list) {
+        const unsub_id = +randomID(6, '0');
+        const unsub_streams = unsubscription_list.map(e => this._format_subscription_item(e));
+
+        logger.info(unsubscription_list, 'remove subscription request received ...');
         if (this.ws_connections["th_binance_cny_sub03"]["connected"] ) {
-            this._send_ws_message(this.ws_connections["th_binance_cny_sub03"]["ws"], { method: "UNSUBSCRIBE", params: [channel], id: sub_id });
+            this._send_ws_message(this.ws_connections["th_binance_cny_sub03"]["ws"], { method: "UNSUBSCRIBE", params: unsub_streams, id: unsub_id });
         }
     }
 

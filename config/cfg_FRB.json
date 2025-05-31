@@ -1,0 +1,14 @@
+{
+    "alias": "FRB",
+    "clear_existing_status": false,
+    "interval": "1h",
+    "act_id": "th_binance_cny_sub02",
+    "rates": [-0.005],
+    "mins": ["01min", "02min", "03min"],
+    "tolerance": 0.005,
+    "ini_usdt": {
+        "01min": 50,
+        "02min": 50,
+        "03min": 50
+    }
+}

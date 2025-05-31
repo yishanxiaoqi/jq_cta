@@ -4,7 +4,7 @@
     "interval": "1h",
     "act_id": "th_binance_cny_sub01",
     "rates": [-0.005],
-    "mins": ["1min", "2min", "3min"],
+    "mins": ["01min", "02min", "03min"],
     "stoploss_rate": 0.1,
     "rate_str_map": {
         "002": -0.002,
@@ -14,13 +14,13 @@
         "020": -0.02
     },
     "ini_usdt": {
-        "1min": 50,
-        "2min": 50,
-        "3min": 50
+        "01min": 50,
+        "02min": 50,
+        "03min": 50
     },
     "tp_rate": {
-        "1min": 0.03,
-        "2min": 0.04,
-        "3min": 0.04
+        "01min": 0.03,
+        "02min": 0.04,
+        "03min": 0.04
     }
 }

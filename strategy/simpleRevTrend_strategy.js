@@ -34,8 +34,6 @@ class SimpleRevTrendStrategy extends StrategyBase {
 
     start() {
         this._register_events();
-        this.subscribe_market_data();
-
         this.load_klines();
 
         setInterval(() => {

@@ -51,7 +51,7 @@ class BalanceMonitor extends StrategyBase {
             "BinanceU.th_binance_cny_sub03.perp": moment("2023-10-27"),
             "CTA": moment("2023-06-23")
         };
-        this.aliases = ["R01", "R06", "R12", "R24", "STR", "SRE"];
+        this.aliases = ["R01", "R06", "R12", "R24", "STR", "SRE", "V01"];
         this.rev_aliases = ["R01", "R06", "R12", "R24"];
         // cta如今包含了两个账户：BinanceU.th_binance_cny_master.perp和BinanceU.th_binance_cny_sub01.perp
         this.cta_accounts = ["BinanceU.th_binance_cny_master.perp", "BinanceU.th_binance_cny_sub01.perp"];

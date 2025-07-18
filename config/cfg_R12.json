@@ -10,7 +10,6 @@
     ],
     "symbols": [
         "1INCHUSDT",
-        "ADAUSDT",
         "ALGOUSDT",
         "ANKRUSDT",
         "ATOMUSDT",
@@ -42,7 +41,6 @@
     ],
     "idfs": [
         "BinanceU.1INCHUSDT.perp",
-        "BinanceU.ADAUSDT.perp",
         "BinanceU.ALGOUSDT.perp",
         "BinanceU.ANKRUSDT.perp",
         "BinanceU.ATOMUSDT.perp",
@@ -84,19 +82,6 @@
         "ini_usdt": 451,
         "act_id": "th_binance_cny_sub01",
         "cfgID": "R120136"
-    },
-    "BinanceU.ADAUSDT.perp": {
-        "splitAt": 8,
-        "track_ATR_n": 10,
-        "track_ATR_multiplier": 0.7,
-        "stoploss_rate": 0.05,
-        "cutloss_rate": 0.01,
-        "ini_af": 0.02,
-        "delta_af": 0.02,
-        "bar_enter_limit": 1,
-        "ini_usdt": 3007,
-        "act_id": "th_binance_cny_master",
-        "cfgID": "R120002"
     },
     "BinanceU.ALGOUSDT.perp": {
         "splitAt": 6,

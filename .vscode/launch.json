@@ -20,7 +20,8 @@
     // pm2 start ./strategy/quickTrend_strategy.js --name Q01 -- on -a Q01
     // pm2 start ./strategy/quickTrend_strategy.js --name Q24 -- on -a Q24
     // pm2 start ./strategy/fundingRate_strategy.js --name FRA -- on -a FRA
-    // pm2 start ./strategy/fundingRate_strategy.js --name FRB -- on -a FRB
+    // pm2 start ./strategy/fundingRateB_strategy.js --name FRB -- on -a FRB
+    // pm2 start ./strategy/rangeVol_strategy.js --name V01 -- on -a V01
 
     // pm2 start ./strategy/balance_monitor.js --name BAM
 
@@ -35,6 +36,7 @@
     // node ./strategy/quickTrend_strategy.js on -a Q01
     // node ./strategy/fundingRate_strategy.js on -a FRA
     // node ./strategy/fundingRateB_strategy.js on -a FRB
+    // node ./strategy/rangeVol_strategy.js on -a V01
     "version": "0.2.0",
     "configurations": []
 }

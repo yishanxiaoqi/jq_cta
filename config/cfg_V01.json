@@ -1,0 +1,79 @@
+{
+    "alias": "V01",
+    "clear_existing_status": false,
+    "ini_usdt": 200,
+    "act_ids": [
+        "th_binance_cny_sub02"
+    ],
+    "symbols": [
+        "ARPAUSDT",
+        "HBARUSDT",
+        "ICXUSDT",
+        "ONTUSDT",
+        "XTZUSDT"
+    ],
+    "idfs": [
+        "BinanceU.ARPAUSDT.perp",
+        "BinanceU.HBARUSDT.perp",
+        "BinanceU.ICXUSDT.perp",
+        "BinanceU.ONTUSDT.perp",
+        "BinanceU.XTZUSDT.perp"
+    ],
+    "entries": [
+        "BinanceU.ARPAUSDT.perp.1h.M02",
+        "BinanceU.HBARUSDT.perp.1h.M03",
+        "BinanceU.ICXUSDT.perp.1h.M06",
+        "BinanceU.ONTUSDT.perp.1h.M07",
+        "BinanceU.XTZUSDT.perp.1h.M02"
+    ],
+    "BinanceU.ARPAUSDT.perp.1h.M02": {
+        "splitAt": 0,
+        "track_ATR_n": 10,
+        "track_ATR_multiplier": 1,
+        "af": 0.005,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
+        "cfgID": "V010061"
+    },    
+    "BinanceU.HBARUSDT.perp.1h.M03": {
+        "splitAt": 0,
+        "track_ATR_n": 45,
+        "track_ATR_multiplier": 0.7,
+        "af": 0.005,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
+        "cfgID": "V010162"
+    },
+    "BinanceU.ICXUSDT.perp.1h.M06": {
+        "splitAt": 0,
+        "track_ATR_n": 20,
+        "track_ATR_multiplier": 1.3,
+        "af": 0.01,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
+        "cfgID": "V010162"
+    },
+    "BinanceU.ONTUSDT.perp.1h.M07": {
+        "splitAt": 0,
+        "track_ATR_n": 30,
+        "track_ATR_multiplier": 0.4,
+        "af": 0.0001,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
+        "cfgID": "V010263"
+    },
+    "BinanceU.XTZUSDT.perp.1h.M02": {
+        "splitAt": 0,
+        "track_ATR_n": 10,
+        "track_ATR_multiplier": 0.7,
+        "af": 0.005,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub02",
+        "cfgID": "V010349"
+    }
+}

@@ -1025,7 +1025,7 @@ class RangeVolStrategy extends StrategyBase {
                 if (that.order_map[entry][key]["ToBeDeleted"]) {
                     // 超过10秒才删除，避免order_update推送延迟，导致order_update的处理过程中order_map中信息缺失
                     if (moment.now() - value["ToBeDeletedTime"] > 1000 * 10) {
-                        alert_string += `${idf}: ${key}: ${JSON.stringify(that.order_map[entry][key])}\n`;
+                        alert_string += `${entry}: ${key}: ${JSON.stringify(that.order_map[entry][key])}\n`;
                         // 如果delete了，在deal_with_TBA里面又会报错？
                         // delete that.order_map[entry][key];
                     }

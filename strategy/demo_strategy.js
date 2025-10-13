@@ -14,8 +14,8 @@ class DemoStrategy extends StrategyBase {
 
         setTimeout(() => {
             // this._test_send_post_only_order();
-            this._test_send_order();
-            // this._test_cancel_order();
+            // this._test_send_order();
+            this._test_cancel_order();
             // this._test_inspect_order();
             // this._test_query_orders();
             // this._test_modify_order();
@@ -147,11 +147,11 @@ class DemoStrategy extends StrategyBase {
     _test_cancel_order() {
         this.cancel_order({
             exchange: EXCHANGE.BINANCEU,
-            symbol: "ALPACAUSDT",
+            symbol: "ONTUSDT",
             contract_type: CONTRACT_TYPE.PERP,
             // order_id: "627254420702912542",
-            account_id: "th_binance_cny_sub01",
-            client_order_id: "VOTSPmvaIq8M"
+            account_id: "th_binance_cny_sub02",
+            client_order_id: "V0101hDNM061kgkU"
         });
     };
 

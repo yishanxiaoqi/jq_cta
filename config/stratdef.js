@@ -8,20 +8,18 @@
  * jq_binance_cny_master: 545756054@qq.com，大陆身份证认证，没有开启2FA
  */
 
-ALIASES = ["R01", "R06", "R12", "R24", "STR", "SRE", "FRA", "FRB", "V01"];
+ALIASES = ["R01", "R06", "R12", "R24", "STR", "SRE", "FRA", "FRB"];
 
 SUBSCRIPTION_LIST = [
     // CTA 
     'BinanceU|1INCHUSDT|perp|trade',
+    'BinanceU|AAVEUSDT|perp|trade',
     'BinanceU|ADAUSDT|perp|trade',
     'BinanceU|ALGOUSDT|perp|trade',
-    'BinanceU|ALPHAUSDT|perp|trade',
     'BinanceU|ANKRUSDT|perp|trade',
-    'BinanceU|ARPAUSDT|perp|trade',
     'BinanceU|ATOMUSDT|perp|trade',
     'BinanceU|AVAXUSDT|perp|trade',
     'BinanceU|AXSUSDT|perp|trade',
-    'BinanceU|BANDUSDT|perp|trade',
     'BinanceU|BATUSDT|perp|trade',
     'BinanceU|BNBUSDT|perp|trade',
     'BinanceU|BTCDOMUSDT|perp|trade',
@@ -48,13 +46,14 @@ SUBSCRIPTION_LIST = [
     'BinanceU|KSMUSDT|perp|trade',
     'BinanceU|KAVAUSDT|perp|trade',
     'BinanceU|LINKUSDT|perp|trade',
+    'BinanceU|LRCUSDT|perp|trade',
     'BinanceU|LTCUSDT|perp|trade',
     'BinanceU|MANAUSDT|perp|trade',
-    'BinanceU|MKRUSDT|perp|trade',
     'BinanceU|MTLUSDT|perp|trade',
     'BinanceU|NEARUSDT|perp|trade',
     'BinanceU|NEOUSDT|perp|trade',
     'BinanceU|NKNUSDT|perp|trade',
+    'BinanceU|ONEUSDT|perp|trade',
     'BinanceU|ONTUSDT|perp|trade',
     'BinanceU|QTUMUSDT|perp|trade',
     'BinanceU|RLCUSDT|perp|trade',

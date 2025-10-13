@@ -49,7 +49,7 @@ class ExchangeBinanceU extends ExchangeBase {
             }, 1000 * 60 * 50);
 
             // 100毫秒后订阅频道
-            if (account_id === "th_binance_cny_sub03") {
+            if (account_id === "th_binance_cny_sub02") {
                 // 订阅频道的时间戳预设值
                 this.sub_streams_upd_ts = {};
                 for (let subscription of this.subscription_list) {

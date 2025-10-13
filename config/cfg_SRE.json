@@ -18,8 +18,8 @@
         "HOTUSDT",
         "ICXUSDT",
         "KSMUSDT",
+        "LRCUSDT",
         "ONTUSDT",
-        "MKRUSDT",
         "VETUSDT"
     ],
     "idfs": [
@@ -33,8 +33,8 @@
         "BinanceU.HOTUSDT.perp",
         "BinanceU.ICXUSDT.perp",
         "BinanceU.KSMUSDT.perp",
-        "BinanceU.MKRUSDT.perp",
         "BinanceU.ONTUSDT.perp",
+        "BinanceU.LRCUSDT.perp",
         "BinanceU.SFPUSDT.perp",
         "BinanceU.STORJUSDT.perp",
         "BinanceU.VETUSDT.perp"
@@ -46,7 +46,6 @@
         "BinanceU.ETCUSDT.perp.1h",
         "BinanceU.GRTUSDT.perp.1h",
         "BinanceU.ICXUSDT.perp.1h",
-        "BinanceU.MKRUSDT.perp.1h",
         "BinanceU.SFPUSDT.perp.1h",
         "BinanceU.VETUSDT.perp.1h",
         "BinanceU.DASHUSDT.perp.6h",
@@ -54,7 +53,8 @@
         "BinanceU.KSMUSDT.perp.6h",
         "BinanceU.STORJUSDT.perp.6h",
         "BinanceU.ANKRUSDT.perp.6h",
-        "BinanceU.ONTUSDT.perp.6h"
+        "BinanceU.ONTUSDT.perp.6h",
+        "BinanceU.LRCUSDT.perp.1d"
     ],
     "BinanceU.AVAXUSDT.perp.1h": {
         "splitAt": 0,
@@ -127,18 +127,6 @@
         "ini_usdt": 150,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0035"
-    },
-    "BinanceU.MKRUSDT.perp.1h": {
-        "splitAt": 0,
-        "track_ATR_n": 20,
-        "track_ATR_multiplier": 1.1,
-        "cutloss_rate": 0.5,
-        "ini_af": 0.08,
-        "delta_af": 0.08,
-        "bar_enter_limit": 1,
-        "ini_usdt": 150,
-        "act_id": "th_binance_cny_sub02",
-        "cfgID": "SRE0045"
     },
     "BinanceU.SFPUSDT.perp.1h": {
         "splitAt": 0,
@@ -235,5 +223,17 @@
         "ini_usdt": 150,
         "act_id": "th_binance_cny_sub02",
         "cfgID": "SRE0110"
+    },
+    "BinanceU.LRCUSDT.perp.1d": {
+        "splitAt": 20,
+        "track_ATR_n": 10,
+        "track_ATR_multiplier": 0.5,
+        "cutloss_rate": 0.1,
+        "ini_af": 0.01,
+        "delta_af": 0.01,
+        "bar_enter_limit": 1,
+        "ini_usdt": 150,
+        "act_id": "th_binance_cny_sub02",
+        "cfgID": "SRE0174"
     }
 }

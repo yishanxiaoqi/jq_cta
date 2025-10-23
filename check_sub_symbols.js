@@ -1,10 +1,10 @@
 require("./config/stratdef");
 const fs = require("fs");
 
-let live_aliases = ["R01", "R06", "R12", "R24", "STR", "SRE"];
+let live_aliases = ["R01", "R06", "R12", "R24", "STR"];
 let live_idfs = [];
 let live_idfs_d = {};
-let REV_aliases = ["R01", "R06", "R12", "R24", "S01", "S24", "R48"];
+let REV_aliases = ["R01", "R06", "R12", "R24"];
 
 console.log(live_aliases);
 

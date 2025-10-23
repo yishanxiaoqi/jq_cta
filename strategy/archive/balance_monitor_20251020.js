@@ -1,14 +1,16 @@
-require("../config/typedef.js");
+// 2025-10-20: 移入archive，移入之前，专门写了一个cta账户记录两个账户的总和
+
+require("../../config/typedef.js");
 const fs = require('fs');
 const moment = require("moment");
 const csv = require('csv-parser');
 const disk = require('diskusage');
 
-const request = require('../module/request.js');
-const Intercom = require("../module/intercom.js");
-const StrategyBase = require("./strategy_base.js");
-const utils = require("../utils/util_func.js");
-const stratutils = require("../utils/strat_util.js");
+const request = require('../../module/request.js');
+const Intercom = require("../../module/intercom.js");
+const StrategyBase = require("../strategy_base.js");
+const utils = require("../../utils/util_func.js");
+const stratutils = require("../../utils/strat_util.js");
 const schedule = require('node-schedule');
 
 class BalanceMonitor extends StrategyBase {
@@ -22,23 +24,44 @@ class BalanceMonitor extends StrategyBase {
         //     "BinanceU.th_binance_cny_sub02.perp",
         //     "BinanceU.th_binance_cny_sub03.perp"
         // ];
+        // accounts不包括CTA，因为CTA是两个或多个account的组合
         this.accounts = [
-            "BinanceU.th_binance_cny_master.perp"
+            // "Binance.th_binance_cny_master.spot",
+            "BinanceU.th_binance_cny_master.perp",
+            "BinanceU.th_binance_cny_sub01.perp",
+            "BinanceU.th_binance_cny_sub02.perp"
         ];
         this.init_equity = {
-            "BinanceU.th_binance_cny_master.perp": 17010.57
+            "BinanceU.th_binance_cny_master.perp": 131926.51,
+            "BinanceU.th_binance_cny_sub01.perp": 51925.76,
+            "BinanceU.th_binance_cny_sub02.perp": 3636.55,
+            "BinanceU.th_binance_cny_sub03.perp": 0,
+            "CTA": 183852.3
         };
         this.denominator = {
-            "BinanceU.th_binance_cny_master.perp": 17010.57
+            "BinanceU.th_binance_cny_master.perp": 106226.80,   
+            "BinanceU.th_binance_cny_sub01.perp": 51925.76,
+            "BinanceU.th_binance_cny_sub02.perp": 2069.74,
+            "BinanceU.th_binance_cny_sub03.perp": 0,
+            "CTA": 131090.70
         };
         this.init_dates = {
-            "BinanceU.th_binance_cny_master.perp": moment("2025-10-20")
+            "BinanceU.th_binance_cny_master.perp": moment("2023-06-23"),
+            "BinanceU.th_binance_cny_sub01.perp": moment("2024-12-27"),
+            // "BinanceU.th_binance_cny_sub02.perp": moment("2023-10-24"),
+            "BinanceU.th_binance_cny_sub02.perp": moment("2024-01-13"),
+            "BinanceU.th_binance_cny_sub03.perp": moment("2023-10-27"),
+            "CTA": moment("2023-06-23")
         };
-        this.aliases = ["R01", "R06", "R12", "R24"];
+        this.aliases = ["R01", "R06", "R12", "R24", "STR", "SRE"];
         this.rev_aliases = ["R01", "R06", "R12", "R24"];
+        // cta如今包含了两个账户：BinanceU.th_binance_cny_master.perp和BinanceU.th_binance_cny_sub01.perp
+        this.cta_accounts = ["BinanceU.th_binance_cny_master.perp", "BinanceU.th_binance_cny_sub01.perp"];
+        this.cta_positions = {};
 
+        // 初始化各个账户的结单，尤其是CTA
         this.account_summary = {};
-        for (let account of this.accounts) {
+        for (let account of ["CTA"].concat(this.accounts)) {
             this.account_summary[account] = {
                 "init_equity": this.init_equity[account],
                 "denominator": this.denominator[account],
@@ -71,7 +94,7 @@ class BalanceMonitor extends StrategyBase {
                     account_id: account_id
                 }) 
             }
-            // this.update_cta_account_summary_to_ui();
+            this.update_cta_account_summary_to_ui();
         }, 1000 * 60 * 0.5);
         
         // 20250109: 各个策略的仓位和盈利情况不再推送，反正也不会看
@@ -94,8 +117,8 @@ class BalanceMonitor extends StrategyBase {
 
         schedule.scheduleJob('0 0/30 * * * *', function() {
             // 记录净值
-            for (let account of that.accounts) {
-                let account_id = account.split(".")[1];
+            for (let account of ["CTA"].concat(that.accounts)) {
+                let account_id = (account === "CTA") ? account : account.split(".")[1];
                 if (that.account_summary[account]["equity"] === undefined) return;
                 let ts = moment().format('YYYYMMDDHHmmssSSS');
                 let {equity, nv, leverage} = that.account_summary[account];
@@ -245,7 +268,16 @@ class BalanceMonitor extends StrategyBase {
         let n_days = Math.max(1, - this.init_dates[account].diff(today, "days"));
 
         this.account_summary[account]["wallet_balance"] =  stratutils.round(balance["wallet_balance_in_USD"], 2);
-        this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"], 2);
+
+        // FUSD for launchpool
+        if (account === "BinanceU.th_binance_cny_master.perp") {
+            // 2370.81 USDC + 60000 USDT 划转到th_binance_cny_sub01z账户
+            this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"] + 2370.81 + 60000, 2);
+        } else if (account === "BinanceU.th_binance_cny_sub01.perp") { 
+            this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"] - 60000, 2);
+        } else {
+            this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"], 2);
+        }
 
         this.account_summary[account]["nv"] = stratutils.round(this.account_summary[account]["equity"] / this.denominator[account], 4); 
         this.account_summary[account]["pnl"] = stratutils.round(this.account_summary[account]["equity"] - this.init_equity[account], 2);
@@ -300,6 +332,7 @@ class BalanceMonitor extends StrategyBase {
         // acccount_id如th_binance_cny_master，account如BinanceU.th_binance_cny_master.perp
         this.update_account_summary_to_ui(account_id, account, usdt_to_cny);
 
+        
         // if (account_id === "th_binance_cny_sub01") return;
         // 计算仓位是否和预想一致
         for (let alias of this.aliases) {
@@ -341,9 +374,22 @@ class BalanceMonitor extends StrategyBase {
             if (cal_positions[symbol] !== 0) warning_msg += `${account_id}|inconsistent position of ${symbol}:: cal: ${cal_positions[symbol]}, real: 0 \n`
         }
 
+        // real_positions没有的怎么主动清除，否则会一直残存在cta_positions里面
+        Object.keys(that.cta_positions).filter((symbol) => ! (real_positions.map((e) => e["symbol"]).includes(symbol))).map((symbol) => {
+            that.cta_positions[symbol][account] = 0;
+        });
+
         for (let item of real_positions) {
             let symbol = item["symbol"];
             let position = item["position"];
+
+            if (that.cta_accounts.includes(account)) {
+                if (that.cta_positions[symbol] === undefined) that.cta_positions[symbol] = {};
+                that.cta_positions[symbol][account] = position;
+            }
+
+            // logger.info(JSON.stringify(that.cta_positions));
+            // logger.info(JSON.stringify(that.latest_prices));
 
             let idf = [EXCHANGE.BINANCEU, symbol, CONTRACT_TYPE.PERP].join(".");
             let calculated_position = (symbol in cal_positions) ? stratutils.transform_with_tick_size(cal_positions[symbol], QUANTITY_TICK_SIZE[idf]) : 0;
@@ -385,6 +431,37 @@ class BalanceMonitor extends StrategyBase {
         this.intercom.emit(INTERCOM_CHANNEL.ACTIVE_ORDERS, response, INTERCOM_SCOPE.STRATEGY);
     }
 
+    update_cta_account_summary_to_ui() {
+        let usdt_to_cny = 7.2;
+        let today = moment.now();
+        if (this.account_summary["BinanceU.th_binance_cny_master.perp"]["month_to_date_pnl"] && this.account_summary["BinanceU.th_binance_cny_sub01.perp"]["month_to_date_pnl"]) {
+            this.account_summary["CTA"]["wallet_balance"] = this.cta_accounts.map(account => this.account_summary[account]["wallet_balance"]).reduce((a, b) => a + b, 0);
+            this.account_summary["CTA"]["unrealized_pnl"] = this.cta_accounts.map(account => this.account_summary[account]["unrealized_pnl"]).reduce((a, b) => a + b, 0);
+            this.account_summary["CTA"]["equity"] = this.cta_accounts.map(account => this.account_summary[account]["equity"]).reduce((a, b) => a + b, 0);
+            this.account_summary["CTA"]["nv"] = stratutils.round(this.account_summary["CTA"]["equity"] / this.account_summary["CTA"]["denominator"], 4); 
+
+            let sum_long_position_initial_margin_in_USDT = this.cta_accounts.map(account => this.account_summary[account]["total_long_position_initial_margin_in_USDT"]).reduce((a, b) => a + b, 0);
+            let sum_short_position_initial_margin_in_USDT = this.cta_accounts.map(account => this.account_summary[account]["total_short_position_initial_margin_in_USDT"]).reduce((a, b) => a + b, 0);
+            let sum_position_initial_margin_in_USDT = this.cta_accounts.map(account => this.account_summary[account]["total_position_initial_margin_in_USDT"]).reduce((a, b) => a + b, 0);
+
+            this.account_summary["CTA"]["long_lev"] = stratutils.round(sum_long_position_initial_margin_in_USDT / this.account_summary["CTA"]["equity"], 2); 
+            this.account_summary["CTA"]["short_lev"] = stratutils.round(sum_short_position_initial_margin_in_USDT / this.account_summary["CTA"]["equity"], 2); 
+            this.account_summary["CTA"]["leverage"] = stratutils.round(sum_position_initial_margin_in_USDT / this.account_summary["CTA"]["equity"], 2); 
+
+            let n_cta_days = Math.max(1, - this.account_summary["CTA"]["init_date"].diff(today, "days"));
+            this.account_summary["CTA"]["pnl"] = stratutils.round(this.account_summary["CTA"]["equity"] - this.account_summary["CTA"]["init_equity"], 2);
+            this.account_summary["CTA"]["ret"] = stratutils.round(this.account_summary["CTA"]["nv"] - 1, 4); 
+            this.account_summary["CTA"]["annual_ret"] = stratutils.round(this.account_summary["CTA"]["ret"] / n_cta_days * 365, 4); 
+
+            let cta_month_init_equity = this.cta_accounts.map(account => this.account_summary[account]["month_init_equity"]).reduce((a, b) => a + b, 0);
+            this.account_summary["CTA"]["equity_in_cny"] = (this.account_summary["CTA"]["equity"] * usdt_to_cny / 10000).toFixed(2);      // 单位：万
+            this.account_summary["CTA"]["pnl_in_cny"] = (this.account_summary["CTA"]["pnl"] * usdt_to_cny / 10000).toFixed(2);            // 单位：万
+            this.account_summary["CTA"]["month_to_date_pnl"] = ((this.account_summary["CTA"]["equity"] - cta_month_init_equity) / cta_month_init_equity * 100).toFixed(2);             // 百分比
+        
+            this.update_account_summary_to_ui("CTA", "CTA", usdt_to_cny);
+        }
+    }
+
     update_account_summary_to_ui(table_name, account, usdt_to_cny) {
         let sendData = {
             "tableName": table_name,
@@ -424,7 +501,7 @@ class BalanceMonitor extends StrategyBase {
         let that = this;
         let txt = "";
 
-        for (let account of that.accounts) {
+        for (let account of that.accounts.concat(["CTA"])) {
             let {pnl, ret, long_lev, short_lev, leverage, equity_in_cny, pnl_in_cny, month_to_date_pnl} = that.account_summary[account];
             let ret_per = `${parseFloat(ret * 100).toFixed(2)}%`;
             
@@ -447,27 +524,27 @@ class BalanceMonitor extends StrategyBase {
         txt += `Disk usage: ${disk_usage} %\n`;
 
 
-        // // 计算仓位的价值和占比，要永远记住，控制仓位才能长久！
-        // txt += `[===永远要控制仓位===]\n`
-        // let value_position = {};
-        // for (let symbol of Object.keys(that.cta_positions)) {
-        //     let sum_pos = Object.values(that.cta_positions[symbol]).reduce((a, b) => a + b, 0);
-        //     let sub = `BinanceU|${symbol}|perp|trade`;
-        //     if (that.latest_prices[sub] !== undefined) {
-        //         let sum_value = Math.abs(sum_pos * that.latest_prices[sub]);
-        //         value_position[symbol] = sum_value;
-        //     }
-        // }
-        // let top3 = Object.entries(value_position).sort(([, a], [, b]) => b - a).slice(0, 3).map(([n]) => n);
-        // for (let symbol of top3) {
-        //     let sub = `BinanceU|${symbol}|perp|trade`;
-        //     if (this.account_summary["CTA"]["equity"]) {
-        //         let sum_pos = Object.values(that.cta_positions[symbol]).reduce((a, b) => a + b, 0);
-        //         let sum_pos_str = (sum_pos > 0) ? "LONG" : "SHORT";
-        //         let per_value = (value_position[symbol] / that.account_summary["CTA"]["equity"] * 100);
-        //         txt += `${symbol}: \n${value_position[symbol].toFixed(0)}USDT \t${per_value.toFixed(1)}% \t${sum_pos_str}\n`;
-        //     }
-        // }
+        // 计算仓位的价值和占比，要永远记住，控制仓位才能长久！
+        txt += `[===永远要控制仓位===]\n`
+        let value_position = {};
+        for (let symbol of Object.keys(that.cta_positions)) {
+            let sum_pos = Object.values(that.cta_positions[symbol]).reduce((a, b) => a + b, 0);
+            let sub = `BinanceU|${symbol}|perp|trade`;
+            if (that.latest_prices[sub] !== undefined) {
+                let sum_value = Math.abs(sum_pos * that.latest_prices[sub]);
+                value_position[symbol] = sum_value;
+            }
+        }
+        let top3 = Object.entries(value_position).sort(([, a], [, b]) => b - a).slice(0, 3).map(([n]) => n);
+        for (let symbol of top3) {
+            let sub = `BinanceU|${symbol}|perp|trade`;
+            if (this.account_summary["CTA"]["equity"]) {
+                let sum_pos = Object.values(that.cta_positions[symbol]).reduce((a, b) => a + b, 0);
+                let sum_pos_str = (sum_pos > 0) ? "LONG" : "SHORT";
+                let per_value = (value_position[symbol] / that.account_summary["CTA"]["equity"] * 100);
+                txt += `${symbol}: \n${value_position[symbol].toFixed(0)}USDT \t${per_value.toFixed(1)}% \t${sum_pos_str}\n`;
+            }
+        }
 
         this.slack_publish({
             "type": "info",

@@ -12,9 +12,7 @@
         "BinanceU|th_binance_cny_master"
     ],
     "idfs": [
-        "BinanceU.AVAXUSDT.perp",
-        "BinanceU.BTCDOMUSDT.perp",
-        "BinanceU.ETHUSDT.perp"
+        "BinanceU.BTCDOMUSDT.perp"
     ],
     "entries": [
         "BinanceU.AVAXUSDT.perp.6h",

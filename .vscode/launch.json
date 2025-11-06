@@ -17,8 +17,7 @@
     // pm2 start ./strategy/simpleTrend_strategy.js --name STR -- on -a STR 
     // pm2 start ./strategy/simpleRevTrend_strategy.js --name SRE -- on -a SRE
     // pm2 start ./strategy/revTrend_xem_strategy.js --name XEM -- on -a XEM
-    // pm2 start ./strategy/quickTrend_strategy.js --name Q01 -- on -a Q01
-    // pm2 start ./strategy/quickTrend_strategy.js --name Q24 -- on -a Q24
+    // pm2 start ./strategy/quickTrend_strategy.js --name QTR -- on -a QTR
     // pm2 start ./strategy/fundingRate_strategy.js --name FRA -- on -a FRA
     // pm2 start ./strategy/fundingRateB_strategy.js --name FRB -- on -a FRB
     // pm2 start ./strategy/rangeVol_strategy.js --name V01 -- on -a V01
@@ -32,8 +31,10 @@
     // 切换回~/jq_ui/，然后pm2 start npm --name "UI_React" -- start
 
     // node
+    // node ./strategy/simpleTrend_strategy.js on -a STR
     // node ./strategy/simpleRevTrend_strategy.js on -a SRE
     // node ./strategy/quickTrend_strategy.js on -a Q01
+    // node ./strategy/quickTrend_strategy.js on -a QTR
     // node ./strategy/fundingRate_strategy.js on -a FRA
     // node ./strategy/fundingRateB_strategy.js on -a FRB
     // node ./strategy/rangeVol_strategy.js on -a V01

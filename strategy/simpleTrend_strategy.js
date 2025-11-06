@@ -31,7 +31,6 @@ class SimpleTrendStrategy extends StrategyBase{
         this.pre_bar_otime = {};
 
         // set-up
-        this.interval = this.cfg["interval"];
         this.contract_type = CONTRACT_TYPE.PERP;
     }
 
@@ -66,19 +65,25 @@ class SimpleTrendStrategy extends StrategyBase{
             "data": []
         }
 
-        that.cfg["entries"].forEach((entry, index) => {
-            if (!(entry in that.status_map)) return;
+        that.cfg["cfgIDs"].forEach((cfgID, index) => {
+            if (!(cfgID in that.status_map)) return;
+            
+            let idf  = that.cfg[cfgID]["idf"];
+            let entry  = that.cfg[cfgID]["entry"];
             let item = {};
-            let idf  = entry.split(".").slice(0, 3).join(".");
+
+            let gap = (that.prices[idf])? Math.round((moment.now() - utils._util_convert_timestamp_to_date(that.prices[idf]["upd_ts"])) / 1000) : "";
+            
+            item[`${index + 1}|cfgID`] = cfgID;
             item[`${index + 1}|entry`] = entry;
-            item[`${index + 1}|status`] = that.status_map[entry]["status"];
-            item[`${index + 1}|pos`] = that.status_map[entry]["pos"];
-            item[`${index + 1}|fee`] = that.status_map[entry]["fee"];
-            item[`${index + 1}|np`] = that.status_map[entry]["net_profit"];
-            item[`${index + 1}|price`] = (that.prices[idf])? that.prices[idf]["price"]: "";
-            item[`${index + 1}|sar`] = that.status_map[entry]["sar"];
-            item[`${index + 1}|up`] = that.status_map[entry]["up"];
-            item[`${index + 1}|dn`] = that.status_map[entry]["dn"];
+            item[`${index + 1}|status`] = that.status_map[cfgID]["status"];
+            item[`${index + 1}|pos`] = that.status_map[cfgID]["pos"];
+            item[`${index + 1}|fee`] = that.status_map[cfgID]["fee"];
+            item[`${index + 1}|np`] = that.status_map[cfgID]["net_profit"];
+            item[`${index + 1}|price`] = (that.prices[idf])? `${that.prices[idf]["price"]}|${gap}`: "";
+            item[`${index + 1}|sar`] = that.status_map[cfgID]["sar"];
+            item[`${index + 1}|up`] = that.status_map[cfgID]["up"];
+            item[`${index + 1}|dn`] = that.status_map[cfgID]["dn"];
             sendData["data"].push(item);
         });
 
@@ -92,14 +97,19 @@ class SimpleTrendStrategy extends StrategyBase{
             that.order_map = {};
         } else {
             that.order_map = require(`../config/order_map_${that.alias}`);
+            // 如果cfgID已经下架，则对应的order_map应该删除
+            let not_existed_cfgIDs = Object.keys(that.order_map).filter(e => !that.cfg["cfgIDs"].includes(e));
+            not_existed_cfgIDs.forEach(cfgID => {
+                delete that.order_map[cfgID];
+            });
         }
 
         // TODO: how to differ from new_start and first initialization
-        that.cfg["entries"].forEach((entry) => {
+        that.cfg["cfgIDs"].forEach((cfgID) => {
             if (that.cfg["clear_existing_status"]) {
-                that.order_map[entry] = {};
+                that.order_map[cfgID] = {};
             } else {
-                that.order_map[entry] = (that.order_map[entry]) ? that.order_map[entry] : {};
+                that.order_map[cfgID] = (that.order_map[cfgID]) ? that.order_map[cfgID] : {};
             }
         });
     }
@@ -111,11 +121,12 @@ class SimpleTrendStrategy extends StrategyBase{
             that.status_map = {};
         } else {
             that.status_map = require(`../config/status_map_${that.alias}`);
+            // 对于之前live但是已经下线的cfgID，还是得保留全部信息，以防重新上线
         }
                     
-        that.cfg["entries"].forEach((entry) => {
-            if ((that.status_map[entry] === undefined) || (that.cfg["clear_existing_status"])) {
-                that.status_map[entry] = {
+        that.cfg["cfgIDs"].forEach((cfgID) => {
+            if ((that.status_map[cfgID] === undefined) || (that.cfg["clear_existing_status"])) {
+                that.status_map[cfgID] = {
                     "status": "EMPTY",
                     "pos": 0,
                     "real_pos": "",
@@ -139,64 +150,30 @@ class SimpleTrendStrategy extends StrategyBase{
         let that = this;
         that.summary = {};
         that.summary["overall"] = {};
-        let status_list = that.cfg["entries"].map((entry) => that.status_map[entry]["status"]);
+        let status_list = that.cfg["cfgIDs"].map((cfgID) => that.status_map[cfgID]["status"]);
         let long_num = status_list.map((element) => element === "LONG").reduce((a, b) => a + b, 0);
         let short_num = status_list.map((element) => element === "SHORT").reduce((a, b) => a + b, 0);
         that.summary["overall"]["long_num"] = long_num;
         that.summary["overall"]["short_num"] = short_num;
     }
 
-    // load_klines() {
-    //     logger.info("Loading the klines from https://fapi.binance.com/fapi/v1/klines/");
-    //     let that = this;
-
-    //     that.cfg["entries"].forEach((entry) => {
-    //         let [exchange, symbol, contract_type, interval] = entry.split(".");
-    //         let num = (interval === "1d") ? 24 : parseInt(interval.split("h")[0]);
-    //         assert(["1d", "12h", "8h", "6h", "4h", "3h", "2h", "1h"].includes(interval));
-    //         that.klines[entry] = { "ts": [], "open": [], "high": [], "low": [], "ready": false };
-
-    //         let n_klines = (that.cfg[entry]["track_ATR_n"] + 1) * num;
-    //         let url = "https://fapi.binance.com/fapi/v1/klines/?symbol=" + symbol + "&contractType=PERPETUAL&interval=1h&limit=" + n_klines;
-    //         request.get({
-    //             url: url, json: true
-    //         }, function (error, res, body) {
-    //             let high = Number.NEGATIVE_INFINITY, low = Number.POSITIVE_INFINITY;
-    //             for (let i = body.length - 1; i >= 0; i--) {
-    //                 let ts = utils.get_human_readable_timestamp(body[i][0]);
-    //                 let hour = parseInt(ts.slice(8, 10));
-    //                 high = Math.max(high, parseFloat(body[i][2]));
-    //                 low = Math.min(low, parseFloat(body[i][3]));
-    //                 if ((interval === "1h") || (hour % num === that.cfg[entry]["splitAt"])) {
-    //                     that.klines[entry]["ts"].push(ts);
-    //                     that.klines[entry]["open"].push(parseFloat(body[i][1]));
-    //                     that.klines[entry]["high"].push(high);
-    //                     that.klines[entry]["low"].push(low);
-    //                     high = Number.NEGATIVE_INFINITY;
-    //                     low = Number.POSITIVE_INFINITY;
-    //                 }
-    //             }
-    //         });
-    //         setTimeout(() => that.klines[entry]["ready"] = true, 2000);
-    //     });
-    // }
-
     load_klines() {
         let that = this;
-        that.cfg["entries"].forEach((entry) => {
-            that.load_entry_klines(entry);
+        that.cfg["cfgIDs"].forEach((cfgID) => {
+            that.load_cfgID_klines(cfgID);
         });
     }
 
-    load_entry_klines(entry) {
+    load_cfgID_klines(cfgID) {
         let that = this;
 
+        let entry = that.cfg[cfgID]["entry"];
         let [exchange, symbol, contract_type, interval] = entry.split(".");
         let num = (interval === "1d") ? 24 : parseInt(interval.split("h")[0]);
         assert(["1d", "12h", "8h", "6h", "4h", "3h", "2h", "1h"].includes(interval));
-        that.klines[entry] = { "ts": [], "open": [], "high": [], "low": [], "ready": false };
+        that.klines[cfgID] = { "ts": [], "open": [], "high": [], "low": [], "ready": false };
 
-        let n_klines = (that.cfg[entry]["track_ATR_n"] + 1) * num;
+        let n_klines = (that.cfg[cfgID]["track_ATR_n"] + 1) * num;
         let url = "https://fapi.binance.com/fapi/v1/klines?symbol=" + symbol + "&contractType=PERPETUAL&interval=1h&limit=" + n_klines;
         logger.info(`Loading the klines from ${url}`);
         request.get({
@@ -208,11 +185,11 @@ class SimpleTrendStrategy extends StrategyBase{
                 let hour = parseInt(ts.slice(8, 10));
                 high = Math.max(high, parseFloat(body[i][2]));
                 low = Math.min(low, parseFloat(body[i][3]));
-                if ((interval === "1h") || (hour % num === that.cfg[entry]["splitAt"])) {
-                    that.klines[entry]["ts"].push(ts);
-                    that.klines[entry]["open"].push(parseFloat(body[i][1]));
-                    that.klines[entry]["high"].push(high);
-                    that.klines[entry]["low"].push(low);
+                if ((interval === "1h") || (hour % num === that.cfg[cfgID]["splitAt"])) {
+                    that.klines[cfgID]["ts"].push(ts);
+                    that.klines[cfgID]["open"].push(parseFloat(body[i][1]));
+                    that.klines[cfgID]["high"].push(high);
+                    that.klines[cfgID]["low"].push(low);
                     high = Number.NEGATIVE_INFINITY;
                     low = Number.POSITIVE_INFINITY;
                 }
@@ -220,12 +197,12 @@ class SimpleTrendStrategy extends StrategyBase{
         });
 
         setTimeout(() => {
-            logger.info(`${entry}:${JSON.stringify(that.klines[entry])}`);
-            if ((that.klines[entry]["ts"].length === 0) || (isNaN(that.klines[entry]['open'][0]))) {
+            logger.info(`${cfgID}:${JSON.stringify(that.klines[cfgID])}`);
+            if ((that.klines[cfgID]["ts"].length === 0) || (isNaN(that.klines[cfgID]['open'][0]))) {
                 logger.info(`Reloading ${entry} klines ...`);
-                that.load_entry_klines(entry);
+                that.load_cfgID_klines(cfgID);
             } else {
-                that.klines[entry]["ready"] = true;
+                that.klines[cfgID]["ready"] = true;
             }
         }, 10000);
     }
@@ -243,23 +220,25 @@ class SimpleTrendStrategy extends StrategyBase{
         let client_order_id = order_update["metadata"]["client_order_id"];
         let update_type = order_update["metadata"]["update_type"];
         let act_id = order_update["metadata"]["account_id"];
-
-        let idf = [exchange, symbol, contract_type].join(".");
-        let interval = (client_order_id.slice(3, 4) === "0")? client_order_id.slice(4, 6): client_order_id.slice(3, 6);
-        let entry = [exchange, symbol, contract_type, interval].join(".");
         
+        // client_order_id format: STR0001DNxxxxx: {012}{3456}{78}{90123}
         // 不是本策略的订单更新，自动过滤（这里不能删！）
         if (client_order_id.slice(0, 3) !== that.alias) return;
         logger.info(`${that.alias}::on_order_update|${JSON.stringify(order_update)}`);
 
-        let label = client_order_id.slice(6, 8);
+        let cfgID = client_order_id.slice(0, 7);
+        let idf = [exchange, symbol, contract_type].join(".");
+        let entry = that.cfg[cfgID]["entry"];
+        let interval = entry.split(".")[4];
+
+        let label = client_order_id.slice(7, 9);
         if (!Object.values(LABELMAP).includes(label)) {
             logger.info(`${that.alias}::on_order_update|unknown order label ${label}!`);
             return;
         } else {
             label = stratutils.get_key_by_value(LABELMAP, label);   
         }
-        let order_idf = [act_id, symbol, interval, direction, label, client_order_id].join("|");
+        let order_idf = [act_id, symbol, interval, direction, client_order_id].join("|");
 
         if (order_status === ORDER_STATUS.SUBMITTED) {
 
@@ -268,7 +247,7 @@ class SimpleTrendStrategy extends StrategyBase{
 
         } else if (order_status === ORDER_STATUS.CANCELLED) {
 
-            logger.warn(`${this.alias}: this strategy is supposed to be no cancel_order action!`);
+            logger.warn(`${that.alias}: this strategy is supposed to be no cancel_order action!`);
 
         } else if ((order_status === ORDER_STATUS.FILLED) || (order_status === ORDER_STATUS.PARTIALLY_FILLED)) {
 
@@ -281,48 +260,48 @@ class SimpleTrendStrategy extends StrategyBase{
             logger.info(`${that.alias}::on_order_update|${order_idf} ${order_type} order ${filled}/${original_amount} filled!`);
 
             // 更新position
-            that.status_map[entry]["pos"] += (direction === DIRECTION.BUY) ? new_filled : - new_filled;
-            that.status_map[entry]["fee"] += fee;
-            that.status_map[entry]["quote_ccy"] += (direction === DIRECTION.SELL) ? new_filled * avg_executed_price : - new_filled * avg_executed_price;
+            that.status_map[cfgID]["pos"] += (direction === DIRECTION.BUY) ? new_filled : - new_filled;
+            that.status_map[cfgID]["fee"] += fee;
+            that.status_map[cfgID]["quote_ccy"] += (direction === DIRECTION.SELL) ? new_filled * avg_executed_price : - new_filled * avg_executed_price;
 
-            that.status_map[entry]["pos"] = stratutils.transform_with_tick_size(that.status_map[entry]["pos"], QUANTITY_TICK_SIZE[idf]);
-            that.status_map[entry]["fee"] = stratutils.transform_with_tick_size(that.status_map[entry]["fee"], 0.01);
-            that.status_map[entry]["quote_ccy"] = stratutils.transform_with_tick_size(that.status_map[entry]["quote_ccy"], 0.01);
+            that.status_map[cfgID]["pos"] = stratutils.transform_with_tick_size(that.status_map[cfgID]["pos"], QUANTITY_TICK_SIZE[idf]);
+            that.status_map[cfgID]["fee"] = stratutils.transform_with_tick_size(that.status_map[cfgID]["fee"], 0.01);
+            that.status_map[cfgID]["quote_ccy"] = stratutils.transform_with_tick_size(that.status_map[cfgID]["quote_ccy"], 0.01);
 
             // 检查一下status_map变化
-            logger.info(`${entry}::${JSON.stringify(that.status_map[entry])}`);
+            logger.info(`${cfgID}::${JSON.stringify(that.status_map[cfgID])}`);
 
             if (order_status === ORDER_STATUS.FILLED) {
                 // 订单完全成交，更新status_map
-                setTimeout(() => delete that.order_map[entry][client_order_id], 1000);
+                setTimeout(() => delete that.order_map[cfgID][client_order_id], 1000);
 
-                that.status_map[entry]["status"] = that.order_map[entry][client_order_id]["target"];
-                let current_status = that.status_map[entry]["status"];
+                that.status_map[cfgID]["status"] = that.order_map[cfgID][client_order_id]["target"];
+                let current_status = that.status_map[cfgID]["status"];
                 if (current_status === "EMPTY") {
                     // 订单完全成交，仓位变为空，这说明是平仓单
                     // 把that.pre_bar_otime[idf]变成undefined，这样就变成new_start，在STR中意义不大
                     // 有可能会出现依然无法重新发开仓单的情况，这种大概率是因为bar_enter_n没有进行更新
                     // 复制为""是因为如果复制为undefined，在UI那边会不更新
-                    that.pre_bar_otime[entry] = undefined;
+                    that.pre_bar_otime[cfgID] = undefined;
                     for (let item of ["bar_n", "ep", "af", "sar", "enter_price"]) {
-                        that.status_map[entry][item] = "";
+                        that.status_map[cfgID][item] = "";
                     }
                 } else {
-                    let cutloss_rate = that.cfg[entry]["cutloss_rate"];
+                    let cutloss_rate = that.cfg[cfgID]["cutloss_rate"];
 
-                    that.status_map[entry]["bar_n"] = 0;
-                    that.status_map[entry]["bar_enter_n"] += 1;
-                    that.status_map[entry]["ep"] = avg_executed_price;
-                    that.status_map[entry]["af"] = that.cfg[entry]["ini_af"];
-                    that.status_map[entry]["enter_price"] = avg_executed_price;
-                    that.status_map[entry]["sar"] = (current_status === "LONG") ? avg_executed_price * (1 - cutloss_rate) : avg_executed_price * (1 + cutloss_rate);   
+                    that.status_map[cfgID]["bar_n"] = 0;
+                    that.status_map[cfgID]["bar_enter_n"] += 1;
+                    that.status_map[cfgID]["ep"] = avg_executed_price;
+                    that.status_map[cfgID]["af"] = that.cfg[cfgID]["ini_af"];
+                    that.status_map[cfgID]["enter_price"] = avg_executed_price;
+                    that.status_map[cfgID]["sar"] = (current_status === "LONG") ? avg_executed_price * (1 - cutloss_rate) : avg_executed_price * (1 + cutloss_rate);   
                     
-                    that.status_map[entry]["ep"] = stratutils.transform_with_tick_size(that.status_map[entry]["ep"], PRICE_TICK_SIZE[idf]);
-                    that.status_map[entry]["sar"] = stratutils.transform_with_tick_size(that.status_map[entry]["sar"], PRICE_TICK_SIZE[idf]);
+                    that.status_map[cfgID]["ep"] = stratutils.transform_with_tick_size(that.status_map[cfgID]["ep"], PRICE_TICK_SIZE[idf]);
+                    that.status_map[cfgID]["sar"] = stratutils.transform_with_tick_size(that.status_map[cfgID]["sar"], PRICE_TICK_SIZE[idf]);
                 }
 
                 // STR::检查LONG和SHORT的个数
-                let status_list = that.cfg["entries"].map((entry) => that.status_map[entry]["status"]);
+                let status_list = that.cfg["cfgIDs"].map((cfgID) => that.status_map[cfgID]["status"]);
                 let long_num = status_list.map((element) => element === "LONG").reduce((a, b) => a + b, 0);
                 let short_num = status_list.map((element) => element === "SHORT").reduce((a, b) => a + b, 0);
                 that.summary["overall"]["long_num"] = long_num;
@@ -330,13 +309,13 @@ class SimpleTrendStrategy extends StrategyBase{
             }
 
             // 检查一下status_map变化
-            logger.info(`${that.alias}::${entry}::${JSON.stringify(that.status_map[entry])}`);
+            logger.info(`${that.alias}::${cfgID}::${JSON.stringify(that.status_map[cfgID])}`);
 
             // record the order filling details
             let ts = order_update["metadata"]["timestamp"];
             // 0 stands for submit_price
-            let filled_info = [act_id, exchange, symbol, contract_type, interval, client_order_id, original_amount, filled, 0, avg_executed_price, fee].join(",");
-            let order_info = (that.order_map[entry][client_order_id] === undefined) ? "" : Object.entries(that.order_map[entry][client_order_id]).map((element) => element[1]).join(",");
+            let filled_info = [act_id, exchange, symbol, contract_type, interval, client_order_id, order_type, original_amount, filled, 0, avg_executed_price, fee].join(",");
+            let order_info = (that.order_map[cfgID][client_order_id] === undefined) ? "" : Object.entries(that.order_map[cfgID][client_order_id]).map((element) => element[1]).join(",");
             let output_string = [ts, filled_info, order_info].join(",");
             output_string += (order_status === ORDER_STATUS.FILLED) ? ",filled\n" : ",partially_filled\n";
             fs.writeFile(`./log/order_filling_${this.alias}.csv`, output_string, { flag: "a+" }, (err) => {
@@ -360,17 +339,18 @@ class SimpleTrendStrategy extends StrategyBase{
         if (!that.cfg["idfs"].includes(idf)) return;
         that.prices[idf] = { "price": price, "upd_ts": ts };
 
-        let corr_entries = that.cfg["entries"].filter((entry) => entry.split(".").slice(0, 3).join(".") === idf);
-        corr_entries.forEach((entry) => {
-            if (!that.klines[entry]["ready"]) return;
+        let corr_cfgIDs = that.cfg["cfgIDs"].filter((cfgID) => that.cfg[cfgID]["idf"].split(".").slice(0, 3).join(".") === idf);
+        corr_cfgIDs.forEach((cfgID) => {
+            if (!that.klines[cfgID]["ready"]) return;
+            let entry = that.cfg[cfgID]["entry"];
             let interval = entry.split(".")[3];
     
-            // logger.info(symbol, ts, that.cur_bar_otime[entry], that.pre_bar_otime[entry]);
-            that.cur_bar_otime[entry] = stratutils.cal_bar_otime(ts, interval, that.cfg[entry]["splitAt"]);
+            // logger.info(symbol, ts, that.cur_bar_otime[cfgID], that.pre_bar_otime[cfgID]);
+            that.cur_bar_otime[cfgID] = stratutils.cal_bar_otime(ts, interval, that.cfg[cfgID]["splitAt"]);
             // if the pre_bar_otime is undefined, it means the strategy is re-started
-            let new_start = (that.pre_bar_otime[entry] === undefined);
+            let new_start = (that.pre_bar_otime[cfgID] === undefined);
             // new interal is not new_start, new bar means a new bar starts
-            let new_bar = (!new_start) && (that.cur_bar_otime[entry] !== that.pre_bar_otime[entry]);
+            let new_bar = (!new_start) && (that.cur_bar_otime[cfgID] !== that.pre_bar_otime[cfgID]);
     
             if (new_start) {
                 logger.info(`${that.alias}::${entry}::NEW START!`);
@@ -378,74 +358,76 @@ class SimpleTrendStrategy extends StrategyBase{
                 logger.info(`${that.alias}::${entry}::NEW BAR!`);
                 // 如果一些订单已经触发但是迟迟不能成交，必须进行处理
                 // TODO: 如果在new_bar的一瞬间正在部分成交（虽然是小概率事件），怎么办？
-                that.status_map[entry]["bar_enter_n"] = 0;
+                that.status_map[cfgID]["bar_enter_n"] = 0;
             }
 
-            // logger.info(`${that.alias}::${entry}::${JSON.stringify(that.klines[entry])}`);
+            // logger.info(`${that.alias}::${entry}::${JSON.stringify(that.klines[cfgID])}`);
             // 更新kline数据，这里应该用>会不会更好？
-            if (that.cur_bar_otime[entry] > that.klines[entry]["ts"][0]) {
+            if (that.cur_bar_otime[cfgID] > that.klines[cfgID]["ts"][0]) {
                 // new_interval开始
-                that.klines[entry]["ts"].unshift(that.cur_bar_otime[entry]);
-                that.klines[entry]["ts"].pop();
-                that.klines[entry]["open"].unshift(price);
-                that.klines[entry]["open"].pop();
-                that.klines[entry]["high"].unshift(price);
-                that.klines[entry]["high"].pop();
-                that.klines[entry]["low"].unshift(price);
-                that.klines[entry]["low"].pop();
-                // logger.info(`${that.alias}::${entry}::${JSON.stringify(that.klines[entry])}`);
-            } else if (that.cur_bar_otime[entry] === that.klines[entry]["ts"][0]) {
-                that.klines[entry]["high"][0] = Math.max(price, that.klines[entry]["high"][0]);
-                that.klines[entry]["low"][0] = Math.min(price, that.klines[entry]["low"][0]);
+                that.klines[cfgID]["ts"].unshift(that.cur_bar_otime[cfgID]);
+                that.klines[cfgID]["ts"].pop();
+                that.klines[cfgID]["open"].unshift(price);
+                that.klines[cfgID]["open"].pop();
+                that.klines[cfgID]["high"].unshift(price);
+                that.klines[cfgID]["high"].pop();
+                that.klines[cfgID]["low"].unshift(price);
+                that.klines[cfgID]["low"].pop();
+                // logger.info(`${that.alias}::${entry}::${JSON.stringify(that.klines[cfgID])}`);
+            } else if (that.cur_bar_otime[cfgID] === that.klines[cfgID]["ts"][0]) {
+                that.klines[cfgID]["high"][0] = Math.max(price, that.klines[cfgID]["high"][0]);
+                that.klines[cfgID]["low"][0] = Math.min(price, that.klines[cfgID]["low"][0]);
             } else {
                 logger.debug(`${that.alias}::${entry}::cur_bar_otime is larger than klines ts[0]?`);
             }
-            // logger.info(`${that.alias}::${entry}::${JSON.stringify(that.klines[entry])}`);
+            // logger.info(`${that.alias}::${entry}::${JSON.stringify(that.klines[cfgID])}`);
     
             // update bar open time and net_profit
-            that.pre_bar_otime[entry] = that.cur_bar_otime[entry];
+            that.pre_bar_otime[cfgID] = that.cur_bar_otime[cfgID];
     
             // 下单逻辑模块
-            that.status_map[entry]["net_profit"] = that.status_map[entry]["quote_ccy"] + that.status_map[entry]["pos"] * price - that.status_map[entry]["fee"];
-            that.status_map[entry]["net_profit"] = stratutils.transform_with_tick_size(that.status_map[entry]["net_profit"], 0.01);
-            that.main_execuation(new_start, new_bar, entry);
+            that.status_map[cfgID]["net_profit"] = that.status_map[cfgID]["quote_ccy"] + that.status_map[cfgID]["pos"] * price - that.status_map[cfgID]["fee"];
+            that.status_map[cfgID]["net_profit"] = stratutils.transform_with_tick_size(that.status_map[cfgID]["net_profit"], 0.01);
+            that.main_execuation(new_start, new_bar, cfgID);
         });
     }
 
-    main_execuation(new_start, new_bar, entry) {
+    main_execuation(new_start, new_bar, cfgID) {
         let that = this;
+        let entry = that.cfg[cfgID]["entry"];
         let [exchange, symbol, contract_type, interval] = entry.split(".");
         let idf =  [exchange, symbol, contract_type].join(".");
+
         let price = that.prices[idf]["price"];
-        let ini_usdt = (that.cfg[entry]["ini_usdt"]) ? that.cfg[entry]["ini_usdt"] : that.cfg["ini_usdt"];
-        let act_id = that.cfg[entry]["act_id"];
+        let ini_usdt = (that.cfg[cfgID]["ini_usdt"]) ? that.cfg[cfgID]["ini_usdt"] : that.cfg["ini_usdt"];
+        let act_id = that.cfg[cfgID]["act_id"];
 
         // load status_map  -----------------------------------------------
-        let bar_enter_n = that.status_map[entry]["bar_enter_n"];
+        let bar_enter_n = that.status_map[cfgID]["bar_enter_n"];
 
         // para loading -----------------------------------------------
-        let track_ATR_multiplier = that.cfg[entry]["track_ATR_multiplier"];
-        let delta_af = that.cfg[entry]["delta_af"];
-        let bar_enter_limit = that.cfg[entry]["bar_enter_limit"];
+        let track_ATR_multiplier = that.cfg[cfgID]["track_ATR_multiplier"];
+        let delta_af = that.cfg[cfgID]["delta_af"];
+        let bar_enter_limit = that.cfg[cfgID]["bar_enter_limit"];
 
         // cal indicators -----------------------------------------------
         // STR策略中用的是true_ATR，即计算过去一段时间每个interval内的High - Low，取其中的最大值作为ATR
-        let highs = Object.values(that.klines[entry]["high"]).slice(1);
-        let lows = Object.values(that.klines[entry]["low"]).slice(1);
+        let highs = Object.values(that.klines[cfgID]["high"]).slice(1);
+        let lows = Object.values(that.klines[cfgID]["low"]).slice(1);
         let H_Ls = highs.map((high, i) => high - lows[i]);
         let track_ATR = Math.max(...H_Ls);
-        let up = that.klines[entry]["open"][0] + track_ATR * track_ATR_multiplier;
-        let dn = that.klines[entry]["open"][0] - track_ATR * track_ATR_multiplier;
+        let up = that.klines[cfgID]["open"][0] + track_ATR * track_ATR_multiplier;
+        let dn = that.klines[cfgID]["open"][0] - track_ATR * track_ATR_multiplier;
         let up_price = stratutils.transform_with_tick_size(up, PRICE_TICK_SIZE[idf]);
         let dn_price = stratutils.transform_with_tick_size(dn, PRICE_TICK_SIZE[idf], "round");  // 如果dn_price是负数，会被round成最小价
-        that.status_map[entry]["up"] = up_price;
-        that.status_map[entry]["dn"] = dn_price;
+        that.status_map[cfgID]["up"] = up_price;
+        that.status_map[cfgID]["dn"] = dn_price;
 
         if (isNaN(up_price) || (isNaN(dn_price))) return;
 
         let label, target, tgt_qty, direction;
 
-        if (that.status_map[entry]["status"] === "EMPTY") {
+        if (that.status_map[cfgID]["status"] === "EMPTY") {
 
             if ((price >= up_price) && (bar_enter_n < bar_enter_limit)) {
                 // STR::突破上轨做多
@@ -457,32 +439,32 @@ class SimpleTrendStrategy extends StrategyBase{
                 tgt_qty = stratutils.transform_with_tick_size(ini_usdt / dn_price, QUANTITY_TICK_SIZE[idf]);
             }
 
-        } else if (that.status_map[entry]["status"] === "LONG") {
+        } else if (that.status_map[cfgID]["status"] === "LONG") {
             // STR::LONG，即up break导致的做多
             if (new_bar) {
                 // STR::new_bar出现，更新相关参数
-                that.status_map[entry]["bar_n"] += 1;
-                if (that.status_map[entry]["bar_n"] !== 1) {
-                    if (that.klines[entry]["high"][1] > that.status_map[entry]["ep"]) {
+                that.status_map[cfgID]["bar_n"] += 1;
+                if (that.status_map[cfgID]["bar_n"] !== 1) {
+                    if (that.klines[cfgID]["high"][1] > that.status_map[cfgID]["ep"]) {
                         // STR::过去的一根bar有更高价，更新ep和af
-                        that.status_map[entry]["ep"] = that.klines[entry]["high"][1];
-                        that.status_map[entry]["af"] += delta_af;
-                        that.status_map[entry]["af"] = stratutils.transform_with_tick_size(that.status_map[entry]["af"], 0.01);
+                        that.status_map[cfgID]["ep"] = that.klines[cfgID]["high"][1];
+                        that.status_map[cfgID]["af"] += delta_af;
+                        that.status_map[cfgID]["af"] = stratutils.transform_with_tick_size(that.status_map[cfgID]["af"], 0.01);
                     }
-                    that.status_map[entry]["sar"] = that.status_map[entry]["sar"] + that.status_map[entry]["af"] * (that.status_map[entry]["ep"] - that.status_map[entry]["sar"]);
-                    that.status_map[entry]["sar"] = stratutils.transform_with_tick_size(that.status_map[entry]["sar"], PRICE_TICK_SIZE[idf]);
+                    that.status_map[cfgID]["sar"] = that.status_map[cfgID]["sar"] + that.status_map[cfgID]["af"] * (that.status_map[cfgID]["ep"] - that.status_map[cfgID]["sar"]);
+                    that.status_map[cfgID]["sar"] = stratutils.transform_with_tick_size(that.status_map[cfgID]["sar"], PRICE_TICK_SIZE[idf]);
                 }
             } else {
-                if (that.status_map[entry]["bar_n"] === 0) {
+                if (that.status_map[cfgID]["bar_n"] === 0) {
                     // the first bar when entered, initialize the ep value
-                    that.status_map[entry]["ep"] = Math.max(that.status_map[entry]["ep"], price);
+                    that.status_map[cfgID]["ep"] = Math.max(that.status_map[cfgID]["ep"], price);
                 }
             }
 
-            let stoploss_price = that.status_map[entry]["sar"];
+            let stoploss_price = that.status_map[cfgID]["sar"];
 
             // STR::开仓那根bar内不作任何操作
-            if (that.status_map[entry]["bar_n"] === 0) return;
+            if (that.status_map[cfgID]["bar_n"] === 0) return;
 
             if (stoploss_price < dn_price) {
                 // STR::dn_price更高，对手单应为反手单
@@ -490,7 +472,7 @@ class SimpleTrendStrategy extends StrategyBase{
                 if (price <= dn_price) {
                     // STR::LONG状态下价格突破下轨，下反手单
                     label = "ANTI_L|REVERSE", target = "SHORT", direction = DIRECTION.SELL;
-                    tgt_qty = stratutils.transform_with_tick_size(that.status_map[entry]["pos"] + ini_usdt / dn_price, QUANTITY_TICK_SIZE[idf]);
+                    tgt_qty = stratutils.transform_with_tick_size(that.status_map[cfgID]["pos"] + ini_usdt / dn_price, QUANTITY_TICK_SIZE[idf]);
                 }
 
             } else {
@@ -499,33 +481,33 @@ class SimpleTrendStrategy extends StrategyBase{
                 if (price <= stoploss_price) {
                     // STR::LONG状态下价格突破止损价，下止损单
                     label = "ANTI_L|STOPLOSS", target = "EMPTY", direction = DIRECTION.SELL;
-                    tgt_qty = stratutils.transform_with_tick_size(that.status_map[entry]["pos"], QUANTITY_TICK_SIZE[idf]);
+                    tgt_qty = stratutils.transform_with_tick_size(that.status_map[cfgID]["pos"], QUANTITY_TICK_SIZE[idf]);
                 }
 
             }
-        } else if (that.status_map[entry]["status"] === "SHORT") {
+        } else if (that.status_map[cfgID]["status"] === "SHORT") {
             // STR::SHORT，即dn break导致的做空
             if (new_bar) {
-                that.status_map[entry]["bar_n"] += 1;
-                if (that.status_map[entry]["bar_n"] !== 1) {
-                    if (that.klines[entry]["low"][1] < that.status_map[entry]["ep"]) {
-                        that.status_map[entry]["ep"] = that.klines[entry]["low"][1];
-                        that.status_map[entry]["af"] += delta_af;
-                        that.status_map[entry]["af"] = stratutils.transform_with_tick_size(that.status_map[entry]["af"], 0.01);
+                that.status_map[cfgID]["bar_n"] += 1;
+                if (that.status_map[cfgID]["bar_n"] !== 1) {
+                    if (that.klines[cfgID]["low"][1] < that.status_map[cfgID]["ep"]) {
+                        that.status_map[cfgID]["ep"] = that.klines[cfgID]["low"][1];
+                        that.status_map[cfgID]["af"] += delta_af;
+                        that.status_map[cfgID]["af"] = stratutils.transform_with_tick_size(that.status_map[cfgID]["af"], 0.01);
                     }
-                    that.status_map[entry]["sar"] = that.status_map[entry]["sar"] + that.status_map[entry]["af"] * (that.status_map[entry]["ep"] - that.status_map[entry]["sar"]);
-                    that.status_map[entry]["sar"] = stratutils.transform_with_tick_size(that.status_map[entry]["sar"], PRICE_TICK_SIZE[idf]);
+                    that.status_map[cfgID]["sar"] = that.status_map[cfgID]["sar"] + that.status_map[cfgID]["af"] * (that.status_map[cfgID]["ep"] - that.status_map[cfgID]["sar"]);
+                    that.status_map[cfgID]["sar"] = stratutils.transform_with_tick_size(that.status_map[cfgID]["sar"], PRICE_TICK_SIZE[idf]);
                 }
             } else {
-                if (that.status_map[entry]["bar_n"] === 0) {
-                    that.status_map[entry]["ep"] = Math.min(that.status_map[entry]["ep"], price);
+                if (that.status_map[cfgID]["bar_n"] === 0) {
+                    that.status_map[cfgID]["ep"] = Math.min(that.status_map[cfgID]["ep"], price);
                 }
             }
 
-            let stoploss_price = that.status_map[entry]["sar"];
+            let stoploss_price = that.status_map[cfgID]["sar"];
 
             // 开仓当天不作任何操作
-            if (that.status_map[entry]["bar_n"] === 0) return;
+            if (that.status_map[cfgID]["bar_n"] === 0) return;
 
             if (stoploss_price > up_price) {
                 // STR::up_price更低，对手单应为反手单
@@ -533,7 +515,7 @@ class SimpleTrendStrategy extends StrategyBase{
                 if (price >= up_price) {
                     // STR::SHORT状态下突破上轨，反手做多
                     label = "ANTI_S|REVERSE", target = "LONG", direction = DIRECTION.BUY;
-                    tgt_qty = stratutils.transform_with_tick_size(- that.status_map[entry]["pos"] + ini_usdt / up_price, QUANTITY_TICK_SIZE[idf]);
+                    tgt_qty = stratutils.transform_with_tick_size(- that.status_map[cfgID]["pos"] + ini_usdt / up_price, QUANTITY_TICK_SIZE[idf]);
                 }
 
             } else {
@@ -542,7 +524,7 @@ class SimpleTrendStrategy extends StrategyBase{
                 if (price >= stoploss_price) {
                     // STR::SHORT状态下突破上轨，反手做多
                     label = "ANTI_S|STOPLOSS", target = "EMPTY", direction = DIRECTION.BUY;
-                    tgt_qty = stratutils.transform_with_tick_size(- that.status_map[entry]["pos"], QUANTITY_TICK_SIZE[idf]);
+                    tgt_qty = stratutils.transform_with_tick_size(- that.status_map[cfgID]["pos"], QUANTITY_TICK_SIZE[idf]);
                 }
 
             }
@@ -550,9 +532,10 @@ class SimpleTrendStrategy extends StrategyBase{
 
         // STR::发单并更新status_map和order_map
         if (label !== undefined) {
-            let client_order_id = that.alias + interval.padStart(3, '0') + LABELMAP[label] + randomID(5);  // client_order_id总共13位
-            that.status_map[entry]["status"] = "TBA";
-            that.order_map[entry][client_order_id] = {label: label, target: target, quantity: tgt_qty, time: moment.now(), filled: 0};
+            // client_order_id format: STR0001DNxxxxx: {012}{3456}{78}{90123}
+            let client_order_id = cfgID + LABELMAP[label] + randomID(5);  // client_order_id总共13位
+            that.status_map[cfgID]["status"] = "TBA";
+            that.order_map[cfgID][client_order_id] = {label: label, target: target, quantity: tgt_qty, time: moment.now(), filled: 0};
             
             that.send_order({
                 label: label,
@@ -586,14 +569,15 @@ class SimpleTrendStrategy extends StrategyBase{
         let quantity = response["request"]["quantity"];
         let direction = response["request"]["direction"];
 
-        let interval = (client_order_id.slice(3, 4) === "0")? client_order_id.slice(4, 6): client_order_id.slice(3, 6);
-        let idf = [exchange, symbol, contract_type].join(".");
-        let entry = [exchange, symbol, contract_type, interval].join(".");
-        let order_idf = [act_id, symbol, interval, direction, label, client_order_id].join("|");
+        let cfgID = client_order_id.slice(0, 7);
+        let idf = that.cfg[cfgID]["idf"];
+        let entry = that.cfg[cfgID]["entry"];
+        let interval = entry.split(".")[3];
+        let order_idf = [act_id, symbol, interval, direction, client_order_id].join("|");
 
         if (response["metadata"]["metadata"]["result"] === false) {
             // 发单失败，因为1分钟后会inspect order，所以时间定为2分钟后
-            setTimeout(() => delete that.order_map[entry][client_order_id], 1000 * 60 * 2);
+            setTimeout(() => delete that.order_map[cfgID][client_order_id], 1000 * 60 * 2);
 
             let error_code = response["metadata"]["metadata"]["error_code"];
             let error_code_msg = response["metadata"]["metadata"]["error_code_msg"];
@@ -659,10 +643,10 @@ class SimpleTrendStrategy extends StrategyBase{
                 logger.info(`${that.alias}::${order_idf}::resend the order in ${timeout} ms!`);
                 setTimeout(() => {
                     retry = (retry === undefined) ? 1 : retry + 1; 
-                    let new_client_order_id = that.alias + interval.padStart(3, '0') + LABELMAP[label] + randomID(5);  // client_order_id总共13位
+                    let new_client_order_id = cfgID + LABELMAP[label] + randomID(5);  // client_order_id总共13位
                     
                     // STR::注意：order_map里面的key只有ANTI_L, ANTI_S, UP, DN四种，但是label有六种！
-                    that.order_map[entry][new_client_order_id] = {label: label, target: target, quantity: quantity, time: moment.now(), filled: 0};
+                    that.order_map[cfgID][new_client_order_id] = {label: label, target: target, quantity: quantity, time: moment.now(), filled: 0};
     
                     that.send_order({
                         retry: retry,

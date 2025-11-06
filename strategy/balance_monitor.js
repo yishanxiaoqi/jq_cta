@@ -23,18 +23,22 @@ class BalanceMonitor extends StrategyBase {
         //     "BinanceU.th_binance_cny_sub03.perp"
         // ];
         this.accounts = [
-            "BinanceU.th_binance_cny_master.perp"
+            "BinanceU.th_binance_cny_master.perp",
+            "BinanceU.th_binance_cny_sub01.perp"
         ];
         this.init_equity = {
-            "BinanceU.th_binance_cny_master.perp": 17010.57
+            "BinanceU.th_binance_cny_master.perp": 17010.57,
+            "BinanceU.th_binance_cny_sub01.perp": 1000
         };
         this.denominator = {
-            "BinanceU.th_binance_cny_master.perp": 17010.57
+            "BinanceU.th_binance_cny_master.perp": 17010.57,
+            "BinanceU.th_binance_cny_sub01.perp": 1000
         };
         this.init_dates = {
-            "BinanceU.th_binance_cny_master.perp": moment("2025-10-20")
+            "BinanceU.th_binance_cny_master.perp": moment("2025-10-20"),
+            "BinanceU.th_binance_cny_sub01.perp": moment("2025-11-01")
         };
-        this.aliases = ["R01", "R06", "R12", "R24"];
+        this.aliases = ["R01", "R06", "R12", "R24", "STR", "QTR"];
         this.rev_aliases = ["R01", "R06", "R12", "R24"];
 
         this.account_summary = {};
@@ -144,6 +148,7 @@ class BalanceMonitor extends StrategyBase {
     }
 
     update_status_map_to_slack() {
+        // 各个策略的status_map已经停止推送，因此这个函数已经停止使用
         let text = "";
         let add_items;
 
@@ -247,6 +252,11 @@ class BalanceMonitor extends StrategyBase {
         this.account_summary[account]["wallet_balance"] =  stratutils.round(balance["wallet_balance_in_USD"], 2);
         this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"], 2);
 
+        if (account === "BinanceU.th_binance_cny_master.perp") {
+            this.account_summary[account]["wallet_balance"] =  stratutils.round(balance["wallet_balance_in_USD"], 2) + 1000;
+            this.account_summary[account]["equity"] = stratutils.round(balance["equity_in_USD"], 2) + 1000;
+        }
+
         this.account_summary[account]["nv"] = stratutils.round(this.account_summary[account]["equity"] / this.denominator[account], 4); 
         this.account_summary[account]["pnl"] = stratutils.round(this.account_summary[account]["equity"] - this.init_equity[account], 2);
         this.account_summary[account]["unrealized_pnl"] = stratutils.round(balance["unrealized_pnl_in_USD"], 2);
@@ -306,20 +316,20 @@ class BalanceMonitor extends StrategyBase {
             let cfg = JSON.parse(fs.readFileSync(`./config/cfg_${alias}.json`, 'utf8'));
             let status_map = JSON.parse(fs.readFileSync(`./config/status_map_${alias}.json`, 'utf8'));
             // 不在cfg里面的不需要进行统计
-            let loop_items = (this.rev_aliases.includes(alias))? cfg["idfs"] : cfg["entries"];
+            let loop_items = (this.rev_aliases.includes(alias))? cfg["idfs"] : cfg["cfgIDs"];
 
             for (let item of loop_items) {
                 if (cfg[item].act_id !== account_id) continue;
                 if (status_map[item] === undefined) continue;
                 
-                let symbol = item.split(".")[1];
+                let idf = (this.rev_aliases.includes(alias))? item : cfg[item]["idf"];
+                let symbol = idf.split(".")[1];
                 if (symbol in cal_positions) {
                     cal_positions[symbol] += status_map[item]["pos"];
                 } else {
                     cal_positions[symbol] = status_map[item]["pos"];
                 }
 
-                let idf = item.split(".").slice(0, 3).join(".");
                 cal_positions[symbol] = stratutils.transform_with_tick_size(cal_positions[symbol], QUANTITY_TICK_SIZE[idf]);
             }
         }
@@ -373,7 +383,7 @@ class BalanceMonitor extends StrategyBase {
         let orders = response["metadata"]["metadata"]["orders"];
         
         // 检查异常单：不属于任何策略
-        let wierd_orders = orders.filter(item => !ALIASES.includes(item.client_order_id.slice(0, 3)));
+        let wierd_orders = orders.filter(item => !that.aliases.includes(item.client_order_id.slice(0, 3)));
         // let alert = wierd_orders.map(e => `${act_id}|${e.symbol}|${e.client_order_id}|${e.direction}|${e.price}`).join(", ");
         if (wierd_orders.length !== 0) {
             that.slack_publish({

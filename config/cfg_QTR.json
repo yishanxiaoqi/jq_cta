@@ -1,0 +1,34 @@
+{
+    "alias": "QTR",
+    "clear_existing_status": true,
+    "interval": "1h",
+    "ini_usdt": 100,
+    "act_ids": [
+        "th_binance_cny_sub01"
+    ],
+    "symbols": [
+        "ETHUSDT"
+    ],
+    "idfs": [
+        "BinanceU.ETHUSDT.perp"
+    ],
+    "entries": [
+        "BinanceU.ETHUSDT.perp.1h"
+    ],
+    "cfgIDs": [
+        "QTR0122"
+    ],
+    "QTR0122": {
+        "idf": "BinanceU.ETHUSDT.perp",
+        "entry": "BinanceU.ETHUSDT.perp.1h",
+        "splitAt": 0,
+        "track_ATR_n": 50,
+        "track_ATR_multiplier": 0.05,
+        "stop_rate": 0.17,
+        "stoploss_rate": 0.01,
+        "af": 0.01,
+        "bar_enter_limit": 1,
+        "ini_usdt": 60,
+        "act_id": "th_binance_cny_sub01"
+    }
+}

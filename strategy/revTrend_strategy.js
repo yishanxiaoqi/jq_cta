@@ -473,7 +473,7 @@ class RevTrendStrategy extends StrategyBase {
 
             // record the order filling details
             let ts = order_update["metadata"]["timestamp"];
-            let filled_info = [act_id, exchange, symbol, contract_type, client_order_id, original_amount, filled, submit_price, avg_executed_price, fee].join(",");
+            let filled_info = [act_id, exchange, symbol, contract_type, client_order_id, order_type, original_amount, filled, submit_price, avg_executed_price, fee].join(",");
             // order_map中只提取label,target,quantity,time,filled等信息
             let order_info = (that.order_map[idf][client_order_id] === undefined) ? ",,,," : Object.entries(that.order_map[idf][client_order_id]).filter((element) => ["label", "target", "quantity", "time", "filled"].includes(element[0])).map((element) => element[1]).join(",");
             let output_string = [ts, filled_info, order_info].join(",");

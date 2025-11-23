@@ -1,34 +1,51 @@
 {
     "alias": "QTR",
-    "clear_existing_status": true,
+    "clear_existing_status": false,
     "interval": "1h",
     "ini_usdt": 100,
     "act_ids": [
-        "th_binance_cny_sub01"
+        "th_binance_cny_master"
     ],
     "symbols": [
-        "ETHUSDT"
+        "ETHUSDT",
+        "LINKUSDT"
     ],
     "idfs": [
-        "BinanceU.ETHUSDT.perp"
+        "BinanceU.ETHUSDT.perp",
+        "BinanceU.LINKUSDT.perp"
     ],
     "entries": [
-        "BinanceU.ETHUSDT.perp.1h"
+        "BinanceU.ETHUSDT.perp.1h",
+        "BinanceU.LINKUSDT.perp.1d"
     ],
     "cfgIDs": [
-        "QTR0122"
+        "QTR0122",
+        "QTR0250"
     ],
     "QTR0122": {
         "idf": "BinanceU.ETHUSDT.perp",
         "entry": "BinanceU.ETHUSDT.perp.1h",
         "splitAt": 0,
         "track_ATR_n": 50,
-        "track_ATR_multiplier": 0.05,
+        "track_ATR_multiplier": 0.4,
         "stop_rate": 0.17,
         "stoploss_rate": 0.01,
         "af": 0.01,
         "bar_enter_limit": 1,
-        "ini_usdt": 60,
-        "act_id": "th_binance_cny_sub01"
+        "ini_usdt": 200,
+        "act_id": "th_binance_cny_master"
+    },
+    "QTR0250": {
+        "idf": "BinanceU.LINKUSDT.perp",
+        "entry": "BinanceU.LINKUSDT.perp.1d",
+        "splitAt": 0,
+        "track_ATR_n": 5,
+        "track_ATR_multiplier": 0.6,
+        "stop_rate": 0.03,
+        "stoploss_rate": 0.03,
+        "af": 0.01,
+        "bar_enter_limit": 1,
+        "ini_usdt": 200,
+        "act_id": "th_binance_cny_master"
     }
 }

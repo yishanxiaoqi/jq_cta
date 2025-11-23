@@ -435,7 +435,7 @@ class QuickTrendStrategy extends StrategyBase {
 
         // logger.info(`${this.alias}::${JSON.stringify(trade)}`);
 
-        let corr_cfgIDs = that.cfg["cfgIDs"].filter((cfgID) => that.cfg[cfgID]["idf"].split(".").slice(0, 3).join(".") === idf);
+        let corr_cfgIDs = that.cfg["cfgIDs"].filter((cfgID) => that.cfg[cfgID]["idf"] === idf);
         for (let cfgID of corr_cfgIDs) {
             if (!that.klines[cfgID]["ready"]) return;
             let entry = that.cfg[cfgID]["entry"];
@@ -732,7 +732,7 @@ class QuickTrendStrategy extends StrategyBase {
 
         let label = client_order_id.slice(7, 9);
         if (!Object.values(LABELMAP).includes(label)) {
-            logger.info(`${that.alias}::on_send_order_response|unknown order label ${label}!`);
+            logger.info(`${cfgID}::on_send_order_response|unknown order label ${label}!`);
             return;
         } else {
             label = stratutils.get_key_by_value(LABELMAP, label);
@@ -749,16 +749,16 @@ class QuickTrendStrategy extends StrategyBase {
             if (retry === 5) {
                 that.slack_publish({
                     "type": "alert",
-                    "msg": `${that.alias}::${order_idf}::Send order retried over 5 times, check the code!`
+                    "msg": `${cfgID}::${order_idf}::Send order retried over 5 times, check the code!`
                 });
                 return;
             }
 
             // 所有的发单报错都会发邮件！
-            logger.debug(`${that.alias}::on_response|${order_idf}::an error occured during ${action}: ${error_code}: ${error_code_msg}`);
+            logger.debug(`${cfgID}::on_response|${order_idf}::an error occured during ${action}: ${error_code}: ${error_code_msg}`);
             that.slack_publish({
                 "type": "alert",
-                "msg": `${that.alias}::on_response|${order_idf}::an error occured during ${action}: ${error_code}: ${error_code_msg}`
+                "msg": `${cfgID}::on_response|${order_idf}::an error occured during ${action}: ${error_code}: ${error_code_msg}`
             });
 
             let resend = false, timeout = 10;    // 注意：这里不能用分号，只能用逗号！
@@ -786,10 +786,10 @@ class QuickTrendStrategy extends StrategyBase {
                 } else if ((limit_type === "lower") && (adj_price <= limit_price)) {
                     adj_price = stratutils.transform_with_tick_size(adj_price + PRICE_TICK_SIZE[idf], PRICE_TICK_SIZE[idf]);
                 } else {
-                    logger.info(`${that.alias}::${order_idf}::limit_type: ${limit_type}.`);
+                    logger.info(`${cfgID}::${order_idf}::limit_type: ${limit_type}.`);
                 }
 
-                logger.info(`${that.alias}::${order_idf}::order out of limitation, change from ${price} to ${adj_price}.`);
+                logger.info(`${cfgID}::${order_idf}::order out of limitation, change from ${price} to ${adj_price}.`);
 
                 price = adj_price, resend = true;
 
@@ -799,7 +799,7 @@ class QuickTrendStrategy extends StrategyBase {
                 let url = "https://fapi.binance.com/fapi/v1/leverage";
                 stratutils.set_leverage_by_rest(symbol, 10, url, key);
 
-                logger.info(`${that.alias}::${order_idf}::change leverage to 10 and resent the order.`);
+                logger.info(`${cfgID}::${order_idf}::change leverage to 10 and resent the order.`);
                 resend = true;
                 timeout = 1000 * 2;
 
@@ -812,7 +812,7 @@ class QuickTrendStrategy extends StrategyBase {
                     // TODO: 这里应该是order_map吧，怎么其他几个脚本都写status_map???
                     that.order_map[cfgID]["DN"] = undefined;
                 } else {
-                    logger.info(`${that.alias}::${order_idf}::price less than min, but not a DN order, check!`);
+                    logger.info(`${cfgID}::${order_idf}::price less than min, but not a DN order, check!`);
                 }
             } else if (error_code_msg === "Order would immediately trigger.") {
                 // STOP order才会报这样的错，说明止损价已经触发，直接改发market order
@@ -840,12 +840,12 @@ class QuickTrendStrategy extends StrategyBase {
             } else if (error_code_msg === "Quantity greater than max quantity.") {
                 if (label === "DN") delete that.order_map[cfgID]["DN"];
             } else {
-                logger.warn(`${that.alias}::on_response|${order_idf}::unknown error occured during ${action}: ${error_code}: ${error_code_msg}`);
+                logger.warn(`${cfgID}::on_response|${order_idf}::unknown error occured during ${action}: ${error_code}: ${error_code_msg}`);
                 return;
             }
 
             if (resend) {
-                logger.info(`${that.alias}::${order_idf}::resend the order in ${timeout} ms!`);
+                logger.info(`${cfgID}::${order_idf}::resend the order in ${timeout} ms!`);
                 setTimeout(() => {
                     retry = (retry === undefined) ? 1 : retry + 1;
                     let new_client_order_id = cfgID + LABELMAP[label] + randomID(5);  // client_order_id总共13位
@@ -874,7 +874,7 @@ class QuickTrendStrategy extends StrategyBase {
 
         } else {
             // 订单发送成功
-            logger.info(`${this.alias}::on_response|${order_idf} submitted!`);
+            logger.info(`${cfgID}::on_response|${order_idf} submitted!`);
         }
     }
 
@@ -993,9 +993,6 @@ class QuickTrendStrategy extends StrategyBase {
         for (let cfgID of that.cfg["cfgIDs"]) {
             if (act_id !== that.cfg[cfgID]["act_id"]) continue;
 
-            let entry = that.cfg[cfgID]["entry"];
-            let symbol = entry.split(".")[1];
-            let interval = entry.split(".")[3];
             let corr_active_orders = active_orders.filter(item => item.client_order_id.slice(0, 7) == cfgID);
             let corr_active_client_order_ids = corr_active_orders.map(item => item.client_order_id);
             let string = corr_active_client_order_ids.join(",");

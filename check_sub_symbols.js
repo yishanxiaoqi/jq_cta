@@ -1,12 +1,16 @@
 require("./config/stratdef");
 const fs = require("fs");
 
-let live_aliases = ["R01", "R06", "R12", "R24", "STR", "QTR"];
+
 let live_idfs = [];
 let live_idfs_d = {};
 let REV_aliases = ["R01", "R06", "R12", "R24"];
+let vol_aliases = ["R01", "R06", "R12", "R24", "SRE", "RAV"];
+let trend_aliases = ["STR", "QTR"];
+let live_aliases = ["R01", "R06", "R12", "R24", "SRE", "RAV", "STR", "QTR"];
 
 console.log(live_aliases);
+let asset_allocation = {};
 
 for (let alias of live_aliases) {
     let cfg = JSON.parse(fs.readFileSync(`./config/cfg_${alias}.json`, 'utf8'));
@@ -15,13 +19,25 @@ for (let alias of live_aliases) {
         let idf = (REV_aliases.includes(alias)) ? item : cfg[item]["idf"];
         if (! live_idfs.includes(idf)) live_idfs.push(idf);
 
-        console.log(item);
+        // console.log(item);
         let act_id = (REV_aliases.includes(alias)) ? cfg[idf]["act_id"] : cfg[item]["act_id"];
+        let ini_usdt = (REV_aliases.includes(alias)) ? cfg[idf]["ini_usdt"] : cfg[item]["ini_usdt"];
         if (act_id in live_idfs_d) {
             if (! live_idfs_d[act_id].includes(idf)) live_idfs_d[act_id].push(idf);
         } else {
             live_idfs_d[act_id] = [idf];
         }
+
+        if (act_id in asset_allocation) {
+            if (vol_aliases.includes(alias)) {
+                asset_allocation[act_id]["反转"] += ini_usdt;
+            } else {
+                asset_allocation[act_id]["趋势"] += ini_usdt;
+            }
+        } else {
+            asset_allocation[act_id] = (vol_aliases.includes(alias)) ? {"反转": ini_usdt, "趋势": 0} : {"反转": 0, "趋势": ini_usdt};
+        }
+
     }
 }
 
@@ -45,3 +61,5 @@ for (let act_id of Object.keys(live_idfs_d)) {
     let length = live_idfs_d[act_id].length;
     console.log(`${act_id}交易的频道个数：${length}`);
 }
+
+console.log(`各账户交易情况：${JSON.stringify(asset_allocation)}`);

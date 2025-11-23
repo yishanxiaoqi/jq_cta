@@ -1,0 +1,32 @@
+{
+    "alias": "RAV",
+    "clear_existing_status": false,
+    "ini_usdt": 100,
+    "act_ids": [
+        "th_binance_cny_master"
+    ],
+    "symbols": [
+        "BATUSDT"
+    ],
+    "idfs": [
+        "BinanceU.BATUSDT.perp"
+    ],
+    "entries": [
+        "BinanceU.BATUSDT.perp.1h"
+    ],
+    "cfgIDs" : [
+        "RAV0109"
+    ],
+    "RAV0109" : {
+        "entry": "BinanceU.BATUSDT.perp.1h",
+        "idf": "BinanceU.BATUSDT.perp",
+        "splitAt": 0,
+        "track_ATR_n": 10,
+        "track_ATR_multiplier": 1.5,
+        "af": 0.01,
+        "bar_enter_limit": 1,
+        "ini_usdt": 200,
+        "act_id": "th_binance_cny_master",
+        "cfgID": "RAV0109"
+    }
+}

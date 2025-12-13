@@ -22,12 +22,12 @@
         "idf": "BinanceU.LRCUSDT.perp",
         "splitAt": 20,
         "track_ATR_n": 10,
-        "track_ATR_multiplier": 0.5,
+        "track_ATR_multiplier": 0.05,
         "cutloss_rate": 0.1,
         "ini_af": 0.01,
         "delta_af": 0.01,
         "bar_enter_limit": 1,
-        "ini_usdt": 100,
+        "ini_usdt": 50,
         "act_id": "th_binance_cny_master",
         "cfgID": "SRE0174"
     }

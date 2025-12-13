@@ -69,7 +69,19 @@ class QuickTrendStrategy extends StrategyBase {
             let entry = that.cfg[cfgID]["entry"];
             let item = {};
 
-            let gap = (that.prices[idf])? Math.round((moment.now() - utils._util_convert_timestamp_to_date(that.prices[idf]["upd_ts"])) / 1000) : "";
+            // 计算time_gap和盈利情况
+            let price_presentation = "";
+            if (that.prices[idf]) {
+                let gap = Math.round((moment.now() - utils._util_convert_timestamp_to_date(that.prices[idf]["upd_ts"])) / 1000);
+                price_presentation = `${that.prices[idf]["price"]}|${gap}`;
+                if (that.status_map[cfgID]["status"] === "LONG") {
+                    let percentage = that.status_map[cfgID]["enter"] ? ((that.prices[idf]["price"] - that.status_map[cfgID]["enter"]) / that.status_map[cfgID]["enter"] * 100).toFixed(0) + "%" : "miss";
+                    price_presentation += "|" + percentage;
+                } else if (that.status_map[cfgID]["status"] === "SHORT") {
+                    let percentage = that.status_map[cfgID]["enter"] ? ((that.status_map[cfgID]["enter"] - that.prices[idf]["price"]) / that.status_map[cfgID]["enter"] * 100).toFixed(0) + "%" : "miss";
+                    price_presentation += "|" + percentage;
+                }
+            }
 
             item[`${index + 1}|cfgID`] = cfgID;
             item[`${index + 1}|entry`] = entry;
@@ -78,7 +90,7 @@ class QuickTrendStrategy extends StrategyBase {
             item[`${index + 1}|pos`] = that.status_map[cfgID]["pos"];
             item[`${index + 1}|fee`] = that.status_map[cfgID]["fee"];
             item[`${index + 1}|np`] = that.status_map[cfgID]["net_profit"];
-            item[`${index + 1}|price`] = (that.prices[idf])? `${that.prices[idf]["price"]}|${gap}`: "";
+            item[`${index + 1}|price`] = price_presentation;
             sendData["data"].push(item);
         });
 
@@ -262,6 +274,7 @@ class QuickTrendStrategy extends StrategyBase {
                         exchange: exchange,
                         symbol: symbol,
                         contract_type: contract_type,
+                        order_type: ORDER_TYPE.STOP_MARKET,
                         client_order_id: that.order_map[cfgID]["DN"]["client_order_id"],
                         account_id: act_id,
                     });
@@ -275,6 +288,7 @@ class QuickTrendStrategy extends StrategyBase {
                         exchange: exchange,
                         symbol: symbol,
                         contract_type: contract_type,
+                        order_type: ORDER_TYPE.LIMIT,
                         client_order_id: that.order_map[cfgID]["DC"]["client_order_id"],
                         account_id: act_id,
                     });
@@ -290,6 +304,7 @@ class QuickTrendStrategy extends StrategyBase {
                         exchange: exchange,
                         symbol: symbol,
                         contract_type: contract_type,
+                        order_type: ORDER_TYPE.STOP_MARKET,
                         client_order_id: that.order_map[cfgID]["UP"]["client_order_id"],
                         account_id: act_id,
                     });
@@ -303,6 +318,7 @@ class QuickTrendStrategy extends StrategyBase {
                         exchange: exchange,
                         symbol: symbol,
                         contract_type: contract_type,
+                        order_type: ORDER_TYPE.LIMIT,
                         client_order_id: that.order_map[cfgID]["UC"]["client_order_id"],
                         account_id: act_id,
                     });
@@ -319,6 +335,7 @@ class QuickTrendStrategy extends StrategyBase {
                         exchange: exchange,
                         symbol: symbol,
                         contract_type: contract_type,
+                        order_type: ORDER_TYPE.LIMIT,
                         client_order_id: that.order_map[cfgID]["UC"]["client_order_id"],
                         account_id: act_id,
                     });
@@ -335,6 +352,7 @@ class QuickTrendStrategy extends StrategyBase {
                         exchange: exchange,
                         symbol: symbol,
                         contract_type: contract_type,
+                        order_type: ORDER_TYPE.LIMIT,
                         client_order_id: that.order_map[cfgID]["DC"]["client_order_id"],
                         account_id: act_id,
                     });
@@ -528,8 +546,10 @@ class QuickTrendStrategy extends StrategyBase {
         // 只在new_bar或者new_start的时候才对发单进行调整??? 要注释掉，QTR策略并不是只在new_bar或者new_start的时候对发单进行调整！
         // if (!new_bar && !new_start) return; 
 
-        let orders_to_be_cancelled = [];    // client_order_id only
-        let orders_to_be_submitted = [];    // {label: "", target: "", tgt_qty: "", price: "", direction: ""}
+        // {order_type: "", client_order_id: ""}
+        let orders_to_be_cancelled = [];    
+        // {label: "", target: "", tgt_qty: "", price: "", direction: "", order_type: ""}
+        let orders_to_be_submitted = [];    
 
         if (that.status_map[cfgID]["status"] === "EMPTY") {
 
@@ -539,10 +559,10 @@ class QuickTrendStrategy extends StrategyBase {
                 let dn_qty = stratutils.transform_with_tick_size(ini_usdt / dn_price, QUANTITY_TICK_SIZE[idf]);
 
                 // 如果已经有UP单，撤销之；如果已经有DN单，撤销之
-                if (that.order_map[cfgID]["UP"] !== undefined) orders_to_be_cancelled.push(that.order_map[cfgID]["UP"]["client_order_id"]);
-                if (that.order_map[cfgID]["DN"] !== undefined) orders_to_be_cancelled.push(that.order_map[cfgID]["DN"]["client_order_id"]);
-                if (that.order_map[cfgID]["UC"] !== undefined) orders_to_be_cancelled.push(that.order_map[cfgID]["UC"]["client_order_id"]);
-                if (that.order_map[cfgID]["DC"] !== undefined) orders_to_be_cancelled.push(that.order_map[cfgID]["DC"]["client_order_id"]);
+                if (that.order_map[cfgID]["UP"] !== undefined) orders_to_be_cancelled.push({ order_type: ORDER_TYPE.STOP_MARKET, client_order_id: that.order_map[cfgID]["UP"]["client_order_id"] });
+                if (that.order_map[cfgID]["DN"] !== undefined) orders_to_be_cancelled.push({ order_type: ORDER_TYPE.STOP_MARKET, client_order_id: that.order_map[cfgID]["DN"]["client_order_id"] });
+                if (that.order_map[cfgID]["UC"] !== undefined) orders_to_be_cancelled.push({ order_type: ORDER_TYPE.LIMIT, client_order_id: that.order_map[cfgID]["UC"]["client_order_id"] });
+                if (that.order_map[cfgID]["DC"] !== undefined) orders_to_be_cancelled.push({ order_type: ORDER_TYPE.LIMIT, client_order_id: that.order_map[cfgID]["DC"]["client_order_id"] });
                 
                 // 发单：UP, DN都是stop market order; UC, DC都是limit order
                 if (price < up_price) {
@@ -589,7 +609,7 @@ class QuickTrendStrategy extends StrategyBase {
 
                     if ((current_uc_price !== stop_price) || (current_uc_qty !== uc_tgt_qty)) {
                         // 若已存的止盈单和现行不一致，则撤销重新发
-                        orders_to_be_cancelled.push(current_uc_client_order_id);
+                        orders_to_be_cancelled.push({ order_type: ORDER_TYPE.LIMIT, client_order_id: current_uc_client_order_id });
                         orders_to_be_submitted.push({ label: "UC", target: "EMPTY", quantity: uc_tgt_qty, price: stop_price, direction: DIRECTION.SELL, order_type: ORDER_TYPE.LIMIT });
                     }
                 }
@@ -627,7 +647,7 @@ class QuickTrendStrategy extends StrategyBase {
 
                     // 若已存的反手单和现行不一致，则撤销重新发
                     if ((current_dc_price !== dc_price) || (current_dc_qty !== dc_tgt_qty)) {
-                        orders_to_be_cancelled.push(current_dc_client_order_id);
+                        orders_to_be_cancelled.push({ order_type: ORDER_TYPE.LIMIT, client_order_id: current_dc_client_order_id });
                         orders_to_be_submitted.push({ label: "DC", target: "EMPTY", quantity: dc_tgt_qty, price: stop_price, direction: DIRECTION.BUY, order_type: ORDER_TYPE.LIMIT });
                     }
                 }
@@ -636,12 +656,13 @@ class QuickTrendStrategy extends StrategyBase {
         }
 
         // logger.info(`orders_to_be_cancelled: ${orders_to_be_cancelled}`);
-        orders_to_be_cancelled.forEach((client_order_id) => {
+        orders_to_be_cancelled.forEach((order) => {
             that.cancel_order({
                 exchange: exchange,
                 symbol: symbol,
                 contract_type: contract_type,
-                client_order_id: client_order_id,
+                order_type: order.order_type,
+                client_order_id: order.client_order_id,
                 account_id: act_id,
             });
         });
@@ -882,6 +903,7 @@ class QuickTrendStrategy extends StrategyBase {
         let that = this;
 
         let action = response["action"];
+        let order_type = response["metadata"]["order_type"];
 
         // 用request里面的数据比较保险
         let exchange = response["request"]["exchange"];
@@ -952,6 +974,7 @@ class QuickTrendStrategy extends StrategyBase {
                         exchange: exchange,
                         symbol: symbol,
                         contract_type: contract_type,
+                        order_type: order_type,
                         client_order_id: client_order_id,
                         account_id: act_id,
                     });
@@ -978,7 +1001,6 @@ class QuickTrendStrategy extends StrategyBase {
             return
         }
 
-        let exchange = response["request"]["exchange"];
         let act_id = response["metadata"]["metadata"]["account_id"];
         let orders = response["metadata"]["metadata"]["orders"];
         let active_orders = orders.filter(item => item.client_order_id.slice(0, 3) === that.alias);

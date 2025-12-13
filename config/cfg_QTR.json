@@ -7,21 +7,46 @@
         "th_binance_cny_master"
     ],
     "symbols": [
+        "AVAXUSDT",
+        "AXSUSDT",
         "ETHUSDT",
-        "LINKUSDT"
+        "LINKUSDT",
+        "UNIUSDT",
+        "XLMUSDT"
+
     ],
     "idfs": [
+        "BinanceU.AVAXUSDT.perp",
+        "BinanceU.AXSUSDT.perp",
         "BinanceU.ETHUSDT.perp",
-        "BinanceU.LINKUSDT.perp"
+        "BinanceU.LINKUSDT.perp",
+        "BinanceU.UNIUSDT.perp",
+        "BinanceU.XLMUSDT.perp"
     ],
     "entries": [
+        "BinanceU.AVAXUSDT.perp.1h",
         "BinanceU.ETHUSDT.perp.1h",
-        "BinanceU.LINKUSDT.perp.1d"
+        "BinanceU.UNIUSDT.perp.1h",
+        "BinanceU.AXSUSDT.perp.1d",
+        "BinanceU.LINKUSDT.perp.1d",
+        "BinanceU.XLMUSDT.perp.1d"
     ],
     "cfgIDs": [
-        "QTR0122",
-        "QTR0250"
+        "QTR0122"
     ],
+    "QTR0092": {
+        "idf": "BinanceU.AVAXUSDT.perp",
+        "entry": "BinanceU.AVAXUSDT.perp.1h",
+        "splitAt": 0,
+        "track_ATR_n": 40,
+        "track_ATR_multiplier": 0.4,
+        "stop_rate": 0.09,
+        "stoploss_rate": 0.02,
+        "af": 0.01,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_master"
+    },
     "QTR0122": {
         "idf": "BinanceU.ETHUSDT.perp",
         "entry": "BinanceU.ETHUSDT.perp.1h",
@@ -32,7 +57,33 @@
         "stoploss_rate": 0.01,
         "af": 0.01,
         "bar_enter_limit": 1,
-        "ini_usdt": 200,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_master"
+    },    
+    "QTR0116": {
+        "idf": "BinanceU.UNIUSDT.perp",
+        "entry": "BinanceU.UNIUSDT.perp.1h",
+        "splitAt": 0,
+        "track_ATR_n": 40,
+        "track_ATR_multiplier": 0.4,
+        "stop_rate": 0.2,
+        "stoploss_rate": 0.01,
+        "af": 0.01,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_master"
+    },
+    "QTR0161": {
+        "idf": "BinanceU.AXSUSDT.perp",
+        "entry": "BinanceU.AXSUSDT.perp.1d",
+        "splitAt": 0,
+        "track_ATR_n": 5,
+        "track_ATR_multiplier": 0.3,
+        "stop_rate": 0.14,
+        "stoploss_rate": 0.02,
+        "af": 0.01,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
         "act_id": "th_binance_cny_master"
     },
     "QTR0250": {
@@ -45,7 +96,20 @@
         "stoploss_rate": 0.03,
         "af": 0.01,
         "bar_enter_limit": 1,
-        "ini_usdt": 200,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_master"
+    },
+    "QTR0364": {
+        "idf": "BinanceU.XLMUSDT.perp",
+        "entry": "BinanceU.XLMUSDT.perp.1d",
+        "splitAt": 0,
+        "track_ATR_n": 5,
+        "track_ATR_multiplier": 0.5,
+        "stop_rate": 0.04,
+        "stoploss_rate": 0.04,
+        "af": 0.01,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
         "act_id": "th_binance_cny_master"
     }
 }

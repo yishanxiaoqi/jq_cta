@@ -1,5 +1,4 @@
-let active_orders = [{"symbol":"ARPAUSDT","order_id":4459256158,"client_order_id":"V0101hDNM02L8yz5di","original_amount":4840,"avg_executed_price":0,"filled":0,"status":"new","direction":"buy","price":0.02066,"contract_type":"perp","create_time":"20250616204912410","last_updated_time":"20250616204912410"},{"symbol":"ARPAUSDT","order_id":4459256157,"client_order_id":"V0101hUPM02OG2c9Kj","original_amount":4785,"avg_executed_price":0,"filled":0,"status":"new","direction":"sell","price":0.0209,"contract_type":"perp","create_time":"20250616204912406","last_updated_time":"20250616204912406"}];
+const utils = require("./utils/util_func");
+const apiconfig = require("./config/apiconfig.json");
 
-active_orders.map(e => {e.interval = (e.client_order_id.slice(3, 4) === "0")? e.client_order_id.slice(4, 6): e.client_order_id.slice(3, 6);});
-active_orders.map(e => {e.mark = e.client_order_id.slice(8, 11);});
-console.log(active_orders);
+console.log(utils._util_get_key_by_value(apiconfig.BinanceU.orderTypeMap, "POST_ONLY"));

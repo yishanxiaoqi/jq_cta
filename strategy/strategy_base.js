@@ -270,7 +270,7 @@ class StrategyBase {
         if (order["ref_id"] === undefined) order["ref_id"] = ref_id;
         order["send_time"] = utils._util_get_human_readable_timestamp();
 
-        let response = await this.exchanges[order.exchange]._query_order_via_rest(order);
+        let response = await this.exchanges[order.exchange]._query_orders_via_rest(order);
         this.intercom.emit(INTERCOM_CHANNEL.REQUEST_RESPONSE, response);
     }
 

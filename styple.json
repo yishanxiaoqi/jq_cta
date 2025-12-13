@@ -1,34 +1,28 @@
-{
-    "ref_id": "R01qqzuqUUqoyrVtP9ZS0eWkznV8Ub",
-    "action": "query_quantitative_rules",
+2025-12-13 22: 00: 00.708 - info: QTR: :on_cancel_order_response| {
+    "ref_id": "QTR3eeQ3ONW6LYUnX4LLkNrlVtTKzr",
+    "action": "cancel_order",
     "strategy": "BinanceU",
     "metadata": {
         "exchange": "BinanceU",
+        "symbol": "ETHUSDT",
         "contract_type": "perp",
-        "event": "query_quantitative_rules",
+        "order_type": "limit",
+        "event": "cancel_order",
         "metadata": {
-            "result": true,
             "account_id": "th_binance_cny_master",
-            "indicators": {
-                "ACCOUNT": [
-                    {
-                        "indicator": "TMV",
-                        "value": 10,
-                        "triggerValue": 18,
-                        "plannedRecoverTime": 1756781052000,
-                        "isLocked": true
-                    }
-                ]
-            },
-            "timestamp": "20250902092423057"
+            "result": false,
+            "error_code": -2011,
+            "error_code_msg": "Unknown order sent."
         },
-        "timestamp": "20250902092423061"
+        "timestamp": "20251213220000708"
     },
     "request": {
         "exchange": "BinanceU",
+        "symbol": "ETHUSDT",
         "contract_type": "perp",
+        "client_order_id": "QTR0122UPYurli",
         "account_id": "th_binance_cny_master",
-        "ref_id": "R01qqzuqUUqoyrVtP9ZS0eWkznV8Ub",
-        "send_time": "20250902092423040"
+        "ref_id": "QTR3eeQ3ONW6LYUnX4LLkNrlVtTKzr",
+        "send_time": "20251213220000666"
     }
 }

@@ -15,9 +15,9 @@ class DemoStrategy extends StrategyBase {
         setTimeout(() => {
             // this._test_send_post_only_order();
             // this._test_send_order();
-            this._test_cancel_order();
+            // this._test_cancel_order();
             // this._test_inspect_order();
-            // this._test_query_orders();
+            this._test_query_orders();
             // this._test_modify_order();
             // this._test_query_account();
             // this._test_send_fake_trade();
@@ -120,70 +120,60 @@ class DemoStrategy extends StrategyBase {
     _test_send_order() {
         this.send_order({
             exchange: EXCHANGE.BINANCEU,
-            symbol: "BTCUSDT",
+            symbol: "XLMUSDT",
             contract_type: CONTRACT_TYPE.PERP,
-            // stop_price: 0.2,
-            price: 113863,
-            quantity: 0.01,
-            direction: DIRECTION.SELL,
-            order_type: ORDER_TYPE.LIMIT,
+            stop_price: 0.28,
+            // price: 0.27,
+            quantity: 200,
+            direction: DIRECTION.BUY,
+            order_type: ORDER_TYPE.STOP_MARKET,
             account_id: "th_binance_cny_master",
-            client_order_id: "R01DNJ3r850F"
+            client_order_id: "testtest0843"
         });
-        // this.send_order({
-        //     exchange: EXCHANGE.BINANCEU,
-        //     symbol: "BANDUSDT",
-        //     contract_type: CONTRACT_TYPE.PERP,
-        //     // stop_price: 0.2,
-        //     price: 0.7634,
-        //     quantity: 200,
-        //     direction: DIRECTION.SELL,
-        //     order_type: ORDER_TYPE.LIMIT,
-        //     account_id: "th_binance_cny_master",
-        //     client_order_id: "R01DNJ3r850E"
-        // });
     };
 
     _test_cancel_order() {
         this.cancel_order({
             exchange: EXCHANGE.BINANCEU,
-            symbol: "ONTUSDT",
+            symbol: "XLMUSDT",
             contract_type: CONTRACT_TYPE.PERP,
-            // order_id: "627254420702912542",
-            account_id: "th_binance_cny_sub02",
-            client_order_id: "V0101hDNM061kgkU"
+            order_type: ORDER_TYPE.STOP_MARKET,
+            // order_id: "6513489055",
+            account_id: "th_binance_cny_master",
+            client_order_id: "testtest0843"
         });
     };
 
     _test_inspect_order() {
         this.inspect_order({
             exchange: EXCHANGE.BINANCEU,
-            symbol: "ALPHAUSDT",
+            symbol: "XLMUSDT",
             contract_type: CONTRACT_TYPE.PERP,
-            order_id: 6571146410,
+            order_type: ORDER_TYPE.STOP_MARKET,
+            // order_id: 2000000029700525,
             account_id: "th_binance_cny_master",
-            // client_order_id: "12345678910"
+            client_order_id: "testtest0843"
         });
     };
 
     _test_modify_order() {
         this.modify_order({
             exchange: EXCHANGE.BINANCEU,
-            symbol: "BTCUSDT",
+            symbol: "BATUSDT",
             contract_type: CONTRACT_TYPE.PERP,
-            price: 27700,
-            quantity: 0.01,
+            price: 0.28,
+            quantity: 200,
             direction: DIRECTION.SELL,
             // order_id: "627254882340593664",
-            account_id: "th_binance_cny_sub01",
-            client_order_id: "12345678911xxx"
+            account_id: "th_binance_cny_master",
+            client_order_id: "testtest1028"
         });
     };
 
     _test_query_orders() {
         this.query_orders({
             exchange: EXCHANGE.BINANCEU,
-            symbol: "ALPHAUSDT",
+            symbol: "XLMUSDT",
             contract_type: CONTRACT_TYPE.PERP,
             account_id: "th_binance_cny_master"
         });
@@ -214,11 +204,11 @@ class DemoStrategy extends StrategyBase {
     }
 
     on_query_orders_response(response) {
-        console.log(JSON.stringify(response));
+        // console.log(JSON.stringify(response));
     }
 
     on_active_orders(response) {
-        console.log(JSON.stringify(response));
+        // console.log(JSON.stringify(response));
     }
 }
 

@@ -14,6 +14,8 @@ const Intercom = require("../module/intercom");
 const apiconfig = require("../config/apiconfig.json");
 const token = require("../config/token.json");
 
+const ALGO_ORDER_TYPES = [ORDER_TYPE.STOP_MARKET, ORDER_TYPE.STOP_LIMIT];
+
 class ExchangeBinanceU extends ExchangeBase {
     constructor(name, intercom) {
         super(name, intercom);
@@ -363,6 +365,7 @@ class ExchangeBinanceU extends ExchangeBase {
             case "Filled":
             case "EXECUTED":
             case "0":
+            case "FINISHED":
                 return ORDER_STATUS.FILLED;
             case "NEW":
             case "submitted":
@@ -438,7 +441,7 @@ class ExchangeBinanceU extends ExchangeBase {
         let absAmount = Math.abs(quantity);
 
         let params;
-        let url = apiconfig.BinanceU.restUrl + apiconfig.BinanceU.restUrlPlaceOrder;
+        let url = ALGO_ORDER_TYPES.includes(order_type) ? apiconfig.BinanceU.restUrl + apiconfig.BinanceU.restUrlPlaceAlgoOrder : apiconfig.BinanceU.restUrl + apiconfig.BinanceU.restUrlPlaceOrder;
         if (order_type === ORDER_TYPE.MARKET) {
             // 市价单走这里
             params = this._get_rest_options(url, {
@@ -478,13 +481,14 @@ class ExchangeBinanceU extends ExchangeBase {
             }, account_id);
         } else if (order_type === ORDER_TYPE.STOP_MARKET) {
             params = this._get_rest_options(url, {
+                algoType: "CONDITIONAL",
                 symbol: exg_symbol,
                 side: exg_direction,
                 type: exg_order_type,
                 quantity: absAmount,
-                stopPrice: String(stop_price),
+                triggerPrice: String(stop_price),
                 newOrderRespType: "FULL",
-                newClientOrderId: client_order_id,
+                clientAlgoId: client_order_id,
                 timestamp: Date.now(),
             }, account_id);
         }
@@ -497,65 +501,61 @@ class ExchangeBinanceU extends ExchangeBase {
             }
         }
 
-        let cxl_resp;
+        let metadata;
         try {
             let body = await rp.post(options);
 
             if (typeof body === "string") {
                 body = JSON.parse(body);
             }
+            // console.log(body);
 
-            if (body.orderId) {
-                let metadata = {
+            if ( (ALGO_ORDER_TYPES.includes(order_type)) && (body.algoId) ) {
+                metadata = {
+                    result: true,
+                    account_id: account_id,
+                    order_id: body["algoId"],
+                    client_order_id: body["clientAlgoId"],
+                    timestamp: body["updateTime"]
+                }
+            } else if ( (!ALGO_ORDER_TYPES.includes(order_type)) && (body.orderId) ) {
+                metadata = {
                     result: true,
                     account_id: account_id,
                     order_id: body["orderId"],
                     client_order_id: body["clientOrderId"],
                     timestamp: body["updateTime"]
                 }
-                cxl_resp = {
-                    exchange: EXCHANGE.BINANCEU,
-                    symbol: symbol,
-                    contract_type: contract_type,
-                    event: ORDER_ACTIONS.SEND,
-                    metadata: metadata,
-                    timestamp: utils._util_get_human_readable_timestamp()
-                };
             } else {
-                cxl_resp = {
-                    exchange: EXCHANGE.BINANCEU,
-                    symbol: symbol,
-                    contract_type: contract_type,
-                    event: ORDER_ACTIONS.SEND,
-                    metadata: {
-                        account_id: account_id,
-                        result: false,
-                        order_id: 0,
-                        error_code: 888888,
-                        error_code_msg: body["err-msg"]
-                    },
-                    timestamp: utils._util_get_human_readable_timestamp()
-                };
+                metadata = {
+                    account_id: account_id,
+                    result: false,
+                    order_id: 0,
+                    error_code: 888888,
+                    error_code_msg: body["err-msg"]
+                }
             }
         } catch (ex) {
             // logger.error(ex.stack);
             let error =  ex.error ? JSON.parse(ex.error): undefined;
-            cxl_resp = {
-                exchange: EXCHANGE.BINANCEU,
-                symbol: symbol,
-                contract_type: contract_type,
-                event: ORDER_ACTIONS.SEND,
-                metadata: {
-                    account_id: account_id,
-                    result: false,
-                    order_id: 0,
-                    error_code: error.code || 999999,
-                    error_code_msg: error.msg || ex.toString()
-                },
-                timestamp: utils._util_get_human_readable_timestamp()
-            };
+            metadata = {
+                account_id: account_id,
+                result: false,
+                order_id: 0,
+                error_code: error.code || 999999,
+                error_code_msg: error.msg || ex.toString()
+            }
         }
 
+        let cxl_resp = {
+            exchange: EXCHANGE.BINANCEU,
+            symbol: symbol,
+            contract_type: contract_type,
+            order_type: order_type,
+            event: ORDER_ACTIONS.SEND,
+            metadata: metadata,
+            timestamp: utils._util_get_human_readable_timestamp()
+        };
         let response = {
             ref_id: ref_id,
             action: ORDER_ACTIONS.SEND,
@@ -568,30 +568,46 @@ class ExchangeBinanceU extends ExchangeBase {
     }
 
     async _cancel_order_via_rest(order) {
-
         let ref_id = order["ref_id"];
         let symbol = order["symbol"];
         let contract_type = order["contract_type"];
+        let order_type = order["order_type"] ? order["order_type"] : ORDER_TYPE.LIMIT;
         let order_id = order["order_id"];
         let client_order_id = order["client_order_id"];
         let account_id = order["account_id"];
 
         let params;
-        let cxl_resp;
-        let url = apiconfig.BinanceU.restUrl + apiconfig.BinanceU.restUrlCancelOrder;
-        if (order_id) {
+        let url = ALGO_ORDER_TYPES.includes(order_type) ? apiconfig.BinanceU.restUrl + apiconfig.BinanceU.restUrlCancelAlgoOrder : apiconfig.BinanceU.restUrl + apiconfig.BinanceU.restUrlCancelOrder;
+        if (ALGO_ORDER_TYPES.includes(order_type)) {
+            if (order_id) {
             // 优先使用order_id进行撤单
-            params = this._get_rest_options(url, {
-                symbol: symbol,
-                orderId: order_id,
-                timestamp: Date.now(),
-            }, account_id);
+                params = this._get_rest_options(url, {
+                    symbol: symbol,
+                    algoid: order_id,
+                    timestamp: Date.now(),
+                }, account_id);
+            } else {
+                params = this._get_rest_options(url, {
+                    symbol: symbol,
+                    clientalgoid: client_order_id,
+                    timestamp: Date.now(),
+                }, account_id);
+            }
         } else {
-            params = this._get_rest_options(url, {
-                symbol: symbol,
-                origClientOrderId: client_order_id,
-                timestamp: Date.now(),
-            }, account_id);
+            if (order_id) {
+            // 优先使用order_id进行撤单
+                params = this._get_rest_options(url, {
+                    symbol: symbol,
+                    orderId: order_id,
+                    timestamp: Date.now(),
+                }, account_id);
+            } else {
+                params = this._get_rest_options(url, {
+                    symbol: symbol,
+                    origClientOrderId: client_order_id,
+                    timestamp: Date.now(),
+                }, account_id);
+            }
         }
 
         var options = {
@@ -602,51 +618,61 @@ class ExchangeBinanceU extends ExchangeBase {
             }
         };
 
+        let metadata;
         try {
             let body = await rp.delete(options);
             //body, e.g:{ symbol: 'BNBBTC',origClientOrderId: 'Q6KYAotfs3rC4Sh99vBVAv',orderId: 55949780,clientOrderId: 'TNJyVOwfgjJCglNldbogbG' }
-            body = JSON.parse(body);
-            if (typeof body !== "undefined" && body["orderId"]) {
-                body["result"] = true;
-                body["status"] = ORDER_STATUS.CANCELLED;
-            } else {
-                body["result"] = false;
-                body["status"] = "cancel error";
+            if (typeof body === "string") {
+                body = JSON.parse(body);
             }
+            // console.log(body);
 
-            let metadata = {
-                result: true,
-                account_id: account_id,
-                order_id: body["orderId"],
-                client_order_id: body["clientOrderId"],
-                timestamp: body["updateTime"]
+            if ( (ALGO_ORDER_TYPES.includes(order_type)) && (body.algoId) ) {
+                metadata = {
+                    result: true,
+                    account_id: account_id,
+                    order_id: body["algoId"],
+                    client_order_id: body["clientAlgoId"],
+                    timestamp: body["updateTime"]
+                }
+            } else if ( (!ALGO_ORDER_TYPES.includes(order_type)) && (body.orderId) ) {
+                metadata = {
+                    result: true,
+                    account_id: account_id,
+                    order_id: body["orderId"],
+                    client_order_id: body["clientOrderId"],
+                    timestamp: body["updateTime"]
+                }
+            } else {
+                metadata = {
+                    account_id: account_id,
+                    result: false,
+                    order_id: 0,
+                    error_code: 888888,
+                    error_code_msg: body["err-msg"]
+                }
             }
-            cxl_resp = {
+        } catch (ex) {
+            // logger.error(ex.stack);
+            // console.log(ex.stack);
+            let error =  ex.error ? JSON.parse(ex.error): undefined;
+            metadata = {
+                account_id: account_id,
+                result: false,
+                error_code: error.code || 999999,
+                error_code_msg: error.msg || ex.toString()
+            };
+        }
+
+        let cxl_resp = {
                 exchange: EXCHANGE.BINANCEU,
                 symbol: symbol,
                 contract_type: contract_type,
+                order_type: order_type,
                 event: ORDER_ACTIONS.CANCEL,
                 metadata: metadata,
                 timestamp: utils._util_get_human_readable_timestamp()
             };
-        } catch (ex) {
-            // logger.error(ex.stack);
-            let error =  ex.error ? JSON.parse(ex.error): undefined;
-            cxl_resp = {
-                exchange: EXCHANGE.BINANCEU,
-                symbol: symbol,
-                contract_type: contract_type,
-                event: ORDER_ACTIONS.CANCEL,
-                metadata: {
-                    account_id: account_id,
-                    result: false,
-                    error_code: error.code || 999999,
-                    error_code_msg: error.msg || ex.toString()
-                },
-                timestamp: utils._util_get_human_readable_timestamp()
-            };
-        }
-
         let response = {
             ref_id: ref_id,
             action: ORDER_ACTIONS.CANCEL,
@@ -659,10 +685,13 @@ class ExchangeBinanceU extends ExchangeBase {
     }
 
     async _modify_order_via_rest(order) {
-
+        // BinanceU只允许limit, stop_market, take_profit三种订单的修改
+        // 根据change_log on 2025-11-06，Modification of untriggered conditional orders is not supported.
+        // 该函数目前只适用于limit的改单，BinanceU也没找到stop_market等订单修改的断点
         let ref_id = order["ref_id"];
         let symbol = order["symbol"];
         let contract_type = order["contract_type"];
+        let order_type = order["order_type"] ? order["order_type"] : ORDER_TYPE.LIMIT;
         let price = order["price"];
         let quantity = order["quantity"];
         let direction = order["direction"];
@@ -671,8 +700,7 @@ class ExchangeBinanceU extends ExchangeBase {
         let account_id = order["account_id"];
 
         let params;
-        let cxl_resp;
-        let url = apiconfig.BinanceU.restUrl + apiconfig.BinanceU.restUrlModifyOrder;
+        let url = ALGO_ORDER_TYPES.includes(order_type) ? apiconfig.BinanceU.restUrl + apiconfig.BinanceU.restUrlModifyAlgoOrder : apiconfig.BinanceU.restUrl + apiconfig.BinanceU.restUrlModifyOrder;
         if (order_id) {
             // 优先使用order_id进行撤单
             params = this._get_rest_options(url, {
@@ -702,65 +730,72 @@ class ExchangeBinanceU extends ExchangeBase {
             }
         };
 
+        let metadata;
+        let order_info;
         try {
             let body = await rp.put(options);
             //body, e.g:{ symbol: 'BNBBTC',origClientOrderId: 'Q6KYAotfs3rC4Sh99vBVAv',orderId: 55949780,clientOrderId: 'TNJyVOwfgjJCglNldbogbG' }
-            body = JSON.parse(body);
-            // console.log(JSON.stringify(body));
-            if (typeof body !== "undefined" && body["orderId"]) {
-                body["result"] = true;
-                // BinanceU里面返回的status是NEW
-            } else {
-                body["result"] = false;
-                body["status"] = "modify error";
+            if (typeof body === "string") {
+                body = JSON.parse(body);
             }
 
-            let metadata = {
-                result: true,
-                account_id: account_id,
-                order_id: body["orderId"],
-                client_order_id: body["clientOrderId"],
-                timestamp: body["updateTime"]
-            };
-            let order_info = {
-                original_amount: +body["origQty"],
-                avg_executed_price: +body["avgPrice"],
-                filled: +body["executedQty"],
-                status: this._convert_to_standard_order_status(body["status"])
-            };
-            cxl_resp = {
-                exchange: EXCHANGE.BINANCEU,
-                symbol: symbol,
-                contract_type: contract_type,
-                event: ORDER_ACTIONS.MODIFY,
-                metadata: metadata,
-                order_info: order_info,
-                timestamp: utils._util_get_human_readable_timestamp()
-            };
+            if ( body.orderId ) {
+                metadata = {
+                    result: true,
+                    account_id: account_id,
+                    order_id: body["orderId"],
+                    client_order_id: body["clientOrderId"],
+                    timestamp: body["updateTime"]
+                }
+                order_info = {
+                    original_amount: +body["origQty"],
+                    avg_executed_price: +body["avgPrice"],
+                    filled: +body["executedQty"],
+                    status: this._convert_to_standard_order_status(body["status"])
+                };
+            } else {
+                metadata = {
+                    result: false,
+                    account_id: account_id,
+                    order_id: 0,
+                    client_order_id: 0,
+                    error_code: 888888,
+                    error_code_msg: body["err-msg"]
+                }
+                order_info = {
+                    original_amount: 0,
+                    avg_executed_price: 0,
+                    filled: 0,
+                    status: "unknown"
+                };
+            }
         } catch (ex) {
             // logger.error(ex.stack);
             let error =  ex.error ? JSON.parse(ex.error): undefined;
-            cxl_resp = {
-                exchange: EXCHANGE.BINANCEU,
-                symbol: symbol,
-                contract_type: contract_type,
-                event: ORDER_ACTIONS.MODIFY,
-                metadata: {
-                    account_id: account_id,
-                    result: false,
-                    error_code: error.code || 999999,
-                    error_code_msg: error.msg || ex.toString()
-                },
-                order_info: {
-                    original_amount: 0,
-                    filled: 0,
-                    avg_executed_price: 0,
-                    status: 'unknown'
-                },
-                timestamp: utils._util_get_human_readable_timestamp()
-            };
+            metadata = {
+                account_id: account_id,
+                result: false,
+                error_code: error.code || 999999,
+                error_code_msg: error.msg || ex.toString()
+            }
+            order_info = {
+                original_amount: 0,
+                filled: 0,
+                avg_executed_price: 0,
+                status: 'unknown'
+            }
         }
 
+        let cxl_resp = {
+            exchange: EXCHANGE.BINANCEU,
+            symbol: symbol,
+            contract_type: contract_type,
+            order_type: order_type,
+            event: ORDER_ACTIONS.MODIFY,
+            metadata: metadata,
+            order_info: order_info,
+            timestamp: utils._util_get_human_readable_timestamp()
+        };
         let response = {
             ref_id: ref_id,
             action: ORDER_ACTIONS.MODIFY,
@@ -776,27 +811,45 @@ class ExchangeBinanceU extends ExchangeBase {
         let ref_id = order["ref_id"];
         let symbol = order["symbol"];
         let contract_type = order["contract_type"];
+        let order_type = order["order_type"] ? order["order_type"] : ORDER_TYPE.LIMIT;
         let order_id = order["order_id"];
         let client_order_id = order["client_order_id"];
         let account_id = order["account_id"];
 
         let params;
-        let cxl_resp;
-        let url = apiconfig.BinanceU.restUrl + apiconfig.BinanceU.restUrlGetOrder;
-        if (order_id) {    
-            params = this._get_rest_options(url, {
-                symbol: symbol,
-                orderId: order_id,
-                timestamp: Date.now(),
-            }, account_id); 
+        let url = ALGO_ORDER_TYPES.includes(order_type) ? apiconfig.BinanceU.restUrl + apiconfig.BinanceU.restUrlInspectAlgoOrder : apiconfig.BinanceU.restUrl + apiconfig.BinanceU.restUrlInspectOrder;
+        if (  ALGO_ORDER_TYPES.includes(order_type) ) {
+            if (order_id) {    
+                params = this._get_rest_options(url, {
+                    symbol: symbol,
+                    algoId: order_id,
+                    timestamp: Date.now(),
+                }, account_id); 
+            } else {
+                params = this._get_rest_options(url, {
+                    symbol: symbol,
+                    clientAlgoId: client_order_id,
+                    timestamp: Date.now(),
+                }, account_id);
+            }
         } else {
-            params = this._get_rest_options(url, {
-                symbol: symbol,
-                origClientOrderId: client_order_id,
-                timestamp: Date.now(),
-            }, account_id);
+            if (order_id) {    
+                params = this._get_rest_options(url, {
+                    symbol: symbol,
+                    orderId: order_id,
+                    timestamp: Date.now(),
+                }, account_id); 
+            } else {
+                params = this._get_rest_options(url, {
+                    symbol: symbol,
+                    origClientOrderId: client_order_id,
+                    timestamp: Date.now(),
+                }, account_id);
+            }
         }
-    
+
+        // console.log(params);
+
         var options = {
             url: params["url"] + params["postbody"],
             headers: {
@@ -805,78 +858,85 @@ class ExchangeBinanceU extends ExchangeBase {
             }
         };
 
+        let metadata;
+        let order_info;
         try {
             let body = await rp.get(options);
             body = JSON.parse(body);
+            // console.log(body);
 
-            if (body.orderId === order_id) {
-                body["result"] = true;
-                body.order_id = order_id;
-                body.account_id = account_id;
+            if ( ALGO_ORDER_TYPES.includes(order_type) && ( (body.algoId === order_id) || (body.clientAlgoId === client_order_id) ) ) {
+                metadata = {
+                    result: true,
+                    account_id: account_id,
+                    order_id: body["algoId"],
+                    client_order_id: body["clientAlgoId"],
+                    timestamp: body["updateTime"]
+                };
                 // + 符号可以把变量变成数字型
-                let order_info = {
+                order_info = {
+                    original_amount: +body["quantity"],
+                    avg_executed_price: +body["actualPrice"],
+                    filled: +body["executedQty"],
+                    status: this._convert_to_standard_order_status(body["algoStatus"])
+                };
+            } else if ( !ALGO_ORDER_TYPES.includes(order_type) && ((body.orderId === order_id) || (body.clientOrderId === client_order_id)) ) {
+                metadata = {
+                    result: true,
+                    account_id: account_id,
+                    order_id: body["orderId"],
+                    client_order_id: body["clientOrderId"],
+                    timestamp: body["updateTime"]
+                };
+                // + 符号可以把变量变成数字型
+                order_info = {
                     original_amount: +body["origQty"],
                     avg_executed_price: +body["avgPrice"],
                     filled: +body["executedQty"],
                     status: this._convert_to_standard_order_status(body["status"])
                 };
-                cxl_resp = {
-                    exchange: EXCHANGE.BINANCEU,
-                    symbol: symbol,
-                    contract_type: contract_type,
-                    event: ORDER_ACTIONS.INSPECT,
-                    metadata: body,
-                    timestamp: utils._util_get_human_readable_timestamp(),
-                    order_info: order_info
-                };
             } else {
-                let order_info = {
+                metadata = {
+                    account_id: account_id,
+                    result: false,
+                    error_code: 888888,
+                    error_code_msg: body["err-msg"]
+                };
+                order_info = {
                     original_amount: 0,
                     filled: 0,
                     avg_executed_price: 0,
                     status: 'unknown'
                 };
-                cxl_resp = {
-                    exchange: EXCHANGE.BINANCEU,
-                    symbol: symbol,
-                    contract_type: contract_type,
-                    event: ORDER_ACTIONS.INSPECT,
-                    metadata: {
-                        account_id: account_id,
-                        result: false,
-                        error_code: 888888,
-                        error_code_msg: body["err-msg"]
-                    },
-                    timestamp: utils._util_get_human_readable_timestamp(),
-                    order_info: order_info
-                };
             }
         } catch (ex) {
-            // logger.error(ex.stack);
             let error =  ex.error ? JSON.parse(ex.error): undefined;
-            let order_info = {
+            metadata = {
+                account_id: account_id,
+                result: false,
+                error_code: error.code || 999999,
+                error_code_msg: error.msg || ex.toString(),
+                order_id: order_id,
+                client_order_id: client_order_id
+            };
+            order_info = {
                 original_amount: 0,
                 filled: 0,
                 avg_executed_price: 0,
                 status: 'unknown'
             };
-            cxl_resp = {
-                exchange: EXCHANGE.BINANCEU,
-                symbol: symbol,
-                contract_type: contract_type,
-                event: ORDER_ACTIONS.INSPECT,
-                metadata: {
-                    account_id: account_id,
-                    result: false,
-                    error_code: error.code || 999999,
-                    error_code_msg: error.msg || ex.toString(),
-                    order_id: order_id
-                },
-                timestamp: utils._util_get_human_readable_timestamp(),
-                order_info: order_info
-            };
         }
 
+        let cxl_resp = {
+            exchange: EXCHANGE.BINANCEU,
+            symbol: symbol,
+            contract_type: contract_type,
+            order_type: order_type,
+            event: ORDER_ACTIONS.INSPECT,
+            metadata: metadata,
+            order_info: order_info,
+            timestamp: utils._util_get_human_readable_timestamp(),
+        };
         let response = {
             ref_id: ref_id,
             action: ORDER_ACTIONS.INSPECT,
@@ -888,9 +948,17 @@ class ExchangeBinanceU extends ExchangeBase {
         return response;
     }
 
-    async _query_order_via_rest(order) {
+    async _query_orders_via_rest(order) {
         /**
          * GET /fapi/v1/allOrders (HMAC SHA256)
+         * 查询全部订单
+         * 以下订单不会被查询到：
+         * 1. 下单时间超过3天 + cancelled or expired + 没有成交量；或者
+         * 2. 下单时间超过90天
+         * 其他所有单都会被查询到
+         * 
+         * GET /fapi/v1/allAlgoOrders (HMAC SHA256)
+         * 查询到全部的algoOrders，包括active, CANCELED, TRIGGERED or FINISHED.
          * 以下订单不会被查询到：
          * 1. 下单时间超过3天 + cancelled or expired + 没有成交量；或者
          * 2. 下单时间超过90天
@@ -902,6 +970,7 @@ class ExchangeBinanceU extends ExchangeBase {
         let contract_type = order["contract_type"];
         let account_id = order["account_id"];
 
+        // non algo orders
         let url = apiconfig.BinanceU.restUrl + apiconfig.BinanceU.restUrlQueryOrders;
         let params = this._get_rest_options(url, {
             symbol: symbol,
@@ -916,15 +985,34 @@ class ExchangeBinanceU extends ExchangeBase {
             }
         };
 
+        // algo orders
+        let algo_url = apiconfig.BinanceU.restUrl + apiconfig.BinanceU.restUrlQueryAlogOrders;
+        let algo_params = this._get_rest_options(algo_url, {
+            symbol: symbol,
+            timestamp: Date.now(),
+        }, account_id); 
+
+        var algo_options = {
+            url: algo_params["url"] + algo_params["postbody"],
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-MBX-APIKEY": token[account_id].apiKey
+            }
+        };
+
         let cxl_resp;
         try {
             let body = await rp.get(options);
+            let algo_body = await rp.get(algo_options);
             body = JSON.parse(body);
+            algo_body = JSON.parse(algo_body);
 
             // console.log(JSON.stringify(body));
+            // console.log(JSON.stringify(algo_body));
 
             // BinanceU中订单只有5中状态：NEW, PARTIALLY_FILLED, FILLED, CANCELLED, EXPIRED
             let active_orders = body.filter((order) => (["NEW", "PARTIALLY_FILLED"].includes(order.status)));
+            let alog_active_orders = algo_body.filter((order) => (["NEW", "PARTIALLY_FILLED"].includes(order.algoStatus)));
             let formatted_active_orders = [];
 
             for (let i of active_orders) {
@@ -932,14 +1020,33 @@ class ExchangeBinanceU extends ExchangeBase {
                     symbol: i["symbol"],
                     order_id: i["orderId"],
                     client_order_id: i['clientOrderId'],
+                    ordert_type: utils._util_get_key_by_value(apiconfig.BinanceU.orderTypeMap, i["origType"]),
                     original_amount: +i["origQty"],
                     avg_executed_price: +i["avgPrice"],
                     filled: +i["executedQty"],
-                    status: this._convert_to_standard_order_status(i["status"], +i["executedQty"], +i["origQty"]),
+                    status: this._convert_to_standard_order_status(i["status"]),
                     direction: i["side"].toLowerCase(),
                     price: +i["price"],
                     contract_type: contract_type,
                     create_time: utils.get_human_readable_timestamp(i["time"]),
+                    last_updated_time: utils.get_human_readable_timestamp(i['updateTime'])
+                });
+            }
+
+            for (let i of alog_active_orders) {
+                formatted_active_orders.push({
+                    symbol: i["symbol"],
+                    order_id: i["algoId"],
+                    client_order_id: i['clientAlgoId'],
+                    ordert_type: utils._util_get_key_by_value(apiconfig.BinanceU.orderTypeMap, i["orderType"]),
+                    original_amount: +i["quantity"],
+                    avg_executed_price: +i["actualPrice"],
+                    filled: 0,
+                    status: this._convert_to_standard_order_status(i["algoStatus"]),
+                    direction: i["side"].toLowerCase(),
+                    price: +i["price"],
+                    contract_type: contract_type,
+                    create_time: utils.get_human_readable_timestamp(i["createTime"]),
                     last_updated_time: utils.get_human_readable_timestamp(i['updateTime'])
                 });
             }
@@ -1238,6 +1345,7 @@ class ExchangeBinanceU extends ExchangeBase {
 
 module.exports = ExchangeBinanceU;
 
+// 以下代码可作为测试用
 // var intercom_config = [
 //     INTERCOM_CONFIG[`LOCALHOST_FEED`],
 //     INTERCOM_CONFIG[`LOCALHOST_STRATEGY`]

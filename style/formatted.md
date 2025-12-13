@@ -503,38 +503,108 @@
 
 ## inspect order response
 
+### BinanceU inspect order response
+####  stop_market order - new order
 ```json
+// BinanceU - inspect order - 2025-12-11
 {
-    "ref_id": "R01J0t23ZpPw34P6DrzNZBLfmH8IcD",
+    "ref_id": "DMOITMK14kNvFLYFhU4ghK0THzLDMI",
     "action": "inspect_order",
     "strategy": "BinanceU",
     "metadata": {
         "exchange": "BinanceU",
-        "symbol": "SKLUSDT",
+        "symbol": "BATUSDT",
         "contract_type": "perp",
+        "order_type": "stop_market",
         "event": "inspect_order",
         "metadata": {
             "account_id": "th_binance_cny_master",
             "result": false,
             "error_code": -2013,
-            "error_code_msg": "Order does not exist."
+            "error_code_msg": "Order does not exist.",
+            "client_order_id": "testtest1044"
         },
-        "timestamp": "20250127000105137",
         "order_info": {
             "original_amount": 0,
             "filled": 0,
             "avg_executed_price": 0,
             "status": "unknown"
+        },
+        "timestamp": "20251211225049723"
+    },
+    "request": {
+        "exchange": "BinanceU",
+        "symbol": "BATUSDT",
+        "contract_type": "perp",
+        "order_type": "stop_market",
+        "account_id": "th_binance_cny_master",
+        "client_order_id": "testtest1044",
+        "ref_id": "DMOITMK14kNvFLYFhU4ghK0THzLDMI",
+        "send_time": "20251211225049650"
+    }
+}
+```
+
+####  stop_market order - filled
+```json
+{
+    "ref_id": "DMOh5qyRVoDBz4iMpROF2L3eainAus",
+    "action": "inspect_order",
+    "strategy": "BinanceU",
+    "metadata": {
+        "exchange": "BinanceU",
+        "symbol": "BATUSDT",
+        "contract_type": "perp",
+        "event": "inspect_order",
+        "metadata": {
+            "algoId": 2000000018722878,
+            "clientAlgoId": "testtest1210",
+            "algoType": "CONDITIONAL",
+            "orderType": "STOP_MARKET",
+            "symbol": "BATUSDT",
+            "side": "BUY",
+            "positionSide": "BOTH",
+            "timeInForce": "GTC",
+            "quantity": "100.0",
+            "algoStatus": "FINISHED",
+            "actualOrderId": "6508229952",
+            "actualPrice": "0.26260",
+            "actualQty": "100.0",
+            "actualType": "MARKET",
+            "triggerPrice": "0.2625",
+            "price": "0.0000",
+            "icebergQuantity": null,
+            "tpOrderType": "",
+            "selfTradePreventionMode": "EXPIRE_MAKER",
+            "workingType": "CONTRACT_PRICE",
+            "priceMatch": "NONE",
+            "closePosition": false,
+            "priceProtect": false,
+            "reduceOnly": false,
+            "createTime": 1765372799769,
+            "updateTime": 1765372813555,
+            "triggerTime": 1765372813547,
+            "goodTillDate": 0,
+            "result": true,
+            "account_id": "th_binance_cny_master"
+        },
+        "timestamp": "20251210212702525",
+        "order_info": {
+            "original_amount": 100,
+            "avg_executed_price": 0.2626,
+            "filled": null,
+            "status": "filled"
         }
     },
     "request": {
         "exchange": "BinanceU",
-        "symbol": "SKLUSDT",
+        "symbol": "BATUSDT",
         "contract_type": "perp",
+        "order_type": "stop_market",
         "account_id": "th_binance_cny_master",
-        "client_order_id": "R01DN1P3KL2a",
-        "ref_id": "R01J0t23ZpPw34P6DrzNZBLfmH8IcD",
-        "send_time": "20250127000105113"
+        "client_order_id": "testtest1210",
+        "ref_id": "DMOh5qyRVoDBz4iMpROF2L3eainAus",
+        "send_time": "20251210212702463"
     }
 }
 ```
@@ -916,30 +986,38 @@ OKX：改单成功
 ### 2.1.1 place limit order
 
 ```json
+// BinanceU place limit order - 2025-12-11
 {
-    "exchange": "BinanceU",
-    "symbol": "XMRUSDT",
-    "contract_type": "perp",
+    "ref_id": "DMOwS0WY3BuGKUONGzK2LXAETp4wae",
+    "action": "place_order",
+    "strategy": "BinanceU",
     "metadata": {
-        "result": true,
-        "account_id": "th_binance_cny_master",
-        "order_id": 12212193643,
-        "client_order_id": "R01SRsHMeyUL",
-        "direction": "Buy",
-        "timestamp": "20250505021738447",
-        "fee": 0.19126663,
-        "fee_asset": "USDT",
-        "update_type": "executed"
-    },
-    "timestamp": "20250505021738452",
-    "order_info": {
+        "exchange": "BinanceU",
+        "symbol": "BATUSDT",
+        "contract_type": "perp",
         "order_type": "limit",
-        "original_amount": 22.108,
-        "filled": 3.501,
-        "new_filled": 3.501,
-        "avg_executed_price": 273.16,
-        "submit_price": 273.16,
-        "status": "partially_filled"
+        "event": "place_order",
+        "metadata": {
+            "result": true,
+            "account_id": "th_binance_cny_master",
+            "order_id": 6513442184,
+            "client_order_id": "testtest1009",
+            "timestamp": 1765462194704
+        },
+        "timestamp": "20251211220954713"
+    },
+    "request": {
+        "exchange": "BinanceU",
+        "symbol": "BATUSDT",
+        "contract_type": "perp",
+        "price": 0.27,
+        "quantity": 100,
+        "direction": "Sell",
+        "order_type": "limit",
+        "account_id": "th_binance_cny_master",
+        "client_order_id": "testtest1009",
+        "ref_id": "DMOwS0WY3BuGKUONGzK2LXAETp4wae",
+        "send_time": "20251211220954659"
     }
 }
 ```
@@ -1033,28 +1111,39 @@ OKX：改单成功
 ### 2.1.3 place stop market order
 
 ```json
+// BinanceU - place stop market order - 2025-12-11
 {
-    "exchange": "BinanceU",
-    "symbol": "BTCUSDT",
-    "contract_type": "perp",
+    "ref_id": "DMOcw0jRLp3n34AgmoltnuGtt8vzKH",
+    "action": "place_order",
+    "strategy": "BinanceU",
     "metadata": {
-        "result": true,
-        "account_id": "jq_cta_02",
-        "order_id": 186426999287,
-        "client_order_id": "12345678910111",
-        "direction": "Sell",
-        "timestamp": "20230903002839378",
-        "fee": 0,
-        "update_type": "submitted"
+        "exchange": "BinanceU",
+        "symbol": "BATUSDT",
+        "contract_type": "perp",
+        "order_type": "stop_market",
+        "event": "place_order",
+        "metadata": {
+            "result": true,
+            "account_id": "th_binance_cny_master",
+            "order_id": 2000000029536502,
+            "client_order_id": "testtest1015",
+            "timestamp": 1765462567611
+        },
+        "timestamp": "20251211221607624"
     },
-    "timestamp": "20230903002839391",
-    "order_info": {
-        "original_amount": 0.001,
-        "filled": 0,
-        "new_filled": 0,
-        "avg_executed_price": 0,
-        "submit_price": 0,
-        "status": "new"
+    "request": {
+        "exchange": "BinanceU",
+        "symbol": "BATUSDT",
+        "contract_type": "perp",
+        "stop_price": 0.27,
+        "price": 0.27,
+        "quantity": 100,
+        "direction": "Buy",
+        "order_type": "stop_market",
+        "account_id": "th_binance_cny_master",
+        "client_order_id": "testtest1015",
+        "ref_id": "DMOcw0jRLp3n34AgmoltnuGtt8vzKH",
+        "send_time": "20251211221607566"
     }
 }
 ```
@@ -1113,6 +1202,73 @@ OKX：改单成功
         "avg_executed_price": 0,
         "submit_price": 0.475,
         "status": "cancelled"
+    }
+}
+```
+
+```json
+// cancel limit order - 2025-12-11
+{
+    "ref_id": "DMOzV6DkLZA5xA97QWvgOBdsQz42ik",
+    "action": "cancel_order",
+    "strategy": "BinanceU",
+    "metadata": {
+        "exchange": "BinanceU",
+        "symbol": "BATUSDT",
+        "contract_type": "perp",
+        "order_type": "limit",
+        "event": "cancel_order",
+        "metadata": {
+            "result": true,
+            "account_id": "th_binance_cny_master",
+            "order_id": 6513442184,
+            "client_order_id": "testtest1009",
+            "timestamp": 1765462475073
+        },
+        "timestamp": "20251211221435082"
+    },
+    "request": {
+        "exchange": "BinanceU",
+        "symbol": "BATUSDT",
+        "contract_type": "perp",
+        "order_type": "limit",
+        "account_id": "th_binance_cny_master",
+        "client_order_id": "testtest1009",
+        "ref_id": "DMOzV6DkLZA5xA97QWvgOBdsQz42ik",
+        "send_time": "20251211221435029"
+    }
+}
+```
+
+```json
+// BinanceU - cancel stop market order - 2025-12-11
+{
+    "ref_id": "DMOLzseJaOHvF2qvboGrxQ385J8YLK",
+    "action": "cancel_order",
+    "strategy": "BinanceU",
+    "metadata": {
+        "exchange": "BinanceU",
+        "symbol": "BATUSDT",
+        "contract_type": "perp",
+        "order_type": "stop_market",
+        "event": "cancel_order",
+        "metadata": {
+            "result": true,
+            "account_id": "th_binance_cny_master",
+            "order_id": 2000000029547297,
+            "client_order_id": "testtest1020"
+        },
+        "timestamp": "20251211222124158"
+    },
+    "request": {
+        "exchange": "BinanceU",
+        "symbol": "BATUSDT",
+        "contract_type": "perp",
+        "order_type": "stop_market",
+        "account_id": "th_binance_cny_master",
+        "client_order_id": "testtest1020",
+        "ref_id": "DMOLzseJaOHvF2qvboGrxQ385J8YLK",
+        "send_time": "20251211222124094"
     }
 }
 ```

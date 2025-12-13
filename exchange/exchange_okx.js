@@ -825,7 +825,7 @@ class ExchangeOKX extends ExchangeBase {
     }
 
 
-    async _query_order_via_rest(order) {
+    async _query_orders_via_rest(order) {
         /**
          * GET /api/v5/trade/orders-pending?ordType=post_only,fok,ioc&instType=SPOT
          * 查询到满足所有条件的active orders

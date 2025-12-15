@@ -14,10 +14,10 @@ class DemoStrategy extends StrategyBase {
 
         setTimeout(() => {
             // this._test_send_post_only_order();
-            // this._test_send_order();
+            this._test_send_order();
             // this._test_cancel_order();
             // this._test_inspect_order();
-            this._test_query_orders();
+            // this._test_query_orders();
             // this._test_modify_order();
             // this._test_query_account();
             // this._test_send_fake_trade();
@@ -120,11 +120,11 @@ class DemoStrategy extends StrategyBase {
     _test_send_order() {
         this.send_order({
             exchange: EXCHANGE.BINANCEU,
-            symbol: "XLMUSDT",
+            symbol: "ETHUSDT",
             contract_type: CONTRACT_TYPE.PERP,
-            stop_price: 0.28,
+            stop_price: 3112.9,
             // price: 0.27,
-            quantity: 200,
+            quantity: 0.05,
             direction: DIRECTION.BUY,
             order_type: ORDER_TYPE.STOP_MARKET,
             account_id: "th_binance_cny_master",
@@ -196,7 +196,7 @@ class DemoStrategy extends StrategyBase {
     }
 
     on_order_update(order_update) {
-        // console.log(JSON.stringify(order_update));
+        console.log(JSON.stringify(order_update));
     }
 
     on_query_account_response(response) {

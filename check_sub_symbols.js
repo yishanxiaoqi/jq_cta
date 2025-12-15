@@ -5,9 +5,9 @@ const fs = require("fs");
 let live_idfs = [];
 let live_idfs_d = {};
 let REV_aliases = ["R01", "R06", "R12", "R24"];
-let vol_aliases = ["R01", "R06", "R12", "R24", "SRE", "RAV"];
+let vol_aliases = ["R01", "R06", "R12", "R24", "SRE", "RAV", "TES"];
 let trend_aliases = ["STR", "QTR"];
-let live_aliases = ["R01", "R06", "R12", "R24", "SRE", "RAV", "STR", "QTR"];
+let live_aliases = ["R01", "R06", "R12", "R24", "SRE", "RAV", "STR", "QTR", "TES"];
 
 console.log(live_aliases);
 let asset_allocation = {};

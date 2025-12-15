@@ -8,8 +8,6 @@
  * jq_binance_cny_master: 545756054@qq.com，大陆身份证认证，没有开启2FA
  */
 
-ALIASES = ["R01", "R06", "R12", "R24", "STR", "SRE", "FRA", "FRB"];
-
 SUBSCRIPTION_LIST = [
     // CTA 
     'BinanceU|1INCHUSDT|perp|trade',
@@ -17,6 +15,7 @@ SUBSCRIPTION_LIST = [
     // 'BinanceU|ADAUSDT|perp|trade',
     'BinanceU|ALGOUSDT|perp|trade',
     // 'BinanceU|ANKRUSDT|perp|trade',
+    'BinanceU|ASRUSDT|perp|trade',
     // 'BinanceU|ATOMUSDT|perp|trade',
     'BinanceU|AVAXUSDT|perp|trade',
     'BinanceU|AXSUSDT|perp|trade',
@@ -26,7 +25,7 @@ SUBSCRIPTION_LIST = [
     // 'BinanceU|C98USDT|perp|trade',
     // 'BinanceU|CELRUSDT|perp|trade',
     'BinanceU|CHZUSDT|perp|trade',
-    // 'BinanceU|CTSIUSDT|perp|trade',
+    'BinanceU|CTSIUSDT|perp|trade',
     // 'BinanceU|CRVUSDT|perp|trade',
     // 'BinanceU|DENTUSDT|perp|trade',
     'BinanceU|DASHUSDT|perp|trade',
@@ -36,6 +35,7 @@ SUBSCRIPTION_LIST = [
     // 'BinanceU|ETCUSDT|perp|trade',
     'BinanceU|ETHUSDT|perp|trade',
     // 'BinanceU|FARTCOINUSDT|perp|trade',
+    'BinanceU|GTCUSDT|perp|trade',
     'BinanceU|GRTUSDT|perp|trade',
     // 'BinanceU|HBARUSDT|perp|trade',
     'BinanceU|HOTUSDT|perp|trade',
@@ -70,11 +70,11 @@ SUBSCRIPTION_LIST = [
     'BinanceU|UNIUSDT|perp|trade',
     'BinanceU|VETUSDT|perp|trade',
     'BinanceU|XLMUSDT|perp|trade',
-    // 'BinanceU|XMRUSDT|perp|trade',
+    'BinanceU|XMRUSDT|perp|trade',
     'BinanceU|XRPUSDT|perp|trade',
     'BinanceU|XTZUSDT|perp|trade',
     'BinanceU|YFIUSDT|perp|trade',
-    // 'BinanceU|ZECUSDT|perp|trade',
+    'BinanceU|ZECUSDT|perp|trade',
     // 'BinanceU|ENJUSDT|perp|trade',
     // 'BinanceU|TRBUSDT|perp|trade',
     // 'BinanceU|FILUSDT|perp|trade',
@@ -1389,6 +1389,7 @@ QUANTITY_TICK_SIZE = {
     "BinanceU.ARKUSDT.perp": 1,
     "BinanceU.ARPAUSDT.perp": 1,
     "BinanceU.ARUSDT.perp": 0.1,
+    "BinanceU.ASRUSDT.perp": 0.1,
     "BinanceU.ASTRUSDT.perp": 1,
     "BinanceU.ATAUSDT.perp": 1,
     "BinanceU.ATHUSDT.perp": 1,
@@ -3099,6 +3100,7 @@ PRICE_TICK_SIZE = {
     "BinanceU.ARKUSDT.perp": 0.0001,
     "BinanceU.ARPAUSDT.perp": 1e-05,
     "BinanceU.ARUSDT.perp": 0.001,
+    "BinanceU.ASRUSDT.perp": 0.001,
     "BinanceU.ASTRUSDT.perp": 1e-06,
     "BinanceU.ATAUSDT.perp": 0.0001,
     "BinanceU.ATHUSDT.perp": 1e-05,

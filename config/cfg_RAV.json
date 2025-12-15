@@ -6,16 +6,20 @@
         "th_binance_cny_master"
     ],
     "symbols": [
-        "BATUSDT"
+        "BATUSDT",
+        "GTCUSDT"
     ],
     "idfs": [
-        "BinanceU.BATUSDT.perp"
+        "BinanceU.BATUSDT.perp",
+        "BinanceU.GTCUSDT.perp"
     ],
     "entries": [
-        "BinanceU.BATUSDT.perp.1h"
+        "BinanceU.BATUSDT.perp.1h",
+        "BinanceU.GTCUSDT.perp.1h"
     ],
     "cfgIDs" : [
-        "RAV0109"
+        "RAV0109",
+        "RAV0196"
     ],
     "RAV0109" : {
         "entry": "BinanceU.BATUSDT.perp.1h",
@@ -24,6 +28,18 @@
         "track_ATR_n": 10,
         "track_ATR_multiplier": 1.5,
         "af": 0.01,
+        "bar_enter_limit": 1,
+        "ini_usdt": 200,
+        "act_id": "th_binance_cny_master",
+        "cfgID": "RAV0109"
+    },
+    "RAV0196" : {
+        "entry": "BinanceU.GTCUSDT.perp.1h",
+        "idf": "BinanceU.GTCUSDT.perp",
+        "splitAt": 0,
+        "track_ATR_n": 15,
+        "track_ATR_multiplier": 0.5,
+        "af": 0.001,
         "bar_enter_limit": 1,
         "ini_usdt": 200,
         "act_id": "th_binance_cny_master",

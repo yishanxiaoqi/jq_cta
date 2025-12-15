@@ -137,10 +137,9 @@ class ExchangeBinanceU extends ExchangeBase {
             //     logger.info(`${this.name}|${account_id}: ${JSON.stringify(jdata)}`);
             // }
 
-            // logger.info(`${this.name}|${account_id}: ${JSON.stringify(jdata)}`);
-
-            if (jdata["e"] === "ORDER_TRADE_UPDATE") {
+            if ((jdata["e"] === "ORDER_TRADE_UPDATE") || (jdata["e"] === "ALGO_UPDATE")) {
                 // order_update更新
+                // logger.info(`${this.name}|${account_id}: ${JSON.stringify(jdata)}`);
                 let order_update = this._format_order_update(jdata, account_id);
                 this.intercom.emit("ORDER_UPDATE", order_update, INTERCOM_SCOPE.FEED);
             } else if (["aggTrade", "bookTicker"].includes(jdata["e"])) {
@@ -272,34 +271,69 @@ class ExchangeBinanceU extends ExchangeBase {
         /**
          * submit_price: 如果是stop_market order就是stop_price，如果是其他则是price
          */
-        let order_type = utils._util_get_key_by_value(apiconfig.BinanceU.orderTypeMap, jdata["o"]["o"]);
-        let submit_price = (order_type == ORDER_TYPE.STOP_MARKET) ? parseFloat(jdata["o"]["sp"]) : parseFloat(jdata["o"]["p"]);
-        let order_update = {
-            exchange: EXCHANGE.BINANCEU,
-            symbol: jdata["o"]["s"],
-            contract_type: "perp",
-            metadata: {
-                result: true,
-                account_id: account_id,
-                order_id: jdata["o"]["i"],
-                client_order_id: jdata["o"]["c"],
-                direction: (jdata["o"]["S"] === "SELL") ? DIRECTION.SELL : DIRECTION.BUY,
-                timestamp: utils.get_human_readable_timestamp(jdata["o"]["T"]),
-                fee: jdata["o"]["n"] ? parseFloat(jdata["o"]["n"]) : undefined,
-                fee_asset: jdata["o"]["N"] ? jdata["o"]["N"] : undefined,
-                update_type: this._convert_to_standard_order_update_type(jdata["o"]["x"])
-            },
-            timestamp: utils._util_get_human_readable_timestamp(),
-            order_info: {
-                order_type: order_type,
-                original_amount: parseFloat(jdata["o"]["q"]),
-                filled: parseFloat(jdata["o"]["z"]),
-                new_filled: parseFloat(jdata["o"]["l"]),
-                avg_executed_price: parseFloat(jdata["o"]["ap"]),
-                submit_price: submit_price,
-                status: this._convert_to_standard_order_status(jdata["o"]["X"])
-            }
-        };
+        let order_update;
+        if (jdata["e"] === "ORDER_TRADE_UPDATE") {
+            // x: Execution Type; X: Order Status
+            let order_type = utils._util_get_key_by_value(apiconfig.BinanceU.orderTypeMap, jdata["o"]["o"]);
+            let submit_price = (order_type == ORDER_TYPE.STOP_MARKET) ? parseFloat(jdata["o"]["tp"]) : parseFloat(jdata["o"]["p"]);
+            order_update = {
+                exchange: EXCHANGE.BINANCEU,
+                symbol: jdata["o"]["s"],
+                contract_type: "perp",
+                metadata: {
+                    result: true,
+                    account_id: account_id,
+                    order_id: jdata["o"]["i"],
+                    client_order_id: jdata["o"]["c"],
+                    direction: (jdata["o"]["S"] === "SELL") ? DIRECTION.SELL : DIRECTION.BUY,
+                    timestamp: utils.get_human_readable_timestamp(jdata["o"]["T"]),
+                    fee: jdata["o"]["n"] ? parseFloat(jdata["o"]["n"]) : undefined,
+                    fee_asset: jdata["o"]["N"] ? jdata["o"]["N"] : undefined,
+                    update_type: this._convert_to_standard_order_update_type(jdata["o"]["x"])
+                },
+                timestamp: utils._util_get_human_readable_timestamp(),
+                order_info: {
+                    order_type: order_type,
+                    original_amount: parseFloat(jdata["o"]["q"]),
+                    filled: parseFloat(jdata["o"]["z"]),
+                    new_filled: parseFloat(jdata["o"]["l"]),
+                    avg_executed_price: parseFloat(jdata["o"]["ap"]),
+                    submit_price: submit_price,
+                    status: this._convert_to_standard_order_status(jdata["o"]["X"])
+                }
+            };
+        } else {
+            let order_type = utils._util_get_key_by_value(apiconfig.BinanceU.orderTypeMap, jdata["o"]["o"]);
+            let submit_price = (order_type == ORDER_TYPE.STOP_MARKET) ? parseFloat(jdata["o"]["tp"]) : parseFloat(jdata["o"]["p"]);
+            order_update = {
+                exchange: EXCHANGE.BINANCEU,
+                symbol: jdata["o"]["s"],
+                contract_type: "perp",
+                metadata: {
+                    result: true,
+                    account_id: account_id,
+                    order_id: jdata["o"]["aid"],
+                    client_order_id: jdata["o"]["caid"],
+                    direction: (jdata["o"]["S"] === "SELL") ? DIRECTION.SELL : DIRECTION.BUY,
+                    timestamp: utils.get_human_readable_timestamp(jdata["T"]),
+                    fee: jdata["o"]["n"] ? parseFloat(jdata["o"]["n"]) : undefined,
+                    fee_asset: jdata["o"]["N"] ? jdata["o"]["N"] : undefined,
+                    // alog order update只有一个X，没有X和x的区别
+                    update_type: this._convert_to_standard_order_update_type(jdata["o"]["X"])
+                },
+                timestamp: utils._util_get_human_readable_timestamp(),
+                order_info: {
+                    order_type: order_type,
+                    original_amount: parseFloat(jdata["o"]["q"]),
+                    filled: jdata["o"]["aq"] ? parseFloat(jdata["o"]["aq"]) : undefined,
+                    new_filled: jdata["o"]["l"] ? parseFloat(jdata["o"]["l"]) : undefined,
+                    avg_executed_price: jdata["o"]["ap"] ? parseFloat(jdata["o"]["ap"]) : undefined,
+                    submit_price: submit_price,
+                    status: this._convert_to_standard_order_status(jdata["o"]["X"])
+                }
+            };
+        }
+        
         return order_update;
     }
 
@@ -365,7 +399,6 @@ class ExchangeBinanceU extends ExchangeBase {
             case "Filled":
             case "EXECUTED":
             case "0":
-            case "FINISHED":
                 return ORDER_STATUS.FILLED;
             case "NEW":
             case "submitted":
@@ -385,6 +418,12 @@ class ExchangeBinanceU extends ExchangeBase {
                 return ORDER_STATUS.PARTIALLY_FILLED;
             case "modified":
                 return ORDER_STATUS.MODIFIED; 
+            case "TRIGGERING":
+                return ORDER_STATUS.TRIGGERING;
+            case "TRIGGERED":
+                return ORDER_STATUS.TRIGGERED;
+            case "FINISHED":
+                return ORDER_STATUS.FINISHED;
             case "EXPIRED":
                 return ORDER_STATUS.EXPIRED;
             default:

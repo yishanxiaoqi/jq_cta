@@ -38,7 +38,7 @@ class BalanceMonitor extends StrategyBase {
             "BinanceU.th_binance_cny_master.perp": moment("2025-10-20"),
             "BinanceU.th_binance_cny_sub01.perp": moment("2025-11-01")
         };
-        this.aliases = ["R01", "R06", "R12", "R24", "SRE", "STR", "QTR", "RAV"];
+        this.aliases = ["R01", "R06", "R12", "R24", "SRE", "STR", "QTR", "RAV", "TES"];
         this.rev_aliases = ["R01", "R06", "R12", "R24"];
 
         this.account_summary = {};

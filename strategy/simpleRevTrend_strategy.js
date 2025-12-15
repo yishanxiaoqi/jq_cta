@@ -250,13 +250,13 @@ class SimpleRevTrendStrategy extends StrategyBase {
 
         // client_order_id format: SRE0001DNxxxxx: {012}{3456}{78}{90123}
         // 不是本策略的订单更新，自动过滤（这里不能删！）
-        let cfgID = client_order_id.slice(0, 7);
         if (client_order_id.slice(0, 3) !== that.alias) return;
+        let cfgID = client_order_id.slice(0, 7);
         logger.info(`${cfgID}::on_order_update|${JSON.stringify(order_update)}`);
         
         let idf = [exchange, symbol, contract_type].join(".");
         let entry = that.cfg[cfgID]["entry"];
-        let interval = entry.split(".")[4];
+        let interval = entry.split(".")[3];
 
         // 确定label以及order_idf
         let label = client_order_id.slice(7, 9);

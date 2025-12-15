@@ -220,16 +220,17 @@ class SimpleTrendStrategy extends StrategyBase{
         let client_order_id = order_update["metadata"]["client_order_id"];
         let update_type = order_update["metadata"]["update_type"];
         let act_id = order_update["metadata"]["account_id"];
-        
+
         // client_order_id format: STR0001DNxxxxx: {012}{3456}{78}{90123}
         // 不是本策略的订单更新，自动过滤（这里不能删！）
         if (client_order_id.slice(0, 3) !== that.alias) return;
-        logger.info(`${that.alias}::on_order_update|${JSON.stringify(order_update)}`);
-
         let cfgID = client_order_id.slice(0, 7);
+        logger.info(`${cfgID}::on_order_update|${JSON.stringify(order_update)}`);
+
+        // 这个不能挪动位置，因为属于本策略的order_update才会进入这一步
         let idf = [exchange, symbol, contract_type].join(".");
         let entry = that.cfg[cfgID]["entry"];
-        let interval = entry.split(".")[4];
+        let interval = entry.split(".")[3];
 
         let label = client_order_id.slice(7, 9);
         if (!Object.values(LABELMAP).includes(label)) {

@@ -19,17 +19,12 @@ class RevTrendStrategy extends StrategyBase {
 
         this.init_status_map();
         this.init_order_map();  // this will set order_map to be empty
-        this.init_summary();
 
         // idf::exchange.symbol.contract_type
         this.prices = {};
         this.klines = {}
         this.cur_bar_otime = {};
         this.pre_bar_otime = {};
-
-        // set-up
-        this.contract_type = CONTRACT_TYPE.PERP;
-        this.bnb_price = undefined;
     }
 
     start() {
@@ -71,14 +66,14 @@ class RevTrendStrategy extends StrategyBase {
     
             // 计算time_gap和盈利情况
             let price_presentation = "";
-            if (that.prices[cfgID]) {
-                let gap = Math.round((moment.now() - utils._util_convert_timestamp_to_date(that.prices[cfgID]["upd_ts"])) / 1000);
-                price_presentation = `${that.prices[cfgID]["price"]}|${gap}`;
+            if (that.prices[idf]) {
+                let gap = Math.round((moment.now() - utils._util_convert_timestamp_to_date(that.prices[idf]["upd_ts"])) / 1000);
+                price_presentation = `${that.prices[idf]["price"]}|${gap}`;
                 if (that.status_map[cfgID]["status"] === "LONG") {
-                    let percentage = that.status_map[cfgID]["short_enter"] ? ((that.prices[cfgID]["price"] - that.status_map[cfgID]["short_enter"]) / that.status_map[cfgID]["short_enter"] * 100).toFixed(0) + "%" : "miss";
+                    let percentage = that.status_map[cfgID]["short_enter"] ? ((that.prices[idf]["price"] - that.status_map[cfgID]["short_enter"]) / that.status_map[cfgID]["short_enter"] * 100).toFixed(0) + "%" : "miss";
                     price_presentation += "|" + percentage;
                 } else if (that.status_map[cfgID]["status"] === "SHORT") {
-                    let percentage = that.status_map[cfgID]["long_enter"] ? ((that.status_map[cfgID]["long_enter"] - that.prices[cfgID]["price"]) / that.status_map[cfgID]["long_enter"] * 100).toFixed(0) + "%" : "miss";
+                    let percentage = that.status_map[cfgID]["long_enter"] ? ((that.status_map[cfgID]["long_enter"] - that.prices[idf]["price"]) / that.status_map[cfgID]["long_enter"] * 100).toFixed(0) + "%" : "miss";
                     price_presentation += "|" + percentage;
                 }
             }
@@ -152,17 +147,6 @@ class RevTrendStrategy extends StrategyBase {
             }
         });
     }
-
-    init_summary() {
-        let that = this;
-        that.summary = {};
-        that.summary["overall"] = {};
-        let status_list = that.cfg["idfs"].map((idf) => that.status_map[cfgID]["status"]);
-        let long_num = status_list.map((element) => element === "LONG").reduce((a, b) => a + b, 0);
-        let short_num = status_list.map((element) => element === "SHORT").reduce((a, b) => a + b, 0);
-        that.summary["overall"]["long_num"] = long_num;
-        that.summary["overall"]["short_num"] = short_num;
-    }
     
     load_klines() {
         let that = this;
@@ -207,7 +191,7 @@ class RevTrendStrategy extends StrategyBase {
         setTimeout(() => {
             logger.info(`${cfgID}:${JSON.stringify(that.klines[cfgID])}`);
             if ((that.klines[cfgID]["ts"].length === 0) || (isNaN(that.klines[cfgID]['open'][0]))) {
-                that.load_idf_klines(idf);
+                that.load_cfgID_klines(cfgID);
             } else {
                 that.klines[cfgID]["ready"] = true;
             }
@@ -228,13 +212,16 @@ class RevTrendStrategy extends StrategyBase {
         let update_type = order_update["metadata"]["update_type"];
         let act_id = order_update["metadata"]["account_id"];
 
-        let idf = [exchange, symbol, contract_type].join(".");
-
         // 不是本策略的订单更新，自动过滤
         if (client_order_id.slice(0, 3) !== that.alias) return;
         let cfgID = client_order_id.slice(0, 7);
         logger.info(`${cfgID}::on_order_update|${JSON.stringify(order_update)}`);
 
+        // 这个不能挪动位置，因为属于本策略的order_update才会进入这一步
+        let idf = [exchange, symbol, contract_type].join(".");
+        let entry = that.cfg[cfgID]["entry"];
+        let interval = entry.split(".")[3];
+        
         let label = client_order_id.slice(7, 9);
         if (!Object.values(LABELMAP).includes(label)) {
             logger.info(`${cfgID}::on_order_update|unknown order label ${label}!`);
@@ -269,16 +256,13 @@ class RevTrendStrategy extends StrategyBase {
             }
 
         } else if ((order_status === ORDER_STATUS.FILLED) || (order_status === ORDER_STATUS.PARTIALLY_FILLED)) {
+
             let original_amount = order_update["order_info"]["original_amount"];
             let filled = order_update["order_info"]["filled"];
             let new_filled = order_update["order_info"]["new_filled"];
             let submit_price = order_update["order_info"]["submit_price"];
             let avg_executed_price = order_update["order_info"]["avg_executed_price"];
             let fee = order_update["metadata"]["fee"];
-            let fee_asset = order_update["metadata"]["fee_asset"];
-            // 用BNB合约价格，把BNB手续费折算成USDT
-            if (fee_asset === "BNB") fee = this.bnb_price? fee * this.bnb_price : fee * 570;
-
             logger.info(`${cfgID}::on_order_update|${order_idf} ${order_type} order ${filled}/${original_amount} filled @${avg_executed_price}/${submit_price}!`);
 
             // 对于UP ORDER无论是完全成交还是部分成交，都撤销DN ORDER；DN ORDER同理
@@ -373,13 +357,6 @@ class RevTrendStrategy extends StrategyBase {
                 // remove the client_order_id from order_map 100ms later, as the on_response may need to use it!
                 setTimeout(() => delete that.order_map[cfgID][client_order_id], 100);
 
-                // 检查LONG和SHORT的个数，这个功能基本已经废弃了
-                let status_list = that.cfg["cfgIDs"].map((cfgID) => that.status_map[cfgID]["status"]);
-                let long_num = status_list.map((element) => element === "LONG").reduce((a, b) => a + b, 0);
-                let short_num = status_list.map((element) => element === "SHORT").reduce((a, b) => a + b, 0);
-                that.summary["overall"]["long_num"] = long_num;
-                that.summary["overall"]["short_num"] = short_num;
-
             } else {
                 // 订单部分成交，处于触发状态
                 that.status_map[cfgID]["status"] = "TBA";
@@ -414,8 +391,7 @@ class RevTrendStrategy extends StrategyBase {
         if (idf === "BinanceU.BNBUSDT.perp") this.bnb_price = price;
 
         if (!that.cfg["idfs"].includes(idf)) return;
-        if (!that.klines[cfgID]["ready"]) return;
-        that.prices[cfgID] = { "price": price, "upd_ts": ts };
+        that.prices[idf] = { "price": price, "upd_ts": ts };
 
         let corr_cfgIDs = that.cfg["cfgIDs"].filter((cfgID) => that.cfg[cfgID]["idf"] === idf);
         for (let cfgID of corr_cfgIDs) {
@@ -455,7 +431,7 @@ class RevTrendStrategy extends StrategyBase {
                 that.klines[cfgID]["high"][0] = Math.max(price, that.klines[cfgID]["high"][0]);
                 that.klines[cfgID]["low"][0] = Math.min(price, that.klines[cfgID]["low"][0]);
             } else {
-                logger.debug(`${that.alias}::${idf}::cur_bar_otime is smaller than klines ts[0]?`);
+                logger.debug(`${cfgID}::${entry}::cur_bar_otime is smaller than klines ts[0]?`);
             }
 
             // update bar open time and net_profit
@@ -482,14 +458,18 @@ class RevTrendStrategy extends StrategyBase {
         let dn_price = that.status_map[cfgID]["dn"];
 
         let cutloss_rate = that.cfg[cfgID]["cutloss_rate"];
+        // {order_type: "", client_order_id: ""}
+        // order_type默认都是LIMIT
         let orders_to_be_cancelled = [];
+        // {label: "", target: "", quantity: "", price: "", direction: "", order_type: ""}
+        // order_type默认都是LIMIT
         let orders_to_be_submitted = [];
 
         if (triggered === "UP") {
             // 开仓单开了一半，剩下的撤单，直接转为对应的status
             logger.info(`${cfgID}::${act_id}|${entry} deal with TBA: cancel the remaining UP order!`);
             let up_client_order_id = that.order_map[cfgID]["UP"]["client_order_id"];
-            orders_to_be_cancelled.push(up_client_order_id);
+            orders_to_be_cancelled.push({ order_type: ORDER_TYPE.LIMIT, client_order_id: up_client_order_id });
             that.status_map[cfgID]["status"] = "SHORT";
 
             delete that.order_map[cfgID]["UP"];
@@ -497,7 +477,7 @@ class RevTrendStrategy extends StrategyBase {
             // 开仓单开了一半，剩下的放弃，直接转为对应的status
             logger.info(`${cfgID}::${act_id}|${entry} deal with TBA: cancel the remaining DN order!`);
             let dn_client_order_id = that.order_map[cfgID]["DN"]["client_order_id"];
-            orders_to_be_cancelled.push(dn_client_order_id);
+            orders_to_be_cancelled.push({ order_type: ORDER_TYPE.LIMIT, client_order_id: dn_client_order_id });
             that.status_map[cfgID]["status"] = "LONG";
 
             delete that.order_map[cfgID]["DN"];
@@ -505,7 +485,7 @@ class RevTrendStrategy extends StrategyBase {
             // 平仓单未能成交，撤销该单，改用市价单成交
             // 反手单未能成交，撤销该单，放弃反手，改为市价平仓
             let anti_client_order_id = that.order_map[cfgID]["ANTI_L"]["client_order_id"];
-            orders_to_be_cancelled.push(anti_client_order_id);
+            orders_to_be_cancelled.push({ order_type: ORDER_TYPE.LIMIT, client_order_id: anti_client_order_id });
 
             if (that.status_map[cfgID]["pos"] < 0) {
                 // 已经部分反手，放弃剩下的反手
@@ -522,14 +502,16 @@ class RevTrendStrategy extends StrategyBase {
                 // 因为binance对限价单价格有限制，通常不能超过标记价格的5%
                 logger.info(`${cfgID}::${act_id}|${entry} deal with TBA: cover the LONG position!`);
                 let tgt_qty = that.status_map[cfgID]["pos"];
-                let sell_price = stratutils.transform_with_tick_size(that.prices[cfgID]["price"] * 0.97, PRICE_TICK_SIZE[idf]);
-                orders_to_be_submitted.push({ client_order_id: that.alias + LABELMAP["ANTI_L|STOPLOSS"] + randomID(7), label: "ANTI_L|STOPLOSS", target: "EMPTY", quantity: tgt_qty, price: sell_price, direction: DIRECTION.SELL });
+                let sell_price = stratutils.transform_with_tick_size(that.prices[idf]["price"] * 0.97, PRICE_TICK_SIZE[idf]);
+                orders_to_be_submitted.push({ 
+                    label: "ANTI_L|STOPLOSS", target: "EMPTY", quantity: tgt_qty, price: sell_price, direction: DIRECTION.SELL, order_type: ORDER_TYPE.LIMIT 
+                });
             }
         } else if ((triggered === "ANTI_S|STOPLOSS") || (triggered === "ANTI_S|REVERSE")) {
             // 平仓单未能成交，撤销该单，改用市价单成交
             // 反手单未能成交，撤销该单，放弃反手，改为市价平仓
             let anti_client_order_id = that.order_map[cfgID]["ANTI_S"]["client_order_id"];
-            orders_to_be_cancelled.push(anti_client_order_id);
+            orders_to_be_cancelled.push({ order_type: ORDER_TYPE.LIMIT, client_order_id: anti_client_order_id });
 
             if (that.status_map[cfgID]["pos"] > 0) {
                 // 已经部分反手，放弃剩下的反手
@@ -546,11 +528,13 @@ class RevTrendStrategy extends StrategyBase {
                 // 因为binance对限价单价格有限制，通常不能超过标记价格的5%
                 logger.info(`${cfgID}::${act_id}|${entry} deal with TBA: cover the SHORT position!`);
                 let tgt_qty = - that.status_map[cfgID]["pos"];
-                let buy_price = stratutils.transform_with_tick_size(that.prices[cfgID]["price"] * 1.03, PRICE_TICK_SIZE[idf]);
-                orders_to_be_submitted.push({ client_order_id: that.alias + LABELMAP["ANTI_S|STOPLOSS"] + randomID(7), label: "ANTI_S|STOPLOSS", target: "EMPTY", quantity: tgt_qty, price: buy_price, direction: DIRECTION.BUY });
+                let buy_price = stratutils.transform_with_tick_size(that.prices[idf]["price"] * 1.03, PRICE_TICK_SIZE[idf]);
+                orders_to_be_submitted.push({ 
+                    label: "ANTI_S|STOPLOSS", target: "EMPTY", quantity: tgt_qty, price: buy_price, direction: DIRECTION.BUY, order_type: ORDER_TYPE.LIMIT
+                });
             }
         } else {
-            logger.info(`${cfgID}::TBA and new_bar handling: unhandled ${that.status_map[cfgID]["triggered"]}. If nothing, ignore it!`)
+            logger.error(`${cfgID}::TBA and new_bar handling: unhandled ${that.status_map[cfgID]["triggered"]}. If nothing, ignore it!`)
         }
 
         let current_status = that.status_map[cfgID]["status"];
@@ -569,18 +553,21 @@ class RevTrendStrategy extends StrategyBase {
 
         logger.info(`${cfgID}::deal with TBA: ${JSON.stringify(that.status_map[cfgID])}`);
 
-        orders_to_be_cancelled.forEach((client_order_id) => {
+        orders_to_be_cancelled.forEach((order) => {
             that.cancel_order({
                 exchange: exchange,
                 symbol: symbol,
                 contract_type: contract_type,
-                client_order_id: client_order_id,
+                order_type: order.order_type,
+                client_order_id: order.client_order_id,
                 account_id: act_id,
             });
         });
 
         orders_to_be_submitted.forEach((order) => {
-            let client_order_id = order.client_order_id, label = order.label, target = order.target, quantity = order.quantity, price = order.price, direction = order.direction;
+            let label = order.label, target = order.target, quantity = order.quantity, price = order.price;
+            let direction = order.direction, order_type = order.order_type;
+            let client_order_id = cfgID + LABELMAP[label] + randomID(5);  // client_order_id总共13位
 
             // 发送订单，同时建立order_map
             // {"3106609167": {"label": "DN", "target": "LONG", "quantity": 21133, "time": 1669492800445, "filled": 0}}
@@ -597,7 +584,7 @@ class RevTrendStrategy extends StrategyBase {
                 price: price,
                 quantity: quantity,
                 direction: direction,
-                order_type: ORDER_TYPE.LIMIT,
+                order_type: order_type,
                 account_id: act_id,
                 client_order_id: client_order_id
             });
@@ -637,8 +624,11 @@ class RevTrendStrategy extends StrategyBase {
         // 重启以后将anti_order_sent置零
         if (new_start) that.status_map[cfgID]["anti_order_sent"] = false;
 
-        let orders_to_be_cancelled = [];    // client_order_id only
-        let orders_to_be_submitted = [];    // {label: "", target: "", tgt_qty: "", price: "", direction: ""}
+        // orders_to_be_cancelled: {order_type: "", client_order_id: ""}.
+        // orders_to_be_submitted: {label: "", target: "", quantity: "", price: "", direction: "", order_type: ""}
+        // order_type默认都是LIMIT
+        let orders_to_be_cancelled = [];
+        let orders_to_be_submitted = [];
 
         if (that.status_map[cfgID]["status"] === "EMPTY") {
             that.status_map[cfgID]["anti_order_sent"] = false;
@@ -650,19 +640,16 @@ class RevTrendStrategy extends StrategyBase {
 
                 // 如果已经有UP单，撤销之
                 if (that.order_map[cfgID]["UP"] !== undefined) {
-                    orders_to_be_cancelled.push(that.order_map[cfgID]["UP"]["client_order_id"]);
+                    orders_to_be_cancelled.push({ order_type: ORDER_TYPE.LIMIT, client_order_id: that.order_map[cfgID]["UP"]["client_order_id"] });
                 }
 
                 // 如果已经有DN单，撤销之
                 if (that.order_map[cfgID]["DN"] !== undefined) {
-                    orders_to_be_cancelled.push(that.order_map[cfgID]["DN"]["client_order_id"]);
+                    orders_to_be_cancelled.push({ order_type: ORDER_TYPE.LIMIT, client_order_id: that.order_map[cfgID]["DN"]["client_order_id"] });
                 }
 
-                // "{R010001}-{DN}-{nQXYE}"
-                let up_client_order_id = cfgID + "UP" + randomID(5);
-                let dn_client_order_id = cfgID + "DN" + randomID(5);
-                orders_to_be_submitted.push({ client_order_id: up_client_order_id, label: "UP", target: "SHORT", quantity: up_qty, price: up_price, direction: DIRECTION.SELL });
-                orders_to_be_submitted.push({ client_order_id: dn_client_order_id, label: "DN", target: "LONG", quantity: dn_qty, price: dn_price, direction: DIRECTION.BUY });
+                orders_to_be_submitted.push({ label: "UP", target: "SHORT", quantity: up_qty, price: up_price, direction: DIRECTION.SELL, order_type: ORDER_TYPE.LIMIT });
+                orders_to_be_submitted.push({ label: "DN", target: "LONG", quantity: dn_qty, price: dn_price, direction: DIRECTION.BUY, order_type: ORDER_TYPE.LIMIT });
             }
         } else if (that.status_map[cfgID]["status"] === "SHORT") {
             // 注意：SHORT时，实际上是up_break，因此有high_since_long
@@ -710,7 +697,9 @@ class RevTrendStrategy extends StrategyBase {
                 let tgt_qty = stratutils.transform_with_tick_size(- that.status_map[cfgID]["pos"] + ini_usdt / dn_price, QUANTITY_TICK_SIZE[idf]);
                 if (that.order_map[cfgID]["ANTI_S"] === undefined) {
                     // 对手单还没有发送
-                    orders_to_be_submitted.push({ client_order_id: that.alias + LABELMAP["ANTI_S|REVERSE"] + randomID(7), label: "ANTI_S|REVERSE", target: "LONG", quantity: tgt_qty, price: dn_price, direction: DIRECTION.BUY });
+                    orders_to_be_submitted.push({ 
+                        label: "ANTI_S|REVERSE", target: "LONG", quantity: tgt_qty, price: dn_price, direction: DIRECTION.BUY, order_type: ORDER_TYPE.LIMIT
+                    });
                     that.status_map[cfgID]["anti_order_sent"] = true;
                 } else {
                     // 对手单已发，检查是否需要更改
@@ -721,8 +710,10 @@ class RevTrendStrategy extends StrategyBase {
 
                     // 若已存的反手单和现行不一致，则撤销重新发
                     if ((anti_label !== "ANTI_S|REVERSE") || (anti_price !== dn_price) || (anti_qty !== tgt_qty)) {
-                        orders_to_be_cancelled.push(anti_client_order_id);
-                        orders_to_be_submitted.push({ client_order_id: that.alias + LABELMAP["ANTI_S|REVERSE"] + randomID(7), label: "ANTI_S|REVERSE", target: "LONG", quantity: tgt_qty, price: dn_price, direction: DIRECTION.BUY });
+                        orders_to_be_cancelled.push({ order_type: ORDER_TYPE.LIMIT, client_order_id: anti_client_order_id });
+                        orders_to_be_submitted.push({ 
+                            label: "ANTI_S|REVERSE", target: "LONG", quantity: tgt_qty, price: dn_price, direction: DIRECTION.BUY, order_type: ORDER_TYPE.LIMIT 
+                        });
                         that.status_map[cfgID]["anti_order_sent"] = true;
                     }
                 }
@@ -735,7 +726,9 @@ class RevTrendStrategy extends StrategyBase {
 
                 if (that.order_map[cfgID]["ANTI_S"] === undefined) {
                     // 对手单（止损单）未发送
-                    orders_to_be_submitted.push({ client_order_id: that.alias + LABELMAP["ANTI_S|STOPLOSS"] + randomID(7), label: "ANTI_S|STOPLOSS", target: "EMPTY", quantity: tgt_qty, price: stoploss_price, direction: DIRECTION.BUY });
+                    orders_to_be_submitted.push({ 
+                        label: "ANTI_S|STOPLOSS", target: "EMPTY", quantity: tgt_qty, price: stoploss_price, direction: DIRECTION.BUY, order_type: ORDER_TYPE.LIMIT
+                    });
                     that.status_map[cfgID]["anti_order_sent"] = true;
                 } else {
                     // 对手单（止损单）已经发送，检查是否需要更改
@@ -746,8 +739,10 @@ class RevTrendStrategy extends StrategyBase {
 
                     // 若已存的平仓单（止损单）和现行不一致，则撤销重新发
                     if ((anti_label !== "ANTI_S|STOPLOSS") || (anti_price !== stoploss_price) || (anti_qty !== tgt_qty)) {
-                        orders_to_be_cancelled.push(anti_client_order_id);
-                        orders_to_be_submitted.push({ client_order_id: that.alias + LABELMAP["ANTI_S|STOPLOSS"] + randomID(7), label: "ANTI_S|STOPLOSS", target: "EMPTY", quantity: tgt_qty, price: stoploss_price, direction: DIRECTION.BUY });
+                        orders_to_be_cancelled.push({ order_type: ORDER_TYPE.LIMIT, client_order_id: anti_client_order_id });
+                        orders_to_be_submitted.push({ 
+                            label: "ANTI_S|STOPLOSS", target: "EMPTY", quantity: tgt_qty, price: stoploss_price, direction: DIRECTION.BUY, order_type: ORDER_TYPE.LIMIT
+                        });
                         that.status_map[cfgID]["anti_order_sent"] = true;
                     }
                 }
@@ -796,7 +791,9 @@ class RevTrendStrategy extends StrategyBase {
                 // 直接发LIMIT单等待成交，如果已经触发，就想办法在该Bar内成交；如果未触发，则一直等待；
                 let tgt_qty = stratutils.transform_with_tick_size(that.status_map[cfgID]["pos"] + ini_usdt / up_price, QUANTITY_TICK_SIZE[idf]);
                 if (that.order_map[cfgID]["ANTI_L"] === undefined) {
-                    orders_to_be_submitted.push({ client_order_id: that.alias + LABELMAP["ANTI_L|REVERSE"] + randomID(7), label: "ANTI_L|REVERSE", target: "SHORT", quantity: tgt_qty, price: up_price, direction: DIRECTION.SELL });
+                    orders_to_be_submitted.push({ 
+                        label: "ANTI_L|REVERSE", target: "SHORT", quantity: tgt_qty, price: up_price, direction: DIRECTION.SELL, order_type: ORDER_TYPE.LIMIT
+                    });
                     that.status_map[cfgID]["anti_order_sent"] = true;
                 } else {
                     let anti_client_order_id = that.order_map[cfgID]["ANTI_L"]["client_order_id"];
@@ -806,8 +803,10 @@ class RevTrendStrategy extends StrategyBase {
 
                     if ((anti_label !== "ANTI_L|REVERSE") || (anti_price !== up_price) || (anti_qty !== tgt_qty)) {
                         // 若已存的对手单（反手单）和现行不一致，则撤销重新发
-                        orders_to_be_cancelled.push(anti_client_order_id);
-                        orders_to_be_submitted.push({ client_order_id: that.alias + LABELMAP["ANTI_L|REVERSE"] + randomID(7), label: "ANTI_L|REVERSE", target: "SHORT", quantity: tgt_qty, price: up_price, direction: DIRECTION.SELL });
+                        orders_to_be_cancelled.push({ order_type: ORDER_TYPE.LIMIT, client_order_id: anti_client_order_id });
+                        orders_to_be_submitted.push({
+                            label: "ANTI_L|REVERSE", target: "SHORT", quantity: tgt_qty, price: up_price, direction: DIRECTION.SELL, order_type: ORDER_TYPE.LIMIT
+                        });
                         that.status_map[cfgID]["anti_order_sent"] = true;
                     }
                 }
@@ -820,7 +819,9 @@ class RevTrendStrategy extends StrategyBase {
                 if ((new_bar) && (that.klines[cfgID]["open"][0] !== undefined)) stoploss_price = Math.max(that.klines[cfgID]["open"][0], stoploss_price);
 
                 if (that.order_map[cfgID]["ANTI_L"] === undefined) {
-                    orders_to_be_submitted.push({ client_order_id: that.alias + LABELMAP["ANTI_L|STOPLOSS"] + randomID(7), label: "ANTI_L|STOPLOSS", target: "EMPTY", quantity: tgt_qty, price: stoploss_price, direction: DIRECTION.SELL });
+                    orders_to_be_submitted.push({ 
+                        label: "ANTI_L|STOPLOSS", target: "EMPTY", quantity: tgt_qty, price: stoploss_price, direction: DIRECTION.SELL, order_type: ORDER_TYPE.LIMIT
+                    });
                     that.status_map[cfgID]["anti_order_sent"] = true;
                 } else {
                     let anti_client_order_id = that.order_map[cfgID]["ANTI_L"]["client_order_id"];
@@ -829,8 +830,10 @@ class RevTrendStrategy extends StrategyBase {
                     let anti_qty = that.order_map[cfgID]["ANTI_L"]["quantity"];
 
                     if ((anti_label !== "ANTI_L|STOPLOSS") || (anti_price !== stoploss_price) || (anti_qty !== tgt_qty)) {
-                        orders_to_be_cancelled.push(anti_client_order_id);
-                        orders_to_be_submitted.push({ client_order_id: that.alias + LABELMAP["ANTI_L|STOPLOSS"] + randomID(7), label: "ANTI_L|STOPLOSS", target: "EMPTY", quantity: tgt_qty, price: stoploss_price, direction: DIRECTION.SELL });
+                        orders_to_be_cancelled.push({ order_type: ORDER_TYPE.LIMIT, client_order_id: anti_client_order_id });
+                        orders_to_be_submitted.push({ 
+                            label: "ANTI_L|STOPLOSS", target: "EMPTY", quantity: tgt_qty, price: stoploss_price, direction: DIRECTION.SELL, order_type: ORDER_TYPE.LIMIT
+                        });
                         that.status_map[cfgID]["anti_order_sent"] = true;
                     }
                 }
@@ -838,12 +841,13 @@ class RevTrendStrategy extends StrategyBase {
         }
 
         // logger.info(`orders_to_be_cancelled: ${orders_to_be_cancelled}`);
-        orders_to_be_cancelled.forEach((client_order_id) => {
+        orders_to_be_cancelled.forEach((order) => {
             that.cancel_order({
                 exchange: exchange,
                 symbol: symbol,
                 contract_type: contract_type,
-                client_order_id: client_order_id,
+                order_type: order.order_type,
+                client_order_id: order.client_order_id,
                 account_id: act_id,
             });
         });
@@ -851,7 +855,9 @@ class RevTrendStrategy extends StrategyBase {
         // logger.info(JSON.stringify(orders_to_be_submitted));
 
         orders_to_be_submitted.forEach((order) => {
-            let client_order_id = order.client_order_id, label = order.label, target = order.target, quantity = order.quantity, price = order.price, direction = order.direction;
+            let label = order.label, target = order.target, quantity = order.quantity, price = order.price;
+            let direction = order.direction, order_type = order.order_type;
+            let client_order_id = cfgID + LABELMAP[label] + randomID(5);  // client_order_id总共13位
 
             // 发送订单，同时建立order_map
             // {"3106609167": {"label": "DN", "target": "LONG", "quantity": 21133, "time": 1669492800445, "price": 0.04732, "filled": 0}}
@@ -868,7 +874,7 @@ class RevTrendStrategy extends StrategyBase {
                 price: price,
                 quantity: quantity,
                 direction: direction,
-                order_type: ORDER_TYPE.LIMIT,
+                order_type: order_type,
                 account_id: act_id,
                 client_order_id: client_order_id
             });
@@ -919,17 +925,21 @@ class RevTrendStrategy extends StrategyBase {
         let quantity = response["request"]["quantity"];
         let direction = response["request"]["direction"];
         let price = response["request"]["price"];
+        let order_type = response["request"]["order_type"] ? response["request"]["order_type"] : ORDER_TYPE.LIMIT;
 
-        let label = client_order_id.slice(3, 5);
+        let cfgID = client_order_id.slice(0, 7);        
+        let idf = that.cfg[cfgID]["idf"];
+        let entry = that.cfg[cfgID]["entry"];
+        let interval = entry.split(".")[3];
+        let order_idf = [act_id, symbol, interval, direction, client_order_id].join("|");
+
+        let label = client_order_id.slice(7, 9);
         if (!Object.values(LABELMAP).includes(label)) {
             logger.info(`${that.alias}::on_send_order_response|unknown order label ${label}!`);
             return;
         } else {
             label = stratutils.get_key_by_value(LABELMAP, label);
         }
-
-        let idf = [exchange, symbol, contract_type].join(".");
-        let order_idf = [act_id, symbol, direction, label, client_order_id].join("|");
 
         if (response["metadata"]["metadata"]["result"] === false) {
             // 发单失败，1分钟后删除该订单信息
@@ -942,16 +952,16 @@ class RevTrendStrategy extends StrategyBase {
             if (retry === 5) {
                 that.slack_publish({
                     "type": "alert",
-                    "msg": `${that.alias}::${order_idf}::Send order retried over 5 times, check the code!`
+                    "msg": `${cfgID}::${order_idf}::Send order retried over 5 times, check the code!`
                 });
                 return;
             }
 
             // 所有的发单报错都会发邮件！
-            logger.debug(`${that.alias}::on_response|${order_idf}::an error occured during ${action}: ${error_code}: ${error_code_msg}`);
+            logger.debug(`${cfgID}::on_response|${order_idf}::an error occured during ${action}: ${error_code}: ${error_code_msg}`);
             that.slack_publish({
                 "type": "alert",
-                "msg": `${that.alias}::on_response|${order_idf}::an error occured during ${action}: ${error_code}: ${error_code_msg}`
+                "msg": `${cfgID}::on_response|${order_idf}::an error occured during ${action}: ${error_code}: ${error_code_msg}`
             });
 
             let resend = false, timeout = 10;    // 注意：这里不能用分号，只能用逗号！
@@ -979,10 +989,10 @@ class RevTrendStrategy extends StrategyBase {
                 } else if ((limit_type === "lower") && (adj_price <= limit_price)) {
                     adj_price = stratutils.transform_with_tick_size(adj_price + PRICE_TICK_SIZE[idf], PRICE_TICK_SIZE[idf]);
                 } else {
-                    logger.info(`${that.alias}::${order_idf}::limit_type: ${limit_type}.`);
+                    logger.info(`${cfgID}::${order_idf}::limit_type: ${limit_type}.`);
                 }
 
-                logger.info(`${that.alias}::${order_idf}::order out of limitation, change from ${price} to ${adj_price}.`);
+                logger.info(`${cfgID}::${order_idf}::order out of limitation, change from ${price} to ${adj_price}.`);
 
                 price = adj_price, resend = true;
 
@@ -992,7 +1002,7 @@ class RevTrendStrategy extends StrategyBase {
                 let url = "https://fapi.binance.com/fapi/v1/leverage";
                 stratutils.set_leverage_by_rest(symbol, 10, url, key);
 
-                logger.info(`${that.alias}::${order_idf}::change leverage to 10 and resent the order.`);
+                logger.info(`${cfgID}::${order_idf}::change leverage to 10 and resent the order.`);
                 resend = true;
                 timeout = 1000 * 2;
 
@@ -1004,14 +1014,14 @@ class RevTrendStrategy extends StrategyBase {
                 if (label === "DN") {
                     delete that.order_map[cfgID]["DN"];
                 } else {
-                    logger.info(`${that.alias}::${order_idf}::price less than min, but not a DN order, check!`);
+                    logger.info(`${cfgID}::${order_idf}::price less than min, but not a DN order, check!`);
                 }
             } else if (error_code_msg === "Quantity greater than max quantity.") {
                 // quantity超过最大限制，通常是DN单，那就不设置DN单
                 if (label === "DN") {
                     delete that.order_map[cfgID]["DN"];
                 } else {
-                    logger.info(`${that.alias}::${order_idf}::Quantity greater than max quantity, but not a DN order, check!`);
+                    logger.info(`${cfgID}::${order_idf}::Quantity greater than max quantity, but not a DN order, check!`);
                 }
             } else if (error_code_msg === "Order would immediately trigger.") {
                 // The order would be triggered immediately, STOP order才会报这样的错，本策略都是LIMIT ORDER
@@ -1033,17 +1043,18 @@ class RevTrendStrategy extends StrategyBase {
                         exchange: exchange,
                         symbol: symbol,
                         contract_type: contract_type,
+                        order_type: order_type,
                         account_id: act_id,
                         client_order_id: client_order_id
                     });
                 }, 1000 * 60);
             } else {
-                logger.warn(`${that.alias}::on_response|${order_idf}::unknown error occured during ${action}: ${error_code}: ${error_code_msg}`);
+                logger.warn(`${cfgID}::on_response|${order_idf}::unknown error occured during ${action}: ${error_code}: ${error_code_msg}`);
                 return;
             }
 
             if (resend) {
-                logger.info(`${that.alias}::${order_idf}::resend the order in ${timeout} ms!`);
+                logger.info(`${cfgID}::${order_idf}::resend the order in ${timeout} ms!`);
                 setTimeout(() => {
                     retry = (retry === undefined) ? 1 : retry + 1;
                     let new_client_order_id = that.alias + LABELMAP[label] + randomID(7);
@@ -1071,7 +1082,7 @@ class RevTrendStrategy extends StrategyBase {
             }
         } else {
             // 订单发送成功
-            logger.info(`${this.alias}::on_response|${order_idf} submitted!`);
+            logger.info(`${cfgID}::on_response|${order_idf} submitted!`);
         }
     }
 
@@ -1087,17 +1098,21 @@ class RevTrendStrategy extends StrategyBase {
         let act_id = response["request"]["account_id"];
         let client_order_id = response["request"]["client_order_id"];
         let direction = response["request"]["direction"];
+        let order_type = response["request"]["order_type"] ? response["request"]["order_type"] : ORDER_TYPE.LIMIT;
 
-        let label = client_order_id.slice(3, 5);
+        let cfgID = client_order_id.slice(0, 7);
+        let idf = that.cfg[cfgID]["idf"];
+        let entry = that.cfg[cfgID]["entry"];
+        let interval = entry.split(".")[3];
+        let order_idf = [act_id, symbol, interval, direction, client_order_id].join("|");
+
+        let label = client_order_id.slice(7, 9);
         if (!Object.values(LABELMAP).includes(label)) {
-            logger.info(`${that.alias}::on_cancel_order_response|unknown order label ${label}!`);
+            logger.info(`${cfgID}::on_cancel_order_response|unknown order label ${label}!`);
             return;
         } else {
             label = stratutils.get_key_by_value(LABELMAP, label);
         }
-
-        let idf = [exchange, symbol, contract_type].join(".");
-        let order_idf = [act_id, symbol, direction, label, client_order_id].join("|");
 
         if (response["metadata"]["metadata"]["result"] === false) {
             //撤单失败
@@ -1108,16 +1123,16 @@ class RevTrendStrategy extends StrategyBase {
             if (retry === 5) {
                 that.slack_publish({
                     "type": "alert",
-                    "msg": `${that.alias}::${order_idf}::Cancel order retried over 5 times, check the code!`
+                    "msg": `${cfgID}::${order_idf}::Cancel order retried over 5 times, check the code!`
                 });
                 return;
             }
 
-            logger.debug(`${that.alias}::on_response|${order_idf}::an error occured during ${action}: ${error_code}: ${error_code_msg}`);
+            logger.debug(`${cfgID}::on_response|${order_idf}::an error occured during ${action}: ${error_code}: ${error_code_msg}`);
             //所有的撤单失败也会发邮件报警
             that.slack_publish({
                 "type": "alert",
-                "msg": `${that.alias}::on_response|${order_idf}::an error occured during ${action}: ${error_code}: ${error_code_msg}`
+                "msg": `${cfgID}::on_response|${order_idf}::an error occured during ${action}: ${error_code}: ${error_code_msg}`
             });
 
             let recancel = false, timeout = 10;     // 注意：这里不能用分号
@@ -1133,12 +1148,12 @@ class RevTrendStrategy extends StrategyBase {
                 // 2秒后重新撤单
                 recancel = true, timeout = 1000 * 2;
             } else {
-                logger.warn(`${that.alias}::on_response|${order_idf}::unknown error occured during ${action}: ${error_code}: ${error_code_msg}`);
+                logger.warn(`${cfgID}::on_response|${order_idf}::unknown error occured during ${action}: ${error_code}: ${error_code_msg}`);
                 return;
             }
 
             if (recancel) {
-                logger.info(`${that.alias}::${order_idf}::recancel the order in ${timeout} ms!`);
+                logger.info(`${cfgID}::${order_idf}::recancel the order in ${timeout} ms!`);
                 setTimeout(() => {
                     retry = (retry === undefined) ? 1 : retry + 1;
                     that.cancel_order({
@@ -1146,13 +1161,14 @@ class RevTrendStrategy extends StrategyBase {
                         exchange: exchange,
                         symbol: symbol,
                         contract_type: contract_type,
+                        order_type: order_type,
                         client_order_id: client_order_id,
                         account_id: act_id,
                     });
                 }, timeout);
             }
         } else {
-            logger.info(`${that.alias}::on_response|${order_idf} cancelled!`);
+            logger.info(`${cfgID}::on_response|${order_idf} cancelled!`);
         }
     }
 
@@ -1161,15 +1177,13 @@ class RevTrendStrategy extends StrategyBase {
         logger.info(JSON.stringify(this.order_map));
         let that = this;
 
-        let exchange = response["request"]["exchange"];
-        let symbol = response["request"]["symbol"];
-        let contract_type = response["request"]["contract_type"];
         let client_order_id = response["request"]["client_order_id"];
-        let idf = [exchange, symbol, contract_type].join(".");
+        let cfgID = client_order_id.slice(0, 7);
+        let entry = that.cfg[cfgID]["entry"];
 
-        let label = client_order_id.slice(3, 5);
+        let label = client_order_id.slice(7, 9);
         if (!Object.values(LABELMAP).includes(label)) {
-            logger.error(`${that.alias}::on_order_update|unknown order label ${label}!`);
+            logger.info(`${that.alias}::on_order_update|unknown order label ${label}!`);
             return;
         }
         label = stratutils.get_key_by_value(LABELMAP, label);
@@ -1179,7 +1193,7 @@ class RevTrendStrategy extends StrategyBase {
                 delete that.order_map[cfgID][client_order_id];
                 that.slack_publish({
                     "type": "alert",
-                    "msg": `${that.alias}::${idf}::After inspecting, delete ${client_order_id} from order map!`
+                    "msg": `${cfgID}::${entry}::After inspecting, delete ${client_order_id} from order map!`
                 });
             }
 
@@ -1187,7 +1201,7 @@ class RevTrendStrategy extends StrategyBase {
                 delete that.order_map[cfgID][label.slice(0, 6)];
                 that.slack_publish({
                     "type": "alert",
-                    "msg": `${that.alias}::${idf}::After inspecting, delete ${label}|${client_order_id} from order map!`
+                    "msg": `${cfgID}::${entry}::After inspecting, delete ${label}|${client_order_id} from order map!`
                 });
             }
 
@@ -1219,15 +1233,16 @@ class RevTrendStrategy extends StrategyBase {
         }
 
         let alert_string = "";
-        let corr_idfs = that.cfg["idfs"].filter(e => that.cfg[e]["act_id"] == act_id);
+        let corr_cfgIDs = that.cfg["cfgIDs"].filter(cfgID => that.cfg[cfgID]["act_id"] == act_id);
 
-        for (let idf of corr_idfs) {
-            let symbol = idf.split(".")[1];
-            let corr_active_orders = active_orders.filter(item => (item.symbol === symbol));
+        for (let cfgID of corr_cfgIDs) {
+            if (act_id !== that.cfg[cfgID]["act_id"]) continue;
+
+            let corr_active_orders = active_orders.filter(item => item.client_order_id.slice(0, 7) == cfgID);
             let corr_active_client_order_ids = corr_active_orders.map(item => item.client_order_id);
             let string = corr_active_client_order_ids.join(",");
 
-            let index = that.cfg["idfs"].indexOf(idf);
+            let index = that.cfg["cfgIDs"].indexOf(cfgID);
 
             let item = {};
             item[`${index + 1}|orders`] = string;
@@ -1246,7 +1261,7 @@ class RevTrendStrategy extends StrategyBase {
                 if (that.order_map[cfgID][key]["ToBeDeleted"]) {
                     // 超过10秒才删除，避免order_update推送延迟，导致order_update的处理过程中order_map中信息缺失
                     if (moment.now() - value["ToBeDeletedTime"] > 1000 * 10) {
-                        alert_string += `${idf}: ${key}: ${JSON.stringify(that.order_map[cfgID][key])}\n`;
+                        alert_string += `${cfgID}: ${key}: ${JSON.stringify(that.order_map[cfgID][key])}\n`;
                         // 如果delete了，在deal_with_TBA里面又会报错？
                         // delete that.order_map[cfgID][key];
                     }
@@ -1264,9 +1279,9 @@ class RevTrendStrategy extends StrategyBase {
             alert_string = `${that.alias}|${act_id}::order not active, but still in the order map as follows, \n${alert_string}\n`;
         }
 
-        let wierd_orders_1 = active_orders.filter(e => !that.cfg["idfs"].includes([exchange, e.symbol, contract_type].join(".")));
-        let wierd_orders_2 = active_orders.filter(e => that.cfg["idfs"].includes([exchange, e.symbol, contract_type].join(".")) && (that.cfg[[exchange, e.symbol, contract_type].join(".")]["act_id"] !== act_id));
-
+        let wierd_orders_1 = active_orders.filter(e => !that.cfg["cfgIDs"].includes(e.client_order_id.slice(0, 7)));
+        let wierd_orders_2 = active_orders.filter(e => that.cfg["cfgIDs"].includes(e.client_order_id.slice(0, 7)) && (that.cfg[e.client_order_id.slice(0, 7)]["act_id"] !== act_id));
+        
         if (wierd_orders_1.length > 0) alert_string += `${that.alias}|${act_id}::idf not exists:: ${JSON.stringify(wierd_orders_1)}\n`;
         if (wierd_orders_2.length > 0) alert_string += `${that.alias}|${act_id}::act_id inconsistent:: ${JSON.stringify(wierd_orders_2)}\n`; 
         if (alert_string !== "") {

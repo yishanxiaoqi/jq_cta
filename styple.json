@@ -1,28 +1,85 @@
-2025-12-13 22: 00: 00.708 - info: QTR: :on_cancel_order_response| {
-    "ref_id": "QTR3eeQ3ONW6LYUnX4LLkNrlVtTKzr",
-    "action": "cancel_order",
+{
+    "ref_id": "BAMmqs1RcQKDFj3yAiyYspeW1zG42k",
+    "action": "query_orders",
     "strategy": "BinanceU",
     "metadata": {
         "exchange": "BinanceU",
-        "symbol": "ETHUSDT",
         "contract_type": "perp",
-        "order_type": "limit",
-        "event": "cancel_order",
+        "event": "query_orders",
         "metadata": {
-            "account_id": "th_binance_cny_master",
-            "result": false,
-            "error_code": -2011,
-            "error_code_msg": "Unknown order sent."
+            "result": true,
+            "account_id": "th_binance_cny_sub01",
+            "orders": [
+                {
+                    "symbol": "CTSIUSDT",
+                    "order_id": 3900515901,
+                    "client_order_id": "R240071UPtJFmI",
+                    "ordert_type": "limit",
+                    "original_amount": 2632,
+                    "avg_executed_price": 0,
+                    "filled": 0,
+                    "status": "new",
+                    "direction": "sell",
+                    "price": 0.038,
+                    "contract_type": "perp",
+                    "create_time": "20251214225314169",
+                    "last_updated_time": "20251214225314169"
+                },
+                {
+                    "symbol": "CTSIUSDT",
+                    "order_id": 3900515900,
+                    "client_order_id": "R240071DN4WAZr",
+                    "ordert_type": "limit",
+                    "original_amount": 2841,
+                    "avg_executed_price": 0,
+                    "filled": 0,
+                    "status": "new",
+                    "direction": "buy",
+                    "price": 0.0352,
+                    "contract_type": "perp",
+                    "create_time": "20251214225314167",
+                    "last_updated_time": "20251214225314167"
+                },
+                {
+                    "symbol": "XMRUSDT",
+                    "order_id": 13497264497,
+                    "client_order_id": "R060360DNTGupg",
+                    "ordert_type": "limit",
+                    "original_amount": 0.247,
+                    "avg_executed_price": 0,
+                    "filled": 0,
+                    "status": "new",
+                    "direction": "buy",
+                    "price": 405.19,
+                    "contract_type": "perp",
+                    "create_time": "20251214225259837",
+                    "last_updated_time": "20251214225259866"
+                },
+                {
+                    "symbol": "XMRUSDT",
+                    "order_id": 13497264498,
+                    "client_order_id": "R060360UP6YpaZ",
+                    "ordert_type": "limit",
+                    "original_amount": 0.241,
+                    "avg_executed_price": 0,
+                    "filled": 0,
+                    "status": "new",
+                    "direction": "sell",
+                    "price": 415.47,
+                    "contract_type": "perp",
+                    "create_time": "20251214225259839",
+                    "last_updated_time": "20251214225259867"
+                }
+            ],
+            "timestamp": "20251214225319887"
         },
-        "timestamp": "20251213220000708"
+        "timestamp": "20251214225319887"
     },
     "request": {
         "exchange": "BinanceU",
-        "symbol": "ETHUSDT",
         "contract_type": "perp",
-        "client_order_id": "QTR0122UPYurli",
-        "account_id": "th_binance_cny_master",
-        "ref_id": "QTR3eeQ3ONW6LYUnX4LLkNrlVtTKzr",
-        "send_time": "20251213220000666"
+        "account_id": "th_binance_cny_sub01",
+        "ref_id": "BAMmqs1RcQKDFj3yAiyYspeW1zG42k",
+        "send_time": "20251214225319842"
     }
 }

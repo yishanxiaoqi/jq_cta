@@ -725,7 +725,40 @@
 
 # Order Update
 
-## Place Order
+## Order Placed
+
+### Stop Market Order
+发一条stop market order只会推送一条order update
+```json
+{
+    "e": "ALGO_UPDATE",
+    "T": 1765638225741,
+    "E": 1765638225744,
+    "o": {
+        "caid": "testtest0843",
+        "aid": 2000000037542090,
+        "at": "CONDITIONAL",
+        "o": "STOP_MARKET",
+        "s": "ETHUSDT",
+        "S": "BUY",
+        "ps": "BOTH",
+        "f": "GTC",
+        "q": "0.05",
+        "X": "NEW",
+        "ai": "",
+        "tp": "3113.8",
+        "p": "0",
+        "V": "EXPIRE_MAKER",
+        "wt": "CONTRACT_PRICE",
+        "pm": "NONE",
+        "cp": false,
+        "pP": false,
+        "R": false,
+        "tt": 0,
+        "gtd": 0
+    }
+}
+```
 
 ```json
 // BinanceU: place limit order
@@ -772,7 +805,7 @@
 }
 ```
 
-## Cancel Order
+## Order Cancelled
 
 ```json
 // OKX
@@ -853,9 +886,218 @@
 }
 ```
 
-## Inspect Order
+## Order Execuated / Triggered
 
-## Modify Order
+### Stop Market Order
+- Stop Market Order在触发后至少会推送5条order_update，其中ORDER_TRADE_UPDATE（triggering, triggered, finished）各三条，ALGO_UPDATE（new, filled）各两条，因为可能还经历partially filled，所以ALGO_UPDATE可能更多。
+```json
+{
+    "e": "ALGO_UPDATE",
+    "T": 1765638225741,
+    "E": 1765638225744,
+    "o": {
+        "caid": "testtest0843",
+        "aid": 2000000037542090,
+        "at": "CONDITIONAL",
+        "o": "STOP_MARKET",
+        "s": "ETHUSDT",
+        "S": "BUY",
+        "ps": "BOTH",
+        "f": "GTC",
+        "q": "0.05",
+        "X": "NEW",
+        "ai": "",
+        "tp": "3113.8",
+        "p": "0",
+        "V": "EXPIRE_MAKER",
+        "wt": "CONTRACT_PRICE",
+        "pm": "NONE",
+        "cp": false,
+        "pP": false,
+        "R": false,
+        "tt": 0,
+        "gtd": 0
+    }
+}
+{
+    "e": "ALGO_UPDATE",
+    "T": 1765638258179,
+    "E": 1765638258183,
+    "o": {
+        "caid": "testtest0843",
+        "aid": 2000000037542090,
+        "at": "CONDITIONAL",
+        "o": "STOP_MARKET",
+        "s": "ETHUSDT",
+        "S": "BUY",
+        "ps": "BOTH",
+        "f": "GTC",
+        "q": "0.05",
+        "X": "TRIGGERING",
+        "ai": "",
+        "tp": "3113.8",
+        "p": "0",
+        "V": "EXPIRE_MAKER",
+        "wt": "CONTRACT_PRICE",
+        "pm": "NONE",
+        "cp": false,
+        "pP": false,
+        "R": false,
+        "tt": 1765638258179,
+        "gtd": 0
+    }
+}
+{
+    "e": "ORDER_TRADE_UPDATE",
+    "T": 1765638258183,
+    "E": 1765638258184,
+    "o": {
+        "s": "ETHUSDT",
+        "c": "testtest0843",    // 触发变成market order后，client order id倒是不会变
+        "S": "BUY",
+        "o": "MARKET",
+        "f": "GTC",
+        "q": "0.05",
+        "p": "0",
+        "ap": "0",
+        "sp": "0",
+        "x": "NEW",
+        "X": "NEW",
+        "i": 8389766049535966000,   // 触发变成market order后，会产生一个新的order id
+        "l": "0",
+        "z": "0",
+        "L": "0",
+        "n": "0",
+        "N": "USDT",
+        "T": 1765638258183,
+        "t": 0,
+        "b": "0",
+        "a": "0",
+        "m": false,
+        "R": false,
+        "wt": "CONTRACT_PRICE",
+        "ot": "MARKET",
+        "ps": "BOTH",
+        "cp": false,
+        "rp": "0",
+        "pP": false,
+        "si": 2000000037542090, // 原始的order id被记录在这里
+        "ss": -1,
+        "st": "ALGO_CONDITION",
+        "V": "EXPIRE_MAKER",
+        "pm": "NONE",
+        "gtd": 0,
+        "er": "0"
+    }
+}
+{
+    "e": "ORDER_TRADE_UPDATE",
+    "T": 1765638258183,
+    "E": 1765638258184,
+    "o": {
+        "s": "ETHUSDT",
+        "c": "testtest0843",
+        "S": "BUY",
+        "o": "MARKET",
+        "f": "GTC",
+        "q": "0.05",
+        "p": "0",
+        "ap": "3113.87",
+        "sp": "0",
+        "x": "TRADE",
+        "X": "FILLED",
+        "i": 8389766049535966000,
+        "l": "0.05",
+        "z": "0.05",
+        "L": "3113.87",
+        "n": "0.07784675",
+        "N": "USDT",
+        "T": 1765638258183,
+        "t": 7043103089,
+        "b": "0",
+        "a": "0",
+        "m": false,
+        "R": false,
+        "wt": "CONTRACT_PRICE",
+        "ot": "MARKET",
+        "ps": "BOTH",
+        "cp": false,
+        "rp": "0",
+        "pP": false,
+        "si": 2000000037542090,
+        "ss": -1,
+        "st": "ALGO_CONDITION",
+        "V": "EXPIRE_MAKER",
+        "pm": "NONE",
+        "gtd": 0,
+        "er": "0"
+    }
+}
+{
+    "e": "ALGO_UPDATE",
+    "T": 1765638258194,
+    "E": 1765638258199,
+    "o": {
+        "caid": "testtest0843",
+        "aid": 2000000037542090,
+        "at": "CONDITIONAL",
+        "o": "STOP_MARKET",
+        "s": "ETHUSDT",
+        "S": "BUY",
+        "ps": "BOTH",
+        "f": "GTC",
+        "q": "0.05",
+        "X": "TRIGGERED",
+        "ai": "8389766049535966587",
+        "ap": "0",
+        "aq": "0",
+        "act": "MARKET",
+        "tp": "3113.8",
+        "p": "0",
+        "V": "EXPIRE_MAKER",
+        "wt": "CONTRACT_PRICE",
+        "pm": "NONE",
+        "cp": false,
+        "pP": false,
+        "R": false,
+        "tt": 1765638258179,
+        "gtd": 0
+    }
+}
+{
+    "e": "ALGO_UPDATE",
+    "T": 1765638258194,
+    "E": 1765638258199,
+    "o": {
+        "caid": "testtest0843",
+        "aid": 2000000037542090,
+        "at": "CONDITIONAL",
+        "o": "STOP_MARKET",
+        "s": "ETHUSDT",
+        "S": "BUY",
+        "ps": "BOTH",
+        "f": "GTC",
+        "q": "0.05",
+        "X": "FINISHED",
+        "ai": "8389766049535966587",
+        "ap": "3113.87",
+        "aq": "0.05",
+        "act": "MARKET",
+        "tp": "3113.8",
+        "p": "0",
+        "V": "EXPIRE_MAKER",
+        "wt": "CONTRACT_PRICE",
+        "pm": "NONE",
+        "cp": false,
+        "pP": false,
+        "R": false,
+        "tt": 1765638258179,
+        "gtd": 0
+    }
+}
+```
+
+## Order Modified
 
 ```json
 // Binance - Modify
@@ -901,5 +1143,3 @@
     }
 }
 ```
-
-## Query Order

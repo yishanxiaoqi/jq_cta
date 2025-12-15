@@ -216,12 +216,13 @@ class QuickTrendStrategy extends StrategyBase {
 
         // 不是本策略的订单更新，自动过滤
         if (client_order_id.slice(0, 3) !== that.alias) return;
-        logger.info(`${that.alias}::on_order_update|${JSON.stringify(order_update)}`);
-
         let cfgID = client_order_id.slice(0, 7);
+        logger.info(`${cfgID}::on_order_update|${JSON.stringify(order_update)}`);
+
+        // 这个不能挪动位置，因为属于本策略的order_update才会进入这一步
         let idf = [exchange, symbol, contract_type].join(".");
         let entry = that.cfg[cfgID]["entry"];
-        let interval = entry.split(".")[4];
+        let interval = entry.split(".")[3];
 
         // 确定label以及order_idf
         let label = client_order_id.slice(7, 9);
@@ -548,7 +549,7 @@ class QuickTrendStrategy extends StrategyBase {
 
         // {order_type: "", client_order_id: ""}
         let orders_to_be_cancelled = [];    
-        // {label: "", target: "", tgt_qty: "", price: "", direction: "", order_type: ""}
+        // {label: "", target: "", quantity: "", price/stop_price: "", direction: "", order_type: ""}
         let orders_to_be_submitted = [];    
 
         if (that.status_map[cfgID]["status"] === "EMPTY") {
@@ -743,7 +744,7 @@ class QuickTrendStrategy extends StrategyBase {
         let direction = response["request"]["direction"];
         let price = response["request"]["price"];
         let stop_price = response["request"]["stop_price"];
-        let order_type = response["request"]["order_type"];
+        let order_type = response["request"]["order_type"] ? response["request"]["order_type"] : ORDER_TYPE.LIMIT;
 
         let cfgID = client_order_id.slice(0, 7);
         let idf = that.cfg[cfgID]["idf"];
@@ -903,7 +904,6 @@ class QuickTrendStrategy extends StrategyBase {
         let that = this;
 
         let action = response["action"];
-        let order_type = response["metadata"]["order_type"];
 
         // 用request里面的数据比较保险
         let exchange = response["request"]["exchange"];
@@ -912,6 +912,7 @@ class QuickTrendStrategy extends StrategyBase {
         let act_id = response["request"]["account_id"];
         let client_order_id = response["request"]["client_order_id"];
         let direction = response["request"]["direction"];
+        let order_type = response["request"]["order_type"] ? response["request"]["order_type"] : ORDER_TYPE.LIMIT;
 
         let cfgID = client_order_id.slice(0, 7);
         let idf = that.cfg[cfgID]["idf"];
@@ -1012,7 +1013,8 @@ class QuickTrendStrategy extends StrategyBase {
         }
 
         let alert_string = "";
-        for (let cfgID of that.cfg["cfgIDs"]) {
+        let corr_cfgIDs = that.cfg["cfgIDs"].filter(cfgID => that.cfg[cfgID]["act_id"] == act_id);
+        for (let cfgID of corr_cfgIDs) {
             if (act_id !== that.cfg[cfgID]["act_id"]) continue;
 
             let corr_active_orders = active_orders.filter(item => item.client_order_id.slice(0, 7) == cfgID);

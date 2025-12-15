@@ -46,7 +46,10 @@ ORDER_STATUS = {
     FILLED: "filled",
     PARTIALLY_FILLED: "partially_filled",
     MODIFIED: "modified",
-    EXPIRED: "expired"
+    EXPIRED: "expired",
+    TRIGGERING: "triggering",
+    TRIGGERED: "triggered",
+    FINISHED: "finished"
 }
 
 MARKET_DATA = {

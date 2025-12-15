@@ -217,10 +217,11 @@ class RangeVolStrategy extends StrategyBase {
         let cfgID = client_order_id.slice(0, 7);
         logger.info(`${cfgID}::on_order_update|${JSON.stringify(order_update)}`);
 
+        // 这个不能挪动位置，因为属于本策略的order_update才会进入这一步
         let idf = [exchange, symbol, contract_type].join(".");
         let entry = that.cfg[cfgID]["entry"];
-        let interval = entry.split(".")[4];
-        
+        let interval = entry.split(".")[3];
+
         let label = client_order_id.slice(7, 9);
         if (!LABELS.includes(label)) {
             logger.info(`${cfgID}::on_order_update|unknown order label ${label}!`);

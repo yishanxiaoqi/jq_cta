@@ -68,6 +68,43 @@
 ## 1.1 send order response
 
 ```json
+// BinanceU place limit order - 2025-12-11
+{
+    "ref_id": "DMOwS0WY3BuGKUONGzK2LXAETp4wae",
+    "action": "place_order",
+    "strategy": "BinanceU",
+    "metadata": {
+        "exchange": "BinanceU",
+        "symbol": "BATUSDT",
+        "contract_type": "perp",
+        "order_type": "limit",
+        "event": "place_order",
+        "metadata": {
+            "result": true,
+            "account_id": "th_binance_cny_master",
+            "order_id": 6513442184,
+            "client_order_id": "testtest1009",
+            "timestamp": 1765462194704
+        },
+        "timestamp": "20251211220954713"
+    },
+    "request": {
+        "exchange": "BinanceU",
+        "symbol": "BATUSDT",
+        "contract_type": "perp",
+        "price": 0.27,
+        "quantity": 100,
+        "direction": "Sell",
+        "order_type": "limit",
+        "account_id": "th_binance_cny_master",
+        "client_order_id": "testtest1009",
+        "ref_id": "DMOwS0WY3BuGKUONGzK2LXAETp4wae",
+        "send_time": "20251211220954659"
+    }
+}
+```
+
+```json
 {
     "ref_id": "R01S8qeAOhVlvgFVU5EW25vT6uGuSC",
     "action": "place_order",
@@ -984,43 +1021,6 @@ OKX：改单成功
 ## 2.1 place order
 
 ### 2.1.1 place limit order
-
-```json
-// BinanceU place limit order - 2025-12-11
-{
-    "ref_id": "DMOwS0WY3BuGKUONGzK2LXAETp4wae",
-    "action": "place_order",
-    "strategy": "BinanceU",
-    "metadata": {
-        "exchange": "BinanceU",
-        "symbol": "BATUSDT",
-        "contract_type": "perp",
-        "order_type": "limit",
-        "event": "place_order",
-        "metadata": {
-            "result": true,
-            "account_id": "th_binance_cny_master",
-            "order_id": 6513442184,
-            "client_order_id": "testtest1009",
-            "timestamp": 1765462194704
-        },
-        "timestamp": "20251211220954713"
-    },
-    "request": {
-        "exchange": "BinanceU",
-        "symbol": "BATUSDT",
-        "contract_type": "perp",
-        "price": 0.27,
-        "quantity": 100,
-        "direction": "Sell",
-        "order_type": "limit",
-        "account_id": "th_binance_cny_master",
-        "client_order_id": "testtest1009",
-        "ref_id": "DMOwS0WY3BuGKUONGzK2LXAETp4wae",
-        "send_time": "20251211220954659"
-    }
-}
-```
 
 ### 2.1.2 place market order
 

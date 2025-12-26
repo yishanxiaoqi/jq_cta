@@ -32,7 +32,12 @@
         "BinanceU.XLMUSDT.perp.1d"
     ],
     "cfgIDs": [
-        "QTR0122"
+        "QTR0092",
+        "QTR0122",
+        "QTR0116",
+        "QTR0161",
+        "QTR0250",
+        "QTR0364"
     ],
     "QTR0092": {
         "idf": "BinanceU.AVAXUSDT.perp",

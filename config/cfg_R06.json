@@ -19,6 +19,7 @@
         "SNXUSDT",
         "SOLUSDT",
         "VETUSDT",
+        "XMRUSDT",
         "XRPUSDT",
         "YFIUSDT"
     ],
@@ -34,10 +35,45 @@
         "BinanceU.SNXUSDT.perp",
         "BinanceU.SOLUSDT.perp",
         "BinanceU.VETUSDT.perp",
+        "BinanceU.XMRUSDT.perp",
         "BinanceU.XRPUSDT.perp",
         "BinanceU.YFIUSDT.perp"
     ],
-    "BinanceU.BATUSDT.perp": {
+    "entries": [
+        "BinanceU.BATUSDT.perp.6h",
+        "BinanceU.BNBUSDT.perp.6h",
+        "BinanceU.DASHUSDT.perp.6h",
+        "BinanceU.DOGEUSDT.perp.6h",
+        "BinanceU.KAVAUSDT.perp.6h",
+        "BinanceU.NEARUSDT.perp.6h",
+        "BinanceU.QTUMUSDT.perp.6h",
+        "BinanceU.RLCUSDT.perp.6h",
+        "BinanceU.SNXUSDT.perp.6h",
+        "BinanceU.SOLUSDT.perp.6h",
+        "BinanceU.VETUSDT.perp.6h",
+        "BinanceU.XMRUSDT.perp.6h",
+        "BinanceU.XRPUSDT.perp.6h",
+        "BinanceU.YFIUSDT.perp.6h"
+    ],
+    "cfgIDs": [
+        "R060064",
+        "R060161",
+        "R060181",
+        "R060072",
+        "R060087",
+        "R060095",
+        "R060099",
+        "R060302",
+        "R060331",
+        "R060106",
+        "R060113",
+        "R060360",
+        "R060361",
+        "R060365"
+    ],
+    "R060064": {
+        "idf": "BinanceU.BATUSDT.perp",
+        "entry": "BinanceU.BATUSDT.perp.6h",
         "splitAt": 0,
         "track_ATR_n": 20,
         "track_ATR_multiplier": 0.8,
@@ -50,7 +86,9 @@
         "act_id": "th_binance_cny_master",
         "cfgID": "R060064"
     },
-    "BinanceU.BNBUSDT.perp": {
+    "R060161": {
+        "idf": "BinanceU.BNBUSDT.perp",
+        "entry": "BinanceU.BNBUSDT.perp.6h",
         "splitAt": 0,
         "track_ATR_n": 10,
         "track_ATR_multiplier": 1.5,
@@ -63,7 +101,9 @@
         "act_id": "th_binance_cny_master",
         "cfgID": "R060161"
     },
-    "BinanceU.DASHUSDT.perp": {
+    "R060181": {
+        "idf": "BinanceU.DASHUSDT.perp",
+        "entry": "BinanceU.DASHUSDT.perp.6h",
         "splitAt": 0,
         "track_ATR_n": 25,
         "track_ATR_multiplier": 1.0,
@@ -76,7 +116,9 @@
         "act_id": "th_binance_cny_master",
         "cfgID": "R060181"
     },
-    "BinanceU.DOGEUSDT.perp": {
+    "R060072": {
+        "idf": "BinanceU.DOGEUSDT.perp",
+        "entry": "BinanceU.DOGEUSDT.perp.6h",
         "splitAt": 5,
         "track_ATR_n": 5,
         "track_ATR_multiplier": 1.0,
@@ -89,7 +131,9 @@
         "act_id": "th_binance_cny_master",
         "cfgID": "R060072"
     },
-    "BinanceU.KAVAUSDT.perp": {
+    "R060087": {
+        "idf": "BinanceU.KAVAUSDT.perp",
+        "entry": "BinanceU.KAVAUSDT.perp.6h",
         "splitAt": 1,
         "track_ATR_n": 10,
         "track_ATR_multiplier": 0.7,
@@ -102,7 +146,9 @@
         "act_id": "th_binance_cny_master",
         "cfgID": "R060087"
     },
-    "BinanceU.NEARUSDT.perp": {
+    "R060095": {
+        "idf": "BinanceU.NEARUSDT.perp",
+        "entry": "BinanceU.NEARUSDT.perp.6h",
         "splitAt": 5,
         "track_ATR_n": 5,
         "track_ATR_multiplier": 1.2,
@@ -115,7 +161,9 @@
         "act_id": "th_binance_cny_master",
         "cfgID": "R060095"
     },
-    "BinanceU.QTUMUSDT.perp": {
+    "R060099": {
+        "idf": "BinanceU.QTUMUSDT.perp",
+        "entry": "BinanceU.QTUMUSDT.perp.6h",
         "splitAt": 3,
         "track_ATR_n": 20,
         "track_ATR_multiplier": 0.8,
@@ -128,7 +176,9 @@
         "act_id": "th_binance_cny_master",
         "cfgID": "R060099"
     },
-    "BinanceU.RLCUSDT.perp": {
+    "R060302": {
+        "idf": "BinanceU.RLCUSDT.perp",
+        "entry": "BinanceU.RLCUSDT.perp.6h",
         "splitAt": 0,
         "track_ATR_n": 5,
         "track_ATR_multiplier": 1.4,
@@ -141,7 +191,9 @@
         "act_id": "th_binance_cny_master",
         "cfgID": "R060302"
     },
-    "BinanceU.SNXUSDT.perp": {
+    "R060331": {
+        "idf": "BinanceU.SNXUSDT.perp",
+        "entry": "BinanceU.SNXUSDT.perp.6h",
         "splitAt": 1,
         "track_ATR_n": 10,
         "track_ATR_multiplier": 1.0,
@@ -154,7 +206,9 @@
         "act_id": "th_binance_cny_master",
         "cfgID": "R060331"
     },
-    "BinanceU.SOLUSDT.perp": {
+    "R060106": {
+        "idf": "BinanceU.SOLUSDT.perp",
+        "entry": "BinanceU.SOLUSDT.perp.6h",
         "splitAt": 0,
         "track_ATR_n": 50,
         "track_ATR_multiplier": 0.4,
@@ -167,7 +221,9 @@
         "act_id": "th_binance_cny_master",
         "cfgID": "R060106"
     },
-    "BinanceU.VETUSDT.perp": {
+    "R060113": {
+        "idf": "BinanceU.VETUSDT.perp",
+        "entry": "BinanceU.VETUSDT.perp.6h",
         "splitAt": 0,
         "track_ATR_n": 25,
         "track_ATR_multiplier": 0.5,
@@ -180,7 +236,24 @@
         "act_id": "th_binance_cny_master",
         "cfgID": "R060113"
     },
-    "BinanceU.XRPUSDT.perp": {
+    "R060360": {
+        "idf": "BinanceU.XMRUSDT.perp",
+        "entry": "BinanceU.XMRUSDT.perp.6h",
+        "splitAt": 2,
+        "track_ATR_n": 5,
+        "track_ATR_multiplier": 0.4,
+        "stoploss_rate": 0.04,
+        "cutloss_rate": 0.03,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_master",
+        "cfgID": "R060360"
+    },
+    "R060361": {
+        "idf": "BinanceU.XRPUSDT.perp",
+        "entry": "BinanceU.XRPUSDT.perp.6h",
         "splitAt": 0,
         "track_ATR_n": 10,
         "track_ATR_multiplier": 1.1,
@@ -193,7 +266,9 @@
         "act_id": "th_binance_cny_master",
         "cfgID": "R060361"
     },
-    "BinanceU.YFIUSDT.perp": {
+    "R060365": {
+        "idf": "BinanceU.YFIUSDT.perp",
+        "entry": "BinanceU.YFIUSDT.perp.6h",
         "splitAt": 0,
         "track_ATR_n": 50,
         "track_ATR_multiplier": 0.4,

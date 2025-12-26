@@ -5,23 +5,23 @@ const fs = require("fs");
 let live_idfs = [];
 let live_idfs_d = {};
 let REV_aliases = ["R01", "R06", "R12", "R24"];
-let vol_aliases = ["R01", "R06", "R12", "R24", "SRE", "RAV", "TES"];
+let vol_aliases = ["R01", "R06", "R12", "R24", "SRE", "RAV"];
 let trend_aliases = ["STR", "QTR"];
-let live_aliases = ["R01", "R06", "R12", "R24", "SRE", "RAV", "STR", "QTR", "TES"];
+let live_aliases = ["R01", "R06", "R12", "R24", "SRE", "RAV", "STR", "QTR"];
 
 console.log(live_aliases);
 let asset_allocation = {};
 
 for (let alias of live_aliases) {
     let cfg = JSON.parse(fs.readFileSync(`./config/cfg_${alias}.json`, 'utf8'));
-    let loop_items = (REV_aliases.includes(alias)) ? cfg["idfs"] : cfg["cfgIDs"];
-    for (let item of loop_items) {
-        let idf = (REV_aliases.includes(alias)) ? item : cfg[item]["idf"];
+    let cfgIDs = cfg["cfgIDs"];
+    for (let cfgID of cfgIDs) {
+        let idf = cfg[cfgID]["idf"];
         if (! live_idfs.includes(idf)) live_idfs.push(idf);
 
-        // console.log(item);
-        let act_id = (REV_aliases.includes(alias)) ? cfg[idf]["act_id"] : cfg[item]["act_id"];
-        let ini_usdt = (REV_aliases.includes(alias)) ? cfg[idf]["ini_usdt"] : cfg[item]["ini_usdt"];
+        // console.log(cfgID, cfgID);
+        let act_id = cfg[cfgID]["act_id"];
+        let ini_usdt = cfg[cfgID]["ini_usdt"];
         if (act_id in live_idfs_d) {
             if (! live_idfs_d[act_id].includes(idf)) live_idfs_d[act_id].push(idf);
         } else {
@@ -63,3 +63,4 @@ for (let act_id of Object.keys(live_idfs_d)) {
 }
 
 console.log(`各账户交易情况：${JSON.stringify(asset_allocation)}`);
+// console.log(`各账户交易交易对：${JSON.stringify(live_idfs_d)}`);

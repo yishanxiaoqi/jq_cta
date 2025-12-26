@@ -6,40 +6,21 @@
         "th_binance_cny_sub01"
     ],
     "symbols": [
-        "ASRUSDT",
         "XMRUSDT",
         "CTSIUSDT"
     ],
     "idfs": [
-        "BinanceU.ASRUSDT.perp",
         "BinanceU.XMRUSDT.perp",
         "BinanceU.CTSIUSDT.perp"
     ],
     "entries": [
-        "BinanceU.ASRUSDT.perp.1h",
         "BinanceU.XMRUSDT.perp.6h",
         "BinanceU.CTSIUSDT.perp.1d"
     ],
     "cfgIDs" : [
-        "TES0250",
         "TES0360",
         "TES0071"
     ],
-    "TES0250": {
-        "idf": "BinanceU.ASRUSDT.perp",
-        "entry": "BinanceU.ASRUSDT.perp.1h",
-        "splitAt": 0,
-        "track_ATR_n": 5,
-        "track_ATR_multiplier": 0.7,
-        "stoploss_rate": 0.04,
-        "cutloss_rate": 0.04,
-        "ini_af": 0.02,
-        "delta_af": 0.02,
-        "bar_enter_limit": 1,
-        "ini_usdt": 100,
-        "act_id": "th_binance_cny_sub01",
-        "cfgID": "TES0250"
-    },
     "TES0360": {
         "idf": "BinanceU.XMRUSDT.perp",
         "entry": "BinanceU.XMRUSDT.perp.6h",

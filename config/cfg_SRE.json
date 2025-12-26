@@ -1,6 +1,6 @@
 {
     "alias": "SRE",
-    "clear_existing_status": true,
+    "clear_existing_status": false,
     "ini_usdt": 100,
     "act_ids": [
         "th_binance_cny_master"
@@ -22,7 +22,7 @@
         "idf": "BinanceU.LRCUSDT.perp",
         "splitAt": 20,
         "track_ATR_n": 10,
-        "track_ATR_multiplier": 0.05,
+        "track_ATR_multiplier": 0.5,
         "cutloss_rate": 0.1,
         "ini_af": 0.01,
         "delta_af": 0.01,

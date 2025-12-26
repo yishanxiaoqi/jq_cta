@@ -38,7 +38,7 @@ class BalanceMonitor extends StrategyBase {
             "BinanceU.th_binance_cny_master.perp": moment("2025-10-20"),
             "BinanceU.th_binance_cny_sub01.perp": moment("2025-11-01")
         };
-        this.aliases = ["R01", "R06", "R12", "R24", "SRE", "STR", "QTR", "RAV", "TES"];
+        this.aliases = ["R01", "R06", "R12", "R24", "SRE", "STR", "QTR", "RAV"];
         this.rev_aliases = ["R01", "R06", "R12", "R24"];
 
         this.account_summary = {};
@@ -315,19 +315,17 @@ class BalanceMonitor extends StrategyBase {
         for (let alias of this.aliases) {
             let cfg = JSON.parse(fs.readFileSync(`./config/cfg_${alias}.json`, 'utf8'));
             let status_map = JSON.parse(fs.readFileSync(`./config/status_map_${alias}.json`, 'utf8'));
-            // 不在cfg里面的不需要进行统计
-            let loop_items = (this.rev_aliases.includes(alias))? cfg["idfs"] : cfg["cfgIDs"];
 
-            for (let item of loop_items) {
-                if (cfg[item].act_id !== account_id) continue;
-                if (status_map[item] === undefined) continue;
+            for (let cfgID of cfg["cfgIDs"]) {
+                if (cfg[cfgID].act_id !== account_id) continue;
+                if (status_map[cfgID] === undefined) continue;
                 
-                let idf = (this.rev_aliases.includes(alias))? item : cfg[item]["idf"];
+                let idf = cfg[cfgID]["idf"];
                 let symbol = idf.split(".")[1];
                 if (symbol in cal_positions) {
-                    cal_positions[symbol] += status_map[item]["pos"];
+                    cal_positions[symbol] += status_map[cfgID]["pos"];
                 } else {
-                    cal_positions[symbol] = status_map[item]["pos"];
+                    cal_positions[symbol] = status_map[cfgID]["pos"];
                 }
 
                 cal_positions[symbol] = stratutils.transform_with_tick_size(cal_positions[symbol], QUANTITY_TICK_SIZE[idf]);

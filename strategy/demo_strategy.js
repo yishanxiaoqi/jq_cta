@@ -14,7 +14,7 @@ class DemoStrategy extends StrategyBase {
 
         setTimeout(() => {
             // this._test_send_post_only_order();
-            this._test_send_order();
+            // this._test_send_order();
             // this._test_cancel_order();
             // this._test_inspect_order();
             // this._test_query_orders();
@@ -22,7 +22,7 @@ class DemoStrategy extends StrategyBase {
             // this._test_query_account();
             // this._test_send_fake_trade();
             // this._test_make_call();
-            // this._test_slack_publish();
+            this._test_slack_publish();
             // this._test_subscribe_market_data();
             // this._test_unsubscribe_market_data();
             // this._test_query_position();
@@ -189,7 +189,7 @@ class DemoStrategy extends StrategyBase {
 
     _test_slack_publish() {
         let publish = {
-            "type": "alert",
+            "type": "info",
             "msg": "test"
         }
         this.slack_publish(publish);

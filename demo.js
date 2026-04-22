@@ -1,4 +1,13 @@
-const utils = require("./utils/util_func");
-const apiconfig = require("./config/apiconfig.json");
+// import Decimal from "decimal.js";
+const Decimal = require('decimal.js');
 
-console.log(utils._util_get_key_by_value(apiconfig.BinanceU.orderTypeMap, "POST_ONLY"));
+// let tick_size = 1e-07;
+let tick_size = 0.0000001;
+
+const x = new Decimal(tick_size);
+console.log(new Decimal(tick_size).decimalPlaces());
+
+// console.log(tick_size.toFixed(7));
+// console.log(tick_size.toString());
+// let point_level = Number.isInteger(+tick_size) ? 0 : tick_size.toString().split('.')[1].length;
+// console.log(point_level);

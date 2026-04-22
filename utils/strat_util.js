@@ -6,6 +6,7 @@ const moment = require('moment');
 const momenttz = require('moment-timezone');
 const request = require('request');
 const JSONbig = require("json-bigint");
+const Decimal = require('decimal.js');
 
 const logger = require('../module/logger');
 const rp = require('../module/request');
@@ -253,7 +254,7 @@ function range(length, start = 0) {
 }
 
 function transform_with_tick_size(number, tick_size, round_type = 'jackie') {
-    const point_level = Number.isInteger(+tick_size) ? 0 : tick_size.toString().split('.')[1].length;  // cover tick_size=0.25 case
+    const point_level = Number.isInteger(+tick_size) ? 0 : new Decimal(tick_size).decimalPlaces();  // cover tick_size=0.25 case
     switch (round_type) {
         case 'round':
             return Math.max(parseFloat((Math.round(number / tick_size) * tick_size).toFixed(point_level)), tick_size);

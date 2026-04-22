@@ -8,7 +8,6 @@
     ],
     "symbols": [
         "AVAXUSDT",
-        "AXSUSDT",
         "ETHUSDT",
         "LINKUSDT",
         "UNIUSDT",
@@ -17,7 +16,6 @@
     ],
     "idfs": [
         "BinanceU.AVAXUSDT.perp",
-        "BinanceU.AXSUSDT.perp",
         "BinanceU.ETHUSDT.perp",
         "BinanceU.LINKUSDT.perp",
         "BinanceU.UNIUSDT.perp",
@@ -27,7 +25,6 @@
         "BinanceU.AVAXUSDT.perp.1h",
         "BinanceU.ETHUSDT.perp.1h",
         "BinanceU.UNIUSDT.perp.1h",
-        "BinanceU.AXSUSDT.perp.1d",
         "BinanceU.LINKUSDT.perp.1d",
         "BinanceU.XLMUSDT.perp.1d"
     ],
@@ -35,7 +32,6 @@
         "QTR0092",
         "QTR0122",
         "QTR0116",
-        "QTR0161",
         "QTR0250",
         "QTR0364"
     ],
@@ -73,19 +69,6 @@
         "track_ATR_multiplier": 0.4,
         "stop_rate": 0.2,
         "stoploss_rate": 0.01,
-        "af": 0.01,
-        "bar_enter_limit": 1,
-        "ini_usdt": 100,
-        "act_id": "th_binance_cny_master"
-    },
-    "QTR0161": {
-        "idf": "BinanceU.AXSUSDT.perp",
-        "entry": "BinanceU.AXSUSDT.perp.1d",
-        "splitAt": 0,
-        "track_ATR_n": 5,
-        "track_ATR_multiplier": 0.3,
-        "stop_rate": 0.14,
-        "stoploss_rate": 0.02,
         "af": 0.01,
         "bar_enter_limit": 1,
         "ini_usdt": 100,

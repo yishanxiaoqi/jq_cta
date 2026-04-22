@@ -1057,7 +1057,7 @@ class RevTrendStrategy extends StrategyBase {
                 logger.info(`${cfgID}::${order_idf}::resend the order in ${timeout} ms!`);
                 setTimeout(() => {
                     retry = (retry === undefined) ? 1 : retry + 1;
-                    let new_client_order_id = that.alias + LABELMAP[label] + randomID(7);
+                    let new_client_order_id = cfgID + LABELMAP[label] + randomID(7);
 
                     // 注意：order_map里面的key只有ANTI_L, ANTI_S, UP, DN四种；
                     // 但是label有六种！

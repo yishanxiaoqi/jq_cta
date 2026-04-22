@@ -393,7 +393,7 @@ class QuickTrendStrategy extends StrategyBase {
                     // 订单成交后status是EMPTY，bar_enter_n设置为1，防止继续发单开仓
                     that.status_map[cfgID]["bar_enter_n"] = 1;
 
-                    for (let item of ["bar_n", "enter", "stop_price", "stoploss_rate"]) {
+                    for (let item of ["bar_n", "enter", "stop_price", "stoploss_price"]) {
                         that.status_map[cfgID][item] = "";
                     }
                 } else {

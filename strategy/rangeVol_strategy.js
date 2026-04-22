@@ -1,4 +1,5 @@
 require("../config/typedef.js");
+require('../config/stratdef');
 const fs = require("fs");
 const moment = require("moment");
 const assert = require("assert");
@@ -160,33 +161,50 @@ class RangeVolStrategy extends StrategyBase {
 
         let entry = that.cfg[cfgID]["entry"];
         let [exchange, symbol, contract_type, interval] = entry.split(".");
-        let num = (interval.endsWith("d")) ? parseInt(interval.split("d")[0]) * 24 : parseInt(interval.split("h")[0]);
-        assert(["2d", "1d", "12h", "8h", "6h", "4h", "3h", "2h", "1h"].includes(interval));
-
+        assert(["1d", "12h", "8h", "6h", "4h", "3h", "2h", "1h", "30m", "15m", "5m"].includes(interval));
         that.klines[cfgID] = { "ts": [], "open": [], "high": [], "low": [], "ready": false };
-        let n_klines = (that.cfg[cfgID]["track_ATR_n"] + 1) * num;
-        let url = "https://fapi.binance.com/fapi/v1/klines?symbol=" + symbol + "&contractType=PERPETUAL&interval=1h&limit=" + n_klines;
-        logger.info(`Loading the klines from ${url}`);
-        request.get({
-            url: url, json: true
-        }, function (error, res, body) {
-            let high = Number.NEGATIVE_INFINITY, low = Number.POSITIVE_INFINITY;
-            for (let i = body.length - 1; i >= 0; i--) {
-                let ts = utils.get_human_readable_timestamp(body[i][0]);
-                // 如果是2d-interval，那么从2000-01-01的零点开始算splitAt
-                let hour = (interval == "2d") ? moment(ts, "YYYYMMDDHHmmssSSS").diff(moment("20000101000000000", "YYYYMMDDHHmmssSSS"), 'hours') : parseInt(ts.slice(8, 10));
-                high = Math.max(high, parseFloat(body[i][2]));
-                low = Math.min(low, parseFloat(body[i][3]));
-                if ((interval === "1h") || (hour % num === that.cfg[cfgID]["splitAt"])) {
+
+        if (interval.endsWith("m")) {
+            let n_klines = that.cfg[cfgID]["track_ATR_n"] + 1;
+            let url = "https://fapi.binance.com/fapi/v1/klines?symbol=" + symbol + "&contractType=PERPETUAL&interval=" + interval + "&limit=" + n_klines;
+            logger.info(`Loading the klines from ${url}`);
+            request.get({
+                url: url, json: true
+            }, function (error, res, body) {
+                for (let i = body.length - 1; i >= 0; i--) {
+                    let ts = utils.get_human_readable_timestamp(body[i][0]);
                     that.klines[cfgID]["ts"].push(ts);
                     that.klines[cfgID]["open"].push(parseFloat(body[i][1]));
-                    that.klines[cfgID]["high"].push(high);
-                    that.klines[cfgID]["low"].push(low);
-                    high = Number.NEGATIVE_INFINITY;
-                    low = Number.POSITIVE_INFINITY;
+                    that.klines[cfgID]["high"].push(parseFloat(body[i][2]));
+                    that.klines[cfgID]["low"].push(parseFloat(body[i][3]));
                 }
-            }
-        });
+            });
+        } else {
+            let num = (interval.endsWith("d")) ? parseInt(interval.split("d")[0]) * 24 : parseInt(interval.split("h")[0]);
+            let n_klines = (that.cfg[cfgID]["track_ATR_n"] + 1) * num;
+            let url = "https://fapi.binance.com/fapi/v1/klines?symbol=" + symbol + "&contractType=PERPETUAL&interval=1h&limit=" + n_klines;
+            logger.info(`Loading the klines from ${url}`);
+            request.get({
+                url: url, json: true
+            }, function (error, res, body) {
+                let high = Number.NEGATIVE_INFINITY, low = Number.POSITIVE_INFINITY;
+                for (let i = body.length - 1; i >= 0; i--) {
+                    let ts = utils.get_human_readable_timestamp(body[i][0]);
+                    // 如果是2d-interval，那么从2000-01-01的零点开始算splitAt
+                    let hour = (interval == "2d") ? moment(ts, "YYYYMMDDHHmmssSSS").diff(moment("20000101000000000", "YYYYMMDDHHmmssSSS"), 'hours') : parseInt(ts.slice(8, 10));
+                    high = Math.max(high, parseFloat(body[i][2]));
+                    low = Math.min(low, parseFloat(body[i][3]));
+                    if ((interval === "1h") || (hour % num === that.cfg[cfgID]["splitAt"])) {
+                        that.klines[cfgID]["ts"].push(ts);
+                        that.klines[cfgID]["open"].push(parseFloat(body[i][1]));
+                        that.klines[cfgID]["high"].push(high);
+                        that.klines[cfgID]["low"].push(low);
+                        high = Number.NEGATIVE_INFINITY;
+                        low = Number.POSITIVE_INFINITY;
+                    }
+                }
+            });
+        }
 
         setTimeout(() => {
             logger.info(`${cfgID}:${JSON.stringify(that.klines[cfgID])}`);

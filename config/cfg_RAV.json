@@ -8,52 +8,146 @@
     ],
     "symbols": [
         "1000XECUSDT",
+        "ARPAUSDT",
         "BATUSDT",
         "CELRUSDT",
+        "EDUUSDT",
+        "ETCUSDT",
         "GTCUSDT",
+        "HOTUSDT",
         "ICXUSDT",
         "KNCUSDT",
         "MTLUSDT",
         "RLCUSDT",
+        "SFPUSDT",
         "SKLUSDT",
-        "SPELLUSDT"
+        "SPELLUSDT",
+        "XMRUSDT",
+        "XTZUSDT"
     ],
     "idfs": [
         "BinanceU.1000XECUSDT.perp",
+        "BinanceU.ARPAUSDT.perp",
         "BinanceU.BATUSDT.perp",
         "BinanceU.CELRUSDT.perp",
+        "BinanceU.EDUUSDT.perp",
+        "BinanceU.ETCUSDT.perp",
         "BinanceU.GTCUSDT.perp",
+        "BinanceU.HOTUSDT.perp",
         "BinanceU.ICXUSDT.perp",
         "BinanceU.KNCUSDT.perp",
         "BinanceU.MTLUSDT.perp",
         "BinanceU.RLCUSDT.perp",
+        "BinanceU.SFPUSDT.perp",
         "BinanceU.SKLUSDT.perp",
-        "BinanceU.SPELLUSDT.perp"
+        "BinanceU.SPELLUSDT.perp",
+        "BinanceU.XMRUSDT.perp",
+        "BinanceU.XTZUSDT.perp"
     ],
     "entries": [
+        "BinanceU.ARPAUSDT.perp.30m",
+        "BinanceU.EDUUSDT.perp.30m",
+        "BinanceU.HOTUSDT.perp.30m",
+        "BinanceU.RLCUSDT.perp.30m",
+        "BinanceU.XMRUSDT.perp.30m",
         "BinanceU.1000XECUSDT.perp.1h",
+        "BinanceU.ARPAUSDT.perp.1h",
         "BinanceU.BATUSDT.perp.1h",
         "BinanceU.CELRUSDT.perp.1h",
+        "BinanceU.ETCUSDT.perp.1h",
         "BinanceU.GTCUSDT.perp.1h",
         "BinanceU.ICXUSDT.perp.1h",
         "BinanceU.KNCUSDT.perp.1h",
         "BinanceU.MTLUSDT.perp.1h",
         "BinanceU.RLCUSDT.perp.1h",
+        "BinanceU.SFPUSDT.perp.1h",
         "BinanceU.SKLUSDT.perp.1h",
-        "BinanceU.SPELLUSDT.perp.1h"
+        "BinanceU.SPELLUSDT.perp.1h",
+        "BinanceU.XMRUSDT.perp.1h",
+        "BinanceU.XTZUSDT.perp.1h"
     ],
     "cfgIDs" : [
+        "RAV0520",
+        "RAV0616",
+        "RAV0701",
+        "RAV0917",
+        "RAV1101",
         "RAV0016",
+        "RAV0069",
         "RAV0109",
         "RAV0132",
+        "RAV0176",
         "RAV0196",
         "RAV0228",
         "RAV0262",
         "RAV0311",
         "RAV0374",
+        "RAV0387",
         "RAV0397",
-        "RAV0403"
-    ],
+        "RAV0403",
+        "RAV0465",
+        "RAV0478"
+    ],    
+    "RAV0520" : {
+        "entry": "BinanceU.ARPAUSDT.perp.30m",
+        "idf": "BinanceU.ARPAUSDT.perp",
+        "splitAt": 0,
+        "track_ATR_n": 15,
+        "track_ATR_multiplier": 1.4,
+        "af": 0.005,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_master",
+        "cfgID": "RAV0520"
+    },
+    "RAV0616" : {
+        "entry": "BinanceU.EDUUSDT.perp.30m",
+        "idf": "BinanceU.EDUUSDT.perp",
+        "splitAt": 0,
+        "track_ATR_n": 20,
+        "track_ATR_multiplier": 1.5,
+        "af": 0.01,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "RAV0616"
+    },
+    "RAV0701" : {
+        "entry": "BinanceU.HOTUSDT.perp.30m",
+        "idf": "BinanceU.HOTUSDT.perp",
+        "splitAt": 0,
+        "track_ATR_n": 10,
+        "track_ATR_multiplier": 1.4,
+        "af": 0.00001,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_master",
+        "cfgID": "RAV0701"
+    },
+    "RAV0917" : {
+        "entry": "BinanceU.RLCUSDT.perp.30m",
+        "idf": "BinanceU.RLCUSDT.perp",
+        "splitAt": 0,
+        "track_ATR_n": 20,
+        "track_ATR_multiplier": 1.5,
+        "af": 0.005,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_master",
+        "cfgID": "RAV0917"
+    },
+    "RAV1101" : {
+        "entry": "BinanceU.XMRUSDT.perp.30m",
+        "idf": "BinanceU.XMRUSDT.perp",
+        "splitAt": 0,
+        "track_ATR_n": 50,
+        "track_ATR_multiplier": 0.5,
+        "af": 0.001,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_master",
+        "cfgID": "RAV1101"
+    },    
     "RAV0016" : {
         "entry": "BinanceU.1000XECUSDT.perp.1h",
         "idf": "BinanceU.1000XECUSDT.perp",
@@ -65,6 +159,18 @@
         "ini_usdt": 100,
         "act_id": "th_binance_cny_sub01",
         "cfgID": "RAV0016"
+    },
+    "RAV0069" : {
+        "entry": "BinanceU.ARPAUSDT.perp.1h",
+        "idf": "BinanceU.ARPAUSDT.perp",
+        "splitAt": 0,
+        "track_ATR_n": 10,
+        "track_ATR_multiplier": 1,
+        "af": 0.005,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_master",
+        "cfgID": "RAV0069"
     },
     "RAV0109" : {
         "entry": "BinanceU.BATUSDT.perp.1h",
@@ -89,6 +195,18 @@
         "ini_usdt": 100,
         "act_id": "th_binance_cny_sub01",
         "cfgID": "RAV0132"
+    },
+    "RAV0176" : {
+        "entry": "BinanceU.ETCUSDT.perp.1h",
+        "idf": "BinanceU.ETCUSDT.perp",
+        "splitAt": 0,
+        "track_ATR_n": 20,
+        "track_ATR_multiplier": 1.2,
+        "af": 0.01,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "RAV0176"
     },
     "RAV0196" : {
         "entry": "BinanceU.GTCUSDT.perp.1h",
@@ -149,6 +267,18 @@
         "ini_usdt": 100,
         "act_id": "th_binance_cny_master",
         "cfgID": "RAV0374"
+    },    
+    "RAV0387" : {
+        "entry": "BinanceU.SFPUSDT.perp.1h",
+        "idf": "BinanceU.SFPUSDT.perp",
+        "splitAt": 0,
+        "track_ATR_n": 5,
+        "track_ATR_multiplier": 0.8,
+        "af": 0.001,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_sub01",
+        "cfgID": "RAV0387"
     },
     "RAV0397" : {
         "entry": "BinanceU.SKLUSDT.perp.1h",
@@ -173,5 +303,29 @@
         "ini_usdt": 100,
         "act_id": "th_binance_cny_sub01",
         "cfgID": "RAV0403"
+    },
+    "RAV0465" : {
+        "entry": "BinanceU.XMRUSDT.perp.1h",
+        "idf": "BinanceU.XMRUSDT.perp",
+        "splitAt": 0,
+        "track_ATR_n": 5,
+        "track_ATR_multiplier": 1.1,
+        "af": 0.005,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_master",
+        "cfgID": "RAV0465"
+    },
+    "RAV0478" : {
+        "entry": "BinanceU.XTZUSDT.perp.1h",
+        "idf": "BinanceU.XTZUSDT.perp",
+        "splitAt": 0,
+        "track_ATR_n": 10,
+        "track_ATR_multiplier": 0.9,
+        "af": 0.01,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_master",
+        "cfgID": "RAV0478"
     }
 }

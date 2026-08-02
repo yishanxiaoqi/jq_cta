@@ -14,6 +14,7 @@
         "BNBUSDT",
         "HOTUSDT",
         "KAVAUSDT",
+        "QNTUSDT",
         "THETAUSDT",
         "YFIUSDT"
     ],
@@ -24,6 +25,7 @@
         "BinanceU.BNBUSDT.perp",
         "BinanceU.HOTUSDT.perp",
         "BinanceU.KAVAUSDT.perp",
+        "BinanceU.QNTUSDT.perp",
         "BinanceU.THETAUSDT.perp",
         "BinanceU.YFIUSDT.perp"
     ],
@@ -34,6 +36,7 @@
         "BinanceU.BNBUSDT.perp.1h",
         "BinanceU.HOTUSDT.perp.1h",
         "BinanceU.KAVAUSDT.perp.1h",
+        "BinanceU.QNTUSDT.perp.1h",
         "BinanceU.THETAUSDT.perp.1h",
         "BinanceU.YFIUSDT.perp.1h"
     ],
@@ -44,6 +47,7 @@
         "R010011",
         "R010079",
         "R010184",
+        "R010257",
         "R010135",
         "R010243"
     ],
@@ -73,7 +77,7 @@
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 100,
+        "ini_usdt": 200,
         "act_id": "th_binance_cny_master",
         "cfgID": "R010250"
     },
@@ -136,6 +140,21 @@
         "ini_usdt": 100,
         "act_id": "th_binance_cny_master",
         "cfgID": "R010184"
+    },
+    "R010257": {
+        "idf": "BinanceU.QNTUSDT.perp",
+        "entry": "BinanceU.QNTUSDT.perp.1h",
+        "splitAt": 0,
+        "track_ATR_n": 5,
+        "track_ATR_multiplier": 0.8,
+        "stoploss_rate": 0.06,
+        "cutloss_rate": 0.06,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_master",
+        "cfgID": "R010257"
     },
     "R010135": {
         "idf": "BinanceU.THETAUSDT.perp",

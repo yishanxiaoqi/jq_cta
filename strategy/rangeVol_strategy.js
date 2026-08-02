@@ -166,6 +166,7 @@ class RangeVolStrategy extends StrategyBase {
 
         if (interval.endsWith("m")) {
             let n_klines = that.cfg[cfgID]["track_ATR_n"] + 1;
+            // BinanceU仅支持1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M，没有10m
             let url = "https://fapi.binance.com/fapi/v1/klines?symbol=" + symbol + "&contractType=PERPETUAL&interval=" + interval + "&limit=" + n_klines;
             logger.info(`Loading the klines from ${url}`);
             request.get({
@@ -417,7 +418,8 @@ class RangeVolStrategy extends StrategyBase {
                 that.klines[cfgID]["high"][0] = Math.max(price, that.klines[cfgID]["high"][0]);
                 that.klines[cfgID]["low"][0] = Math.min(price, that.klines[cfgID]["low"][0]);
             } else {
-                logger.debug(`${that.alias}::${cfgID}::cur_bar_otime is smaller than klines ts[0]?`);
+                logger.debug(`${cfgID}::${entry}::cur_bar_otime ${that.cur_bar_otime[cfgID]} is smaller than klines ts[0]? ts: ${ts}`);
+                logger.debug(`${cfgID}::${entry}::${that.klines[cfgID]}`);
             }
 
             // update bar open time and net_profit

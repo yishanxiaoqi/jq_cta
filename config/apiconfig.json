@@ -4,8 +4,9 @@
         "restUrlQueryAccount": "/api/v3/account"
     },
     "BinanceU": {
-        "websocketUrl": "wss://fstream.binance.com/stream?streams=",
-        "privateWebsocketUrl": "wss://fstream.binance.com/ws/",
+        "publicWebsocketUrl": "wss://fstream.binance.com/public/stream?streams=",
+        "marketWebsocketUrl": "wss://fstream.binance.com/market/stream?streams=",
+        "privateWebsocketUrl": "wss://fstream.binance.com/private/ws/",
         "restUrl": "https://fapi.binance.com",
         "restUrlGetBalance": "/fapi/v2/balance",
         "restUrlGetHistoryOrder": "/fapi/v1/allOrders",

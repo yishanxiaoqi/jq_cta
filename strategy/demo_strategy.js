@@ -15,14 +15,14 @@ class DemoStrategy extends StrategyBase {
         setTimeout(() => {
             // this._test_send_post_only_order();
             // this._test_send_order();
-            // this._test_cancel_order();
+            this._test_cancel_order();
             // this._test_inspect_order();
             // this._test_query_orders();
             // this._test_modify_order();
             // this._test_query_account();
             // this._test_send_fake_trade();
             // this._test_make_call();
-            this._test_slack_publish();
+            // this._test_slack_publish();
             // this._test_subscribe_market_data();
             // this._test_unsubscribe_market_data();
             // this._test_query_position();
@@ -42,14 +42,15 @@ class DemoStrategy extends StrategyBase {
     }
 
     _test_send_fake_trade() {
-        let symbol = "ALPACAUSDT";
+        let symbol = "ETHUSDT";
         let metadata = [
             [
                 String(482902330),          // aggregated trade id
-                utils._util_get_human_readable_timestamp(),
-                parseFloat("0.17"),      // price
+                // utils._util_get_human_readable_timestamp(),
+                "20260723235959959",
+                parseFloat("1885.84"),      // price
                 TRADE_SIDE.SELL,
-                parseFloat(6685475.57 * 200)
+                parseFloat(0.01)
             ]
         ];
         let market_data = {
@@ -58,7 +59,7 @@ class DemoStrategy extends StrategyBase {
             contract_type: CONTRACT_TYPE.PERP,
             data_type: MARKET_DATA.TRADE,
             metadata: metadata,
-            timestamp: utils._util_get_human_readable_timestamp()
+            timestamp: "20260723235959959"
         };
         this.intercom.emit("MARKET_DATA", market_data, INTERCOM_SCOPE.FEED);
     }
@@ -120,27 +121,27 @@ class DemoStrategy extends StrategyBase {
     _test_send_order() {
         this.send_order({
             exchange: EXCHANGE.BINANCEU,
-            symbol: "ETHUSDT",
+            symbol: "BTCUSDT",
             contract_type: CONTRACT_TYPE.PERP,
-            stop_price: 3112.9,
-            // price: 0.27,
-            quantity: 0.05,
-            direction: DIRECTION.BUY,
+            // stop_price: 79000,
+            price: 79000,
+            quantity: 0.01,
+            direction: DIRECTION.SELL,
             order_type: ORDER_TYPE.STOP_MARKET,
             account_id: "th_binance_cny_master",
-            client_order_id: "testtest0843"
+            client_order_id: "testtest1003"
         });
     };
 
     _test_cancel_order() {
         this.cancel_order({
             exchange: EXCHANGE.BINANCEU,
-            symbol: "XLMUSDT",
+            symbol: "BNBUSDT",
             contract_type: CONTRACT_TYPE.PERP,
-            order_type: ORDER_TYPE.STOP_MARKET,
+            order_type: ORDER_TYPE.LIMIT,
             // order_id: "6513489055",
             account_id: "th_binance_cny_master",
-            client_order_id: "testtest0843"
+            client_order_id: "R010011UPsVZDd"
         });
     };
 
@@ -180,7 +181,7 @@ class DemoStrategy extends StrategyBase {
     };
 
     _on_market_data_trade_ready(trade) {
-        if (trade.symbol === "JOEUSDT") console.log(JSON.stringify(trade));
+        // console.log(JSON.stringify(trade));
     }
 
     _on_market_data_bestquote_ready(bestquote) {
@@ -196,7 +197,7 @@ class DemoStrategy extends StrategyBase {
     }
 
     on_order_update(order_update) {
-        console.log(JSON.stringify(order_update));
+        // console.log(JSON.stringify(order_update));
     }
 
     on_query_account_response(response) {

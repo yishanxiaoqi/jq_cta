@@ -14,11 +14,11 @@
         "AXSUSDT",
         "BNBUSDT",
         "CHZUSDT",
-        "DASHUSDT",
         "GRTUSDT",
         "HOTUSDT",
         "LTCUSDT",
         "QTUMUSDT",
+        "XMRUSDT",
         "XTZUSDT"
     ],
     "idfs": [
@@ -28,11 +28,11 @@
         "BinanceU.AXSUSDT.perp",
         "BinanceU.BNBUSDT.perp",
         "BinanceU.CHZUSDT.perp",
-        "BinanceU.DASHUSDT.perp",
         "BinanceU.GRTUSDT.perp",
         "BinanceU.HOTUSDT.perp",
         "BinanceU.LTCUSDT.perp",
         "BinanceU.QTUMUSDT.perp",
+        "BinanceU.XMRUSDT.perp",
         "BinanceU.XTZUSDT.perp"
     ],
     "entries": [
@@ -42,11 +42,11 @@
         "BinanceU.AXSUSDT.perp.12h",
         "BinanceU.BNBUSDT.perp.12h",
         "BinanceU.CHZUSDT.perp.12h",
-        "BinanceU.DASHUSDT.perp.12h",
         "BinanceU.GRTUSDT.perp.12h",
         "BinanceU.HOTUSDT.perp.12h",
         "BinanceU.LTCUSDT.perp.12h",
         "BinanceU.QTUMUSDT.perp.12h",
+        "BinanceU.XMRUSDT.perp.12h",
         "BinanceU.XTZUSDT.perp.12h"
     ],
     "cfgIDs": [
@@ -56,11 +56,11 @@
         "R120067",
         "R120169",
         "R120074",
-        "R120189",
         "R120228",
         "R120029",
         "R120100",
         "R120041",
+        "R120373",
         "R120388"
     ],
     "R120137": {
@@ -153,21 +153,6 @@
         "act_id": "th_binance_cny_master",
         "cfgID": "R120074"
     },
-    "R120189": {
-        "idf": "BinanceU.DASHUSDT.perp",
-        "entry": "BinanceU.DASHUSDT.perp.12h",
-        "splitAt": 0,
-        "track_ATR_n": 35,
-        "track_ATR_multiplier": 0.6,
-        "stoploss_rate": 0.04,
-        "cutloss_rate": 0.05,
-        "ini_af": 0.02,
-        "delta_af": 0.02,
-        "bar_enter_limit": 1,
-        "ini_usdt": 142,
-        "act_id": "th_binance_cny_master",
-        "cfgID": "R120189"
-    },
     "R120228": {
         "idf": "BinanceU.GRTUSDT.perp",
         "entry": "BinanceU.GRTUSDT.perp.12h",
@@ -227,6 +212,21 @@
         "ini_usdt": 118,
         "act_id": "th_binance_cny_master",
         "cfgID": "R120041"
+    },
+    "R120373": {
+        "idf": "BinanceU.XMRUSDT.perp",
+        "entry": "BinanceU.XMRUSDT.perp.12h",
+        "splitAt": 6,
+        "track_ATR_n": 30,
+        "track_ATR_multiplier": 0.2,
+        "stoploss_rate": 0.04,
+        "cutloss_rate": 0.02,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_master",
+        "cfgID": "R120373"
     },
     "R120388": {
         "idf": "BinanceU.XTZUSDT.perp",

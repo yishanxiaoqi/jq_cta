@@ -431,7 +431,8 @@ class RevTrendStrategy extends StrategyBase {
                 that.klines[cfgID]["high"][0] = Math.max(price, that.klines[cfgID]["high"][0]);
                 that.klines[cfgID]["low"][0] = Math.min(price, that.klines[cfgID]["low"][0]);
             } else {
-                logger.debug(`${cfgID}::${entry}::cur_bar_otime is smaller than klines ts[0]?`);
+                logger.debug(`${cfgID}::${entry}::cur_bar_otime ${that.cur_bar_otime[cfgID]} is smaller than klines ts[0]? ts: ${ts}`);
+                logger.debug(`${cfgID}::${entry}::${that.klines[cfgID]}`);
             }
 
             // update bar open time and net_profit

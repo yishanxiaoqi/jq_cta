@@ -13,10 +13,10 @@
         "BATUSDT",
         "BNBUSDT",
         "CTSIUSDT",
+        "HOTUSDT",
         "IOTAUSDT",
         "QTUMUSDT",
-        "SANDUSDT",
-        "ZECUSDT"
+        "YFIUSDT"
     ],
     "idfs": [
         "BinanceU.ALGOUSDT.perp",
@@ -24,10 +24,10 @@
         "BinanceU.BATUSDT.perp",
         "BinanceU.BNBUSDT.perp",
         "BinanceU.CTSIUSDT.perp",
+        "BinanceU.HOTUSDT.perp",
         "BinanceU.IOTAUSDT.perp",
         "BinanceU.QTUMUSDT.perp",
-        "BinanceU.SANDUSDT.perp",
-        "BinanceU.ZECUSDT.perp"
+        "BinanceU.YFIUSDT.perp"
     ],
     "entries" : [
         "BinanceU.ALGOUSDT.perp.1d",
@@ -35,10 +35,10 @@
         "BinanceU.BATUSDT.perp.1d",
         "BinanceU.BNBUSDT.perp.1d",
         "BinanceU.CTSIUSDT.perp.1d",
+        "BinanceU.HOTUSDT.perp.1d",
         "BinanceU.IOTAUSDT.perp.1d",
         "BinanceU.QTUMUSDT.perp.1d",
-        "BinanceU.SANDUSDT.perp.1d",
-        "BinanceU.ZECUSDT.perp.1d"
+        "BinanceU.YFIUSDT.perp.1d"
     ],
     "cfgIDs" : [
         "R240109",
@@ -46,10 +46,10 @@
         "R240135",
         "R240139",
         "R240071",
+        "R240027",
         "R240198",
         "R240041",
-        "R240088",
-        "R240290"
+        "R240289"
     ],
     "R240109": {
         "idf": "BinanceU.ALGOUSDT.perp",
@@ -126,6 +126,21 @@
         "act_id": "th_binance_cny_master",
         "cfgID": "R240071"
     },
+    "R240027": {
+        "idf": "BinanceU.HOTUSDT.perp",
+        "entry": "BinanceU.HOTUSDT.perp.1d",
+        "splitAt": 1,
+        "track_ATR_n": 10,
+        "track_ATR_multiplier": 0.6,
+        "stoploss_rate": 0.03,
+        "cutloss_rate": 0.04,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_master",
+        "cfgID": "R240027"
+    },
     "R240198": {
         "idf": "BinanceU.IOTAUSDT.perp",
         "entry": "BinanceU.IOTAUSDT.perp.1d",
@@ -156,34 +171,19 @@
         "act_id": "th_binance_cny_master",
         "cfgID": "R240041"
     },
-    "R240088": {
-        "idf": "BinanceU.SANDUSDT.perp",
-        "entry": "BinanceU.SANDUSDT.perp.1d",
-        "splitAt": 2,
+    "R240289": {
+        "idf": "BinanceU.YFIUSDT.perp",
+        "entry": "BinanceU.YFIUSDT.perp.1d",
+        "splitAt": 12,
         "track_ATR_n": 5,
-        "track_ATR_multiplier": 0.8,
-        "stoploss_rate": 0.03,
-        "cutloss_rate": 0.03,
-        "ini_af": 0.02,
-        "delta_af": 0.02,
-        "bar_enter_limit": 1,
-        "ini_usdt": 237,
-        "act_id": "th_binance_cny_master",
-        "cfgID": "R240088"
-    },
-    "R240290": {
-        "idf": "BinanceU.ZECUSDT.perp",
-        "entry": "BinanceU.ZECUSDT.perp.1d",
-        "splitAt": 17,
-        "track_ATR_n": 50,
-        "track_ATR_multiplier": 0.3,
+        "track_ATR_multiplier": 1.4,
         "stoploss_rate": 0.05,
-        "cutloss_rate": 0.03,
+        "cutloss_rate": 0.05,
         "ini_af": 0.02,
         "delta_af": 0.02,
         "bar_enter_limit": 1,
-        "ini_usdt": 200,
+        "ini_usdt": 100,
         "act_id": "th_binance_cny_master",
-        "cfgID": "R240290"
+        "cfgID": "R240289"
     }
 }

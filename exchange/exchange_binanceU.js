@@ -27,10 +27,11 @@ class ExchangeBinanceU extends ExchangeBase {
     }
 
     async _init_websocket() {
-        for (let account_id of this.account_ids) this._init_individual_websocket(account_id);
+        for (let account_id of this.account_ids) this._init_private_websocket(account_id);
+        this._init_market_websocket();
     }
     
-    async _init_individual_websocket(account_id) {
+    async _init_private_websocket(account_id) {
         this.ws_connections[account_id] = {};
         if (this.listenKeys[account_id] === undefined) {
             await this.get_listenKey(account_id);
@@ -39,7 +40,7 @@ class ExchangeBinanceU extends ExchangeBase {
         this.ws_connections[account_id]["ws"] = new WS(apiconfig.BinanceU.privateWebsocketUrl + this.listenKey);
 
         this.ws_connections[account_id]["ws"].on("open", (evt) => {
-            logger.info(`${this.name}|${account_id}: WS is CONNECTED.`);
+            logger.info(`${this.name}|${account_id}: private WS is CONNECTED.`);
 
             this.ws_connections[account_id]["reconnecting"] = false;
             this.ws_connections[account_id]["connected"] = true;
@@ -49,23 +50,6 @@ class ExchangeBinanceU extends ExchangeBase {
             setInterval(() => {
                 this.extend_listenKey(account_id);
             }, 1000 * 60 * 50);
-
-            // 100毫秒后订阅频道
-            if (account_id === "th_binance_cny_sub02") {
-                // 订阅频道的时间戳预设值
-                this.sub_streams_upd_ts = {};
-                for (let subscription of this.subscription_list) {
-                    this.sub_streams_upd_ts[subscription] = moment.now();
-                }
-
-                // 用th_binance_cny_sub03账号来订阅market_data，th_binance_cny_sub03目前没有任何资金
-                setTimeout(() => {
-                    logger.info(`${this.name}|${account_id}: Sending subscribe requests ...`)
-                    const sub_id = +randomID(6, '0');
-                    const sub_streams = this._format_subscription_list();
-                    this._send_ws_message(this.ws_connections[account_id]["ws"], { method: "SUBSCRIBE", params: sub_streams, id: sub_id });
-                }, 100);
-            }
 
             if (this.ws_connections[account_id]["ws_keep_alive_interval"]) {
                 clearInterval(this.ws_connections[account_id]["ws_keep_alive_interval"]);
@@ -87,35 +71,22 @@ class ExchangeBinanceU extends ExchangeBase {
 
                 if (Date.now() - this.ws_connections[account_id]["heartbeat"] > 3.1 * 60 * 1000) {
                     // 如果超过3.1分钟没有收到ping，说明ws可能已经断了，需要重连
-                    logger.warn(`${this.name}|${account_id}: not receving heartbeat over 3.1 min, reconnect this WS...`)
+                    logger.warn(`${this.name}|${account_id}: not receving heartbeat over 3.1 min, reconnect this private WS...`)
                     this._reconnect_ws(account_id);
                     return;
                 }
 
                 if (Date.now() - this.ws_connections[account_id]["ws_connected_ts"] > 23 * 60 * 60 * 1000) {
-                    logger.warn(`${this.name}|${account_id}: over 23 hours, reconnect this WS...`)
+                    logger.warn(`${this.name}|${account_id}: over 23 hours, reconnect this private WS...`)
                     this._reconnect_ws(account_id);
                     return;
-                }
-
-                if (account_id === "th_binance_cny_sub03") {
-                    let obj = this.sub_streams_upd_ts;
-                    let most_lag_subscription = Object.keys(obj).reduce(function(a, b) { return obj[a] < obj[b] ? a : b });
-                    let max_time_lag = moment.now() - this.sub_streams_upd_ts[most_lag_subscription];
-
-                    if (max_time_lag > 5 * 60 * 1000) {
-                        // 超过5分钟没有接收到某订阅频道的市场数据，重启该市场订阅WS
-                        logger.warn(`${this.name}|${account_id}: not receving ${most_lag_subscription} data over 5 min, reconnect the WS...`)
-                        this._reconnect_ws(account_id);
-                        return;
-                    }
                 }
 
             }, 30000);
         });
 
         this.ws_connections[account_id]["ws"].on("close", (code, reason) => {
-            logger.warn(`${this.name}|${account_id}:: websocket is DISCONNECTED. reason: ${reason} code: ${code}`);
+            logger.warn(`${this.name}|${account_id}:: private ws is DISCONNECTED. reason: ${reason} code: ${code}`);
             // logger.error(`${this.name} WS is DISCONNECTED.`);
 
             if (code === 1006) {
@@ -133,6 +104,8 @@ class ExchangeBinanceU extends ExchangeBase {
                 return;
             }
 
+            // 调试代码，工作时注释掉
+            // logger.info(`${this.name}|${account_id}: ${JSON.stringify(jdata)}`);
             // if (jdata["e"] !== "aggTrade") {
             //     logger.info(`${this.name}|${account_id}: ${JSON.stringify(jdata)}`);
             // }
@@ -142,16 +115,6 @@ class ExchangeBinanceU extends ExchangeBase {
                 // logger.info(`${this.name}|${account_id}: ${JSON.stringify(jdata)}`);
                 let order_update = this._format_order_update(jdata, account_id);
                 this.intercom.emit("ORDER_UPDATE", order_update, INTERCOM_SCOPE.FEED);
-            } else if (["aggTrade", "bookTicker"].includes(jdata["e"])) {
-                // trade价格更新
-                let market_data = this._format_market_data(jdata);
-                this.intercom.emit("MARKET_DATA", market_data, INTERCOM_SCOPE.FEED);
-
-                let data_type = (jdata["e"] === "aggTrade") ? "trade" : "bestquote";
-                let subscription = `${market_data.exchange}|${market_data.symbol}|${market_data.contract_type}|${data_type}`;
-
-                this.sub_streams_upd_ts[subscription] = moment.now();
-
             } else if (jdata["e"] === "ACCOUNT_UPDATE") {
                 let account_update = jdata;
                 this.intercom.emit("ACCOUNT_UPDATE", account_update, INTERCOM_SCOPE.FEED);
@@ -159,58 +122,188 @@ class ExchangeBinanceU extends ExchangeBase {
         });
 
         this.ws_connections[account_id]["ws"].on("error", (evt) => {
-            logger.error(`${this.name}|${account_id}: websocket on error: ` + evt);
+            logger.error(`${this.name}|${account_id}: private ws on error: ` + evt);
         });
 
         this.ws_connections[account_id]["ws"].on("ping", (evt) => {
             // 官方文档：BinanceU每隔3分钟会发送一次ping
             // client发送ping的时候，server会回复pong
-            logger.info(`${this.name}|${account_id}: websocket on ping, response with pong.`);
+            logger.info(`${this.name}|${account_id}: private ws on ping, response with pong.`);
             this.ws_connections[account_id]["ws"].pong();
             this.ws_connections[account_id]["heartbeat"] = new Date();
         });
     }
 
+    async _init_market_websocket() {
+        this.ws_connections["market"] = {};
+        const sub_streams_combine = this._format_subscription_list().join("/");
+        logger.info(`${this.name}|market: Sending subscribe requests ${sub_streams_combine} ...`);
+        this.ws_connections["market"]["ws"] = new WS(apiconfig.BinanceU.marketWebsocketUrl + sub_streams_combine);
+
+        this.ws_connections["market"]["ws"].on("open", (evt) => {
+            logger.info(`${this.name}|market: market WS is CONNECTED.`);
+
+            this.ws_connections["market"]["reconnecting"] = false;
+            this.ws_connections["market"]["connected"] = true;
+            this.ws_connections["market"]["ws_connected_ts"] = Date.now();
+
+            // 订阅频道的时间戳预设值
+            this.sub_streams_upd_ts = {};
+            for (let subscription of this.subscription_list) {
+                this.sub_streams_upd_ts[subscription] = moment.now();
+            }
+
+            // setTimeout(() => {
+            //     const sub_id = +randomID(6, '0');
+            //     const sub_streams = this._format_subscription_list();
+            //     logger.info(`${this.name}|${account_id}: Sending subscribe requests ${sub_streams} ...`);
+            //     this._send_ws_message(this.ws_connections["market"]["ws"], { method: "SUBSCRIBE", params: sub_streams, id: sub_id });
+            // }, 100);
+
+            if (this.ws_connections["market"]["ws_keep_alive_interval"]) {
+                clearInterval(this.ws_connections["market"]["ws_keep_alive_interval"]);
+                this.ws_connections["market"]["ws_keep_alive_interval"] = undefined;
+            }
+
+            // 每隔半分钟
+            this.ws_connections["market"]["ws_keep_alive_interval"] = setInterval(() => {
+                // https://dev.binance.vision/t/how-to-send-ping-pong-to-binance-websocket-server/43
+                // client可以向server发送ping，server会回复pong
+                try {
+                    if (this.ws_connections["market"]["ws"].readyState === WS.OPEN) {
+                        this.ws_connections["market"]["ws"].ping(() => { });
+                        // this.ws_connections[account_id]["ws"].pong(() => { });
+                    }
+                } catch (ex) {
+                    logger.error(`market ws error|${ex}`);
+                }
+
+                if (Date.now() - this.ws_connections["market"]["heartbeat"] > 3.1 * 60 * 1000) {
+                    // 如果超过3.1分钟没有收到ping，说明ws可能已经断了，需要重连
+                    logger.warn(`${this.name}|market ws: not receving heartbeat over 3.1 min, reconnect this market WS...`)
+                    this._reconnect_ws("market");
+                    return;
+                }
+
+                if (Date.now() - this.ws_connections["market"]["ws_connected_ts"] > 23 * 60 * 60 * 1000) {
+                    logger.warn(`${this.name}|${"market"}: over 23 hours, reconnect this market WS...`)
+                    this._reconnect_ws("market");
+                    return;
+                }
+
+                let obj = this.sub_streams_upd_ts;
+                let most_lag_subscription = Object.keys(obj).reduce(function(a, b) { return obj[a] < obj[b] ? a : b });
+                let max_time_lag = moment.now() - this.sub_streams_upd_ts[most_lag_subscription];
+
+                if (max_time_lag > 5 * 60 * 1000) {
+                    // 超过5分钟没有接收到某订阅频道的市场数据，重启该市场订阅WS
+                    logger.warn(`${this.name}|market: not receving ${most_lag_subscription} data over 5 min, reconnect the market WS...`)
+                    this._reconnect_ws("market");
+                    return;
+                }
+
+            }, 30000);
+        });
+
+        this.ws_connections["market"]["ws"].on("close", (code, reason) => {
+            logger.warn(`${this.name}|market: market ws is DISCONNECTED. reason: ${reason} code: ${code}`);
+            // logger.error(`${this.name} WS is DISCONNECTED.`);
+
+            if (code === 1006) {
+                // 很有可能是VPN连接不稳定
+                this._reconnect_ws("market");
+            }
+        });
+
+        this.ws_connections["market"]["ws"].on("message", (evt) => {
+            let jdata;
+            try {
+                // 注意传送的数据格式：{"stream":"btcusdt@aggTrade","data":{}}
+                jdata = JSON.parse(evt)["data"];
+            } catch (ex) {
+                logger.error(ex);
+                return;
+            }
+
+            // 调试用代码，工作时注释
+            // logger.info(`${this.name}|market: ${JSON.stringify(jdata)}`);
+            // if (jdata["e"] !== "aggTrade") {
+            //     logger.info(`${this.name}|${account_id}: ${JSON.stringify(jdata)}`);
+            // }
+
+            if (["aggTrade", "bookTicker"].includes(jdata["e"])) {
+                // trade价格更新, bookTicker应在public ws更新
+                let market_data = this._format_market_data(jdata);
+                this.intercom.emit("MARKET_DATA", market_data, INTERCOM_SCOPE.FEED);
+
+                let data_type = (jdata["e"] === "aggTrade") ? "trade" : "bestquote";
+                let subscription = `${market_data.exchange}|${market_data.symbol}|${market_data.contract_type}|${data_type}`;
+
+                this.sub_streams_upd_ts[subscription] = moment.now();
+            }
+        });
+
+        this.ws_connections["market"]["ws"].on("error", (evt) => {
+            logger.error(`${this.name}|market: websocket on error: ` + evt);
+        });
+
+        this.ws_connections["market"]["ws"].on("ping", (evt) => {
+            // 官方文档：BinanceU每隔3分钟会发送一次ping
+            // client发送ping的时候，server会回复pong
+            logger.info(`${this.name}|market: websocket on ping, response with pong.`);
+            this.ws_connections["market"]["ws"].pong();
+            this.ws_connections["market"]["heartbeat"] = new Date();
+        });
+    }
+
     
     on_market_data_subscription(subscription_list) {
+        // 暂时没用，因为没有哪个脚本会在中途添加订阅
         const sub_id = +randomID(6, '0');
         const sub_streams = subscription_list.map(e => this._format_subscription_item(e));
 
         logger.info(subscription_list, 'subscription request received ...');
-        if (this.ws_connections["th_binance_cny_sub03"]["connected"] ) {
-            this._send_ws_message(this.ws_connections["th_binance_cny_sub03"]["ws"], { method: "SUBSCRIBE", params: sub_streams, id: sub_id });
+        if (this.ws_connections["market"]["connected"] ) {
+            this._send_ws_message(this.ws_connections["market"]["ws"], { method: "SUBSCRIBE", params: sub_streams, id: sub_id });
         }
     }
 
     on_market_data_unsubscription(unsubscription_list) {
+        // 暂时没用，因为没有哪个脚本会在中途取消订阅
         const unsub_id = +randomID(6, '0');
         const unsub_streams = unsubscription_list.map(e => this._format_subscription_item(e));
 
         logger.info(unsubscription_list, 'remove subscription request received ...');
-        if (this.ws_connections["th_binance_cny_sub03"]["connected"] ) {
-            this._send_ws_message(this.ws_connections["th_binance_cny_sub03"]["ws"], { method: "UNSUBSCRIBE", params: unsub_streams, id: unsub_id });
+        if (this.ws_connections["market"]["connected"] ) {
+            this._send_ws_message(this.ws_connections["market"]["ws"], { method: "UNSUBSCRIBE", params: unsub_streams, id: unsub_id });
         }
     }
 
-    _reconnect_ws(account_id) {
-        if (this.ws_connections[account_id]["reconnecting"]) {
-            logger.info(`${this.name}|${account_id}: websocket is already reconnecting.`);
+    _reconnect_ws(ws_name) {
+        if (this.ws_connections[ws_name]["reconnecting"]) {
+            logger.info(`${this.name}|${ws_name}: websocket is already reconnecting.`);
             return;
         }
-        this.ws_connections[account_id]["reconnecting"] = true;
+        this.ws_connections[ws_name]["reconnecting"] = true;
 
         try {
-            if (this.ws_connections[account_id]["connected"]) {
-                logger.info(`${this.name}|${account_id}: websocket was closed by _reconnect_ws.`);
-                this.ws_connections[account_id]["ws"].close();
+            if (this.ws_connections[ws_name]["connected"]) {
+                logger.info(`${this.name}|${ws_name}: websocket was closed by _reconnect_ws.`);
+                this.ws_connections[ws_name]["ws"].close();
             }
         } catch (e) {
-            logger.error(`${this.name}|${account_id}: error ${e.stack}`);
+            logger.error(`${this.name}|${ws_name}: error ${e.stack}`);
         }
 
         setTimeout(() => {
-            logger.info(`${this.name}|${account_id}: websocket is reconnecting...`);
-            this._init_individual_websocket(account_id);
+            logger.info(`${this.name}|${ws_name}: websocket is reconnecting...`);
+            if (ws_name === "market") {
+                this._init_market_websocket();
+            } else if (ws_name === "public") {
+                this._init_public_websocket();
+            } else {
+                this._init_private_websocket(ws_name);
+            }
         }, 100);
     }
   

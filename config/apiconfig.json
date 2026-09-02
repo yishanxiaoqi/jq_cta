@@ -8,6 +8,7 @@
         "marketWebsocketUrl": "wss://fstream.binance.com/market/stream?streams=",
         "privateWebsocketUrl": "wss://fstream.binance.com/private/ws/",
         "restUrl": "https://fapi.binance.com",
+        "tradFiAgreementContract": "/fapi/v1/stock/contract",
         "restUrlGetBalance": "/fapi/v2/balance",
         "restUrlGetHistoryOrder": "/fapi/v1/allOrders",
         "restUrlGetHistoryTrade": "/fapi/v1/userTrades",

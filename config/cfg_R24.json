@@ -9,7 +9,6 @@
     ],
     "symbols": [
         "ALGOUSDT",
-        "AXSUSDT",
         "BATUSDT",
         "BNBUSDT",
         "CTSIUSDT",
@@ -20,7 +19,6 @@
     ],
     "idfs": [
         "BinanceU.ALGOUSDT.perp",
-        "BinanceU.AXSUSDT.perp",
         "BinanceU.BATUSDT.perp",
         "BinanceU.BNBUSDT.perp",
         "BinanceU.CTSIUSDT.perp",
@@ -31,7 +29,6 @@
     ],
     "entries" : [
         "BinanceU.ALGOUSDT.perp.1d",
-        "BinanceU.AXSUSDT.perp.1d",
         "BinanceU.BATUSDT.perp.1d",
         "BinanceU.BNBUSDT.perp.1d",
         "BinanceU.CTSIUSDT.perp.1d",
@@ -42,7 +39,6 @@
     ],
     "cfgIDs" : [
         "R240109",
-        "R240126",
         "R240135",
         "R240139",
         "R240071",
@@ -65,21 +61,6 @@
         "ini_usdt": 118,
         "act_id": "th_binance_cny_master",
         "cfgID": "R240109"
-    },
-    "R240126": {
-        "idf": "BinanceU.AXSUSDT.perp",
-        "entry": "BinanceU.AXSUSDT.perp.1d",
-        "splitAt": 5,
-        "track_ATR_n": 15,
-        "track_ATR_multiplier": 1.0,
-        "stoploss_rate": 0.05,
-        "cutloss_rate": 0.04,
-        "ini_af": 0.02,
-        "delta_af": 0.02,
-        "bar_enter_limit": 1,
-        "ini_usdt": 142,
-        "act_id": "th_binance_cny_master",
-        "cfgID": "R240126"
     },
     "R240135": {
         "idf": "BinanceU.BATUSDT.perp",

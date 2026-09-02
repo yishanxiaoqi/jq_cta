@@ -14,8 +14,8 @@ class DemoStrategy extends StrategyBase {
 
         setTimeout(() => {
             // this._test_send_post_only_order();
-            // this._test_send_order();
-            this._test_cancel_order();
+            this._test_send_order();
+            // this._test_cancel_order();
             // this._test_inspect_order();
             // this._test_query_orders();
             // this._test_modify_order();
@@ -121,13 +121,13 @@ class DemoStrategy extends StrategyBase {
     _test_send_order() {
         this.send_order({
             exchange: EXCHANGE.BINANCEU,
-            symbol: "BTCUSDT",
+            symbol: "XPTUSDT",
             contract_type: CONTRACT_TYPE.PERP,
             // stop_price: 79000,
-            price: 79000,
-            quantity: 0.01,
-            direction: DIRECTION.SELL,
-            order_type: ORDER_TYPE.STOP_MARKET,
+            price: 1750,
+            quantity: 0.1,
+            direction: DIRECTION.BUY,
+            order_type: ORDER_TYPE.LIMIT,
             account_id: "th_binance_cny_master",
             client_order_id: "testtest1003"
         });
@@ -136,12 +136,12 @@ class DemoStrategy extends StrategyBase {
     _test_cancel_order() {
         this.cancel_order({
             exchange: EXCHANGE.BINANCEU,
-            symbol: "BNBUSDT",
+            symbol: "XMRUSDT",
             contract_type: CONTRACT_TYPE.PERP,
             order_type: ORDER_TYPE.LIMIT,
             // order_id: "6513489055",
             account_id: "th_binance_cny_master",
-            client_order_id: "R010011UPsVZDd"
+            client_order_id: "RAV1101DNZyn87"
         });
     };
 

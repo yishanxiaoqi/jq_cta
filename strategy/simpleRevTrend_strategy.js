@@ -481,8 +481,18 @@ class SimpleRevTrendStrategy extends StrategyBase {
             let entry = that.cfg[cfgID]["entry"];
             let interval = entry.split(".")[3];
 
-            // logger.info(symbol, ts, that.cur_bar_otime[idf], that.pre_bar_otime[idf]);
-            that.cur_bar_otime[cfgID] = stratutils.cal_bar_otime(ts, interval, that.cfg[cfgID]["splitAt"]);
+            if ((that.cur_bar_otime[cfgID] === undefined ) || (ts >= that.cur_bar_otime[cfgID])) {
+                // 20260813::在ts >= that.cur_bar_otime[cfgID]的情况下才更新cur_bar_otime，
+                // 因为像ETHUSDT、BNBUSDT可能出现trade推送乱序的情况
+                // 如：先推送20260723220000048的trade，再推送较早的20260723215959959的trade
+                that.cur_bar_otime[cfgID] = stratutils.cal_bar_otime(ts, interval, that.cfg[cfgID]["splitAt"]);
+            } else {
+                that.slack_publish({
+                    "type": "alert",
+                    "msg": `${cfgID}::${entry}::Received wierd ts ${ts}, which is smaller than ${that.cur_bar_otime[cfgID]}!`
+                });
+            }
+
             // if the pre_bar_otime is undefined, it means the strategy is re-started
             let new_start = (that.pre_bar_otime[cfgID] === undefined);
             // new interal is not new_start, new bar means a new bar starts
@@ -511,12 +521,15 @@ class SimpleRevTrendStrategy extends StrategyBase {
                 that.klines[cfgID]["high"][0] = Math.max(price, that.klines[cfgID]["high"][0]);
                 that.klines[cfgID]["low"][0] = Math.min(price, that.klines[cfgID]["low"][0]);
             } else {
-                // logger.debug(`${that.alias}::${cfgID}::cur_bar_otime is smaller than klines ts[0]?`);
+                // 应该不会出现
+                logger.debug(`${cfgID}::${entry}::cur_bar_otime ${that.cur_bar_otime[cfgID]} is smaller than klines ts[0]? ts: ${ts}`);
             }
 
-            if (new_bar) {
-                // 检查一下kline
-                logger.info(`${cfgID}::NEW BAR::${JSON.stringify(that.klines[cfgID])}!`);
+            if (stratutils.cal_bar_otime(ts, interval, that.cfg[cfgID]["splitAt"]) === that.klines[cfgID]["ts"][1]) {
+                // 如果出现trade的推送乱序，如推送了送一个interval内的trade，那么更新上一个bar的high和low
+                that.klines[cfgID]["high"][1] = Math.max(price, that.klines[cfgID]["high"][1]);
+                that.klines[cfgID]["low"][1] = Math.min(price, that.klines[cfgID]["low"][1]);
+                logger.debug(`${cfgID}::${entry}::updated kline::${JSON.stringify(that.klines[cfgID])}`);
             }
 
             // update bar open time and net_profit

@@ -26,6 +26,12 @@ class ExchangeBinanceU extends ExchangeBase {
         this.listenKeys = {};
     }
 
+    start() {
+        this._register_events();
+        this._init_websocket();
+        for (let account_id of this.account_ids) this._sign_tradFi_agreement(account_id);
+    }
+
     async _init_websocket() {
         for (let account_id of this.account_ids) this._init_private_websocket(account_id);
         this._init_market_websocket();
@@ -256,6 +262,23 @@ class ExchangeBinanceU extends ExchangeBase {
         });
     }
 
+    async _sign_tradFi_agreement(account_id) {
+        let url = apiconfig.BinanceU.restUrl + apiconfig.BinanceU.tradFiAgreementContract;
+        let params = this._get_rest_options(url, {
+            timestamp: Date.now()
+        }, account_id);
+
+        var options = {
+            url: params["url"] + params["postbody"],
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-MBX-APIKEY": token[account_id].apiKey
+            }
+        };
+
+        let body = await rp.post(options);
+        logger.info(`${this.name}|${account_id}: Sign TradFi-Perps agreement contract: ${body}!`);
+    };
     
     on_market_data_subscription(subscription_list) {
         // 暂时没用，因为没有哪个脚本会在中途添加订阅

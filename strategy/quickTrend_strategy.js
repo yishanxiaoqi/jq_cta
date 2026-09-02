@@ -460,7 +460,6 @@ class QuickTrendStrategy extends StrategyBase {
             let entry = that.cfg[cfgID]["entry"];
             let interval = entry.split(".")[3];
 
-            // logger.info(symbol, ts, that.cur_bar_otime[idf], that.pre_bar_otime[idf]);
             if ((that.cur_bar_otime[cfgID] === undefined ) || (ts >= that.cur_bar_otime[cfgID])) {
                 // 20260723::在ts >= that.cur_bar_otime[cfgID]的情况下才更新cur_bar_otime，
                 // 因为像ETHUSDT、BNBUSDT可能出现trade推送乱序的情况

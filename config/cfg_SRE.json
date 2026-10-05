@@ -7,39 +7,21 @@
         "th_binance_cny_sub01"
     ],
     "symbols": [
-        "DASHUSDT",
         "KSMUSDT",
         "RLCUSDT"
     ],
     "idfs": [
-        "BinanceU.DASHUSDT.perp",
         "BinanceU.KSMUSDT.perp",
         "BinanceU.RLCUSDT.perp"
     ],
     "entries": [
-        "BinanceU.DASHUSDT.perp.6h",
         "BinanceU.KSMUSDT.perp.6h",
         "BinanceU.RLCUSDT.perp.1d"
     ],
     "cfgIDs" : [
-        "SRE0083",
         "SRE0085",
         "SRE0183"
     ],
-    "SRE0083" : {
-        "entry": "BinanceU.DASHUSDT.perp.6h",
-        "idf": "BinanceU.DASHUSDT.perp",
-        "splitAt": 2,
-        "track_ATR_n": 5,
-        "track_ATR_multiplier": 0.9,
-        "cutloss_rate": 0.1,
-        "ini_af": 0.02,
-        "delta_af": 0.02,
-        "bar_enter_limit": 1,
-        "ini_usdt": 100,
-        "act_id": "th_binance_cny_master",
-        "cfgID": "SRE0083"
-    },
     "SRE0085" : {
         "entry": "BinanceU.KSMUSDT.perp.6h",
         "idf": "BinanceU.KSMUSDT.perp",

@@ -13,10 +13,12 @@
         "BATUSDT",
         "BNBUSDT",
         "HOTUSDT",
+        "HUMAUSDT",
         "KAVAUSDT",
         "QNTUSDT",
         "THETAUSDT",
-        "YFIUSDT"
+        "YFIUSDT",
+        "ZILUSDT"
     ],
     "idfs": [
         "BinanceU.ALGOUSDT.perp",
@@ -24,10 +26,12 @@
         "BinanceU.BATUSDT.perp",
         "BinanceU.BNBUSDT.perp",
         "BinanceU.HOTUSDT.perp",
+        "BinanceU.HUMAUSDT.perp",
         "BinanceU.KAVAUSDT.perp",
         "BinanceU.QNTUSDT.perp",
         "BinanceU.THETAUSDT.perp",
-        "BinanceU.YFIUSDT.perp"
+        "BinanceU.YFIUSDT.perp",
+        "BinanceU.ZILUSDT.perp"
     ],
     "entries": [
         "BinanceU.ALGOUSDT.perp.1h",
@@ -35,10 +39,12 @@
         "BinanceU.BATUSDT.perp.1h",
         "BinanceU.BNBUSDT.perp.1h",
         "BinanceU.HOTUSDT.perp.1h",
+        "BinanceU.HUMAUSDT.perp.1h",
         "BinanceU.KAVAUSDT.perp.1h",
         "BinanceU.QNTUSDT.perp.1h",
         "BinanceU.THETAUSDT.perp.1h",
-        "BinanceU.YFIUSDT.perp.1h"
+        "BinanceU.YFIUSDT.perp.1h",
+        "BinanceU.ZILUSDT.perp.1h"
     ],
     "cfgIDs": [
         "R010144",
@@ -49,10 +55,12 @@
         "R010156",
         "R010011",
         "R010079",
+        "R010263",
         "R010184",
         "R010257",
         "R010135",
-        "R010243"
+        "R010243",
+        "R010245"
     ],
     "R010144": {
         "idf": "BinanceU.ALGOUSDT.perp",
@@ -159,6 +167,21 @@
         "act_id": "th_binance_cny_master",
         "cfgID": "R010011"
     },
+    "R010263": {
+        "idf": "BinanceU.HUMAUSDT.perp",
+        "entry": "BinanceU.HUMAUSDT.perp.1h",
+        "splitAt": 0,
+        "track_ATR_n": 15,
+        "track_ATR_multiplier": 0.6,
+        "stoploss_rate": 0.04,
+        "cutloss_rate": 0.05,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_master",
+        "cfgID": "R010263"
+    },
     "R010079": {
         "idf": "BinanceU.HOTUSDT.perp",
         "entry": "BinanceU.HOTUSDT.perp.1h",
@@ -233,5 +256,20 @@
         "ini_usdt": 100,
         "act_id": "th_binance_cny_master",
         "cfgID": "R010243"
+    },
+    "R010245": {
+        "idf": "BinanceU.ZILUSDT.perp",
+        "entry": "BinanceU.ZILUSDT.perp.1h",
+        "splitAt": 0,
+        "track_ATR_n": 45,
+        "track_ATR_multiplier": 0.8,
+        "stoploss_rate": 0.03,
+        "cutloss_rate": 0.02,
+        "ini_af": 0.02,
+        "delta_af": 0.02,
+        "bar_enter_limit": 1,
+        "ini_usdt": 100,
+        "act_id": "th_binance_cny_master",
+        "cfgID": "R010245"
     }
 }
